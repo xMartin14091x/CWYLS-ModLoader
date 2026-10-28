@@ -11,7 +11,7 @@ project instead.
   belong to Nestopi Inc. This repository and its releases contain none of them. Do not add them, and do
   not distribute them in mods.
 - **Full game only:** the loader runs on the full Steam release of the game and switches itself off on
-  the free demo.
+  the free demo. This demo lock is a condition of the licence: copies and changed versions must keep it.
 - **Your risk:** the game's own terms restrict analysing and modifying it. You use mods at your own risk.
   If Nestopi asks, this project will change or be taken down.
 - **Your saves:** the loader keeps mod content out of the game's save files so they stay loadable

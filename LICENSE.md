@@ -1,6 +1,7 @@
 Required Notice: Copyright (c) 2026 Martin Nakorn
 Required Notice: CWY:LS Mod Loader is an unofficial, fan-made project for Chill with You : Lo-Fi Story. It is not made or endorsed by Nestopi Inc. The game, its code and its assets are the property of Nestopi Inc. and are not covered by this license.
 Required Notice: Mods, content packs and other works made for or with CWY:LS Mod Loader must be distributed free of charge.
+Required Notice: CWY:LS Mod Loader may be used only with the full Steam release of Chill with You : Lo-Fi Story. Copies and changed versions must keep its demo lock (see AGENTS.md, "Protected controls").
 
 # PolyForm Noncommercial License 1.0.0
 
