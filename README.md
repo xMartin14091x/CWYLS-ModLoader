@@ -59,7 +59,7 @@ Download the zip for your system from **[Releases](https://github.com/xMartin140
   <img src=".github/assets/installer/installer-demo.gif" width="760" alt="Animation: the macOS installer. The CWY:LS name assembles from stardust, the setup panel finds the game, Install or update is chosen, the steps run, and ALL SET shows the Steam launch line, already copied.">
 </picture>
 <br>
-<sub>The macOS installer, recorded with a test copy of the game. The Windows one looks the same.</sub>
+<sub>The macOS installer, recorded with a test copy of the game. The Windows installer has the same screens.</sub>
 </div>
 
 <table>
