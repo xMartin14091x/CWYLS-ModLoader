@@ -19,7 +19,7 @@
 ![game](https://img.shields.io/badge/game-1.17.3-9fd9c2?style=flat-square)
 ![licence](https://img.shields.io/badge/licence-PolyForm%20Noncommercial-e8c48f?style=flat-square)
 
-[**Download**](../../releases) &nbsp;·&nbsp; [**Make mods**](docs/guide/) &nbsp;·&nbsp; [**API reference**](docs/api/) &nbsp;·&nbsp; [**Report a problem**](../../issues)
+[**Download**](https://github.com/xMartin14091x/CWYLS-ModLoader/releases) &nbsp;·&nbsp; [**Make mods**](docs/guide/) &nbsp;·&nbsp; [**API reference**](docs/api/) &nbsp;·&nbsp; [**Report a problem**](https://github.com/xMartin14091x/CWYLS-ModLoader/issues)
 
 </div>
 
@@ -53,7 +53,7 @@ game version.
 
 ## ▶ Install
 
-Download the zip for your system from **[Releases](../../releases)** and unzip it.
+Download the zip for your system from **[Releases](https://github.com/xMartin14091x/CWYLS-ModLoader/releases)** and unzip it.
 
 <table>
 <tr><th>macOS</th><th>Windows</th></tr>
