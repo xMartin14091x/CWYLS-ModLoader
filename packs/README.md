@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../.github/assets/banner/docs-packs-dark.svg">
-  <img src="../.github/assets/banner/docs-packs-light.svg" alt="CWY:LS Mod Loader content packs">
+  <img src="../.github/assets/banner/docs-packs-light.svg" width="100%" alt="CWY:LS Mod Loader content packs">
 </picture>
 
 <sub>[Author's guide](../docs/guide/README.md) &nbsp;·&nbsp; [Manifest](../docs/guide/manifest.md) &nbsp;·&nbsp; [Example pack](cwy.example) &nbsp;·&nbsp; [API reference](../docs/api/README.md)</sub>

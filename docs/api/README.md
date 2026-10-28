@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../../.github/assets/banner/docs-api-dark.svg">
-  <img src="../../.github/assets/banner/docs-api-light.svg" alt="CWY:LS Mod Loader API reference">
+  <img src="../../.github/assets/banner/docs-api-light.svg" width="100%" alt="CWY:LS Mod Loader API reference">
 </picture>
 
 <sub>[Author's guide](../guide/README.md) &nbsp;·&nbsp; [Getting started](../guide/getting-started.md) &nbsp;·&nbsp; [Helper](../guide/helper.md) &nbsp;·&nbsp; **API reference**</sub>
