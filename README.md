@@ -53,6 +53,15 @@ flowchart LR
 
 Download the zip for your system from **[Releases](https://github.com/xMartin14091x/CWYLS-ModLoader/releases)** and unzip it.
 
+<div align="center">
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset=".github/assets/installer/installer-demo-light.gif">
+  <img src=".github/assets/installer/installer-demo.gif" width="760" alt="Animation: the macOS installer. The CWY:LS name assembles from stardust, the setup panel finds the game, Install or update is chosen, the steps run, and ALL SET shows the Steam launch line, already copied.">
+</picture>
+<br>
+<sub>The macOS installer, recorded with a test copy of the game. The Windows one looks the same.</sub>
+</div>
+
 <table>
 <tr><th width="50%">macOS</th><th width="50%">Windows</th></tr>
 <tr valign="top"><td>
