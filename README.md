@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner/0.9-dusk-dark.svg">
-  <img src=".github/assets/banner/0.9-dusk-light.svg" width="100%" alt="CWY:LS Mod Loader, release 0.9 · Dusk: the wordmark under an evening sky with twinkling stars, the Teacup constellation, a crescent moon and a small lit house on the hills.">
+  <img src=".github/assets/banner/0.9-dusk-light.svg" alt="CWY:LS Mod Loader, release 0.9 · Dusk: the wordmark under an evening sky with twinkling stars, the Teacup constellation, a crescent moon and a small lit house on the hills.">
 </picture>
 
 **A mod loader for *Chill With You: Lo-Fi Story*, built so your mods keep working when the game updates.**
@@ -56,7 +56,7 @@ Download the zip for your system from **[Releases](https://github.com/xMartin140
 <div align="center">
 <picture>
   <source media="(prefers-color-scheme: light)" srcset=".github/assets/installer/installer-demo-light.gif">
-  <img src=".github/assets/installer/installer-demo.gif" width="760" alt="Animation: the macOS installer. The CWY:LS name assembles from stardust, the setup panel finds the game, Install or update is chosen, the steps run, and ALL SET shows the Steam launch line, already copied.">
+  <img src=".github/assets/installer/installer-demo.gif" alt="Animation: the macOS installer. The CWY:LS name assembles from stardust, the setup panel finds the game, Install or update is chosen, the steps run, and ALL SET shows the Steam launch line, already copied.">
 </picture>
 <br>
 <sub>The macOS installer, recorded with a test copy of the game. The Windows installer has the same screens.</sub>
@@ -270,7 +270,7 @@ Banner lettering uses [Fraunces](https://github.com/undercasetype/Fraunces) and 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner/sky-so-far-dark.svg">
-  <img src=".github/assets/banner/sky-so-far-light.svg" width="100%" alt="The sky so far: one constellation per release. 0.9 · Dusk added the Teacup.">
+  <img src=".github/assets/banner/sky-so-far-light.svg" alt="The sky so far: one constellation per release. 0.9 · Dusk added the Teacup.">
 </picture>
 
 <details>
