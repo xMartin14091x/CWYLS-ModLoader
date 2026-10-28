@@ -1,0 +1,142 @@
+solid star
+facet normal -0.63 0.24 0.74
+ outer loop
+  vertex 0 0 3.2
+  vertex 0 10 0
+  vertex -2.47 3.4 0
+ endloop
+endfacet
+facet normal -0.63 0.24 -0.74
+ outer loop
+  vertex 0 0 -3.2
+  vertex -2.47 3.4 0
+  vertex 0 10 0
+ endloop
+endfacet
+facet normal -0.03 0.67 0.74
+ outer loop
+  vertex 0 0 3.2
+  vertex -2.47 3.4 0
+  vertex -9.51 3.09 0
+ endloop
+endfacet
+facet normal -0.03 0.67 -0.74
+ outer loop
+  vertex 0 0 -3.2
+  vertex -9.51 3.09 0
+  vertex -2.47 3.4 0
+ endloop
+endfacet
+facet normal -0.42 -0.53 0.74
+ outer loop
+  vertex 0 0 3.2
+  vertex -9.51 3.09 0
+  vertex -3.99 -1.3 0
+ endloop
+endfacet
+facet normal -0.42 -0.53 -0.74
+ outer loop
+  vertex 0 0 -3.2
+  vertex -3.99 -1.3 0
+  vertex -9.51 3.09 0
+ endloop
+endfacet
+facet normal -0.65 0.18 0.74
+ outer loop
+  vertex 0 0 3.2
+  vertex -3.99 -1.3 0
+  vertex -5.88 -8.09 0
+ endloop
+endfacet
+facet normal -0.65 0.18 -0.74
+ outer loop
+  vertex 0 0 -3.2
+  vertex -5.88 -8.09 0
+  vertex -3.99 -1.3 0
+ endloop
+endfacet
+facet normal 0.37 -0.56 0.74
+ outer loop
+  vertex 0 0 3.2
+  vertex -5.88 -8.09 0
+  vertex 0 -4.2 0
+ endloop
+endfacet
+facet normal 0.37 -0.56 -0.74
+ outer loop
+  vertex 0 0 -3.2
+  vertex 0 -4.2 0
+  vertex -5.88 -8.09 0
+ endloop
+endfacet
+facet normal -0.37 -0.56 0.74
+ outer loop
+  vertex 0 0 3.2
+  vertex 0 -4.2 0
+  vertex 5.88 -8.09 0
+ endloop
+endfacet
+facet normal -0.37 -0.56 -0.74
+ outer loop
+  vertex 0 0 -3.2
+  vertex 5.88 -8.09 0
+  vertex 0 -4.2 0
+ endloop
+endfacet
+facet normal 0.65 0.18 0.74
+ outer loop
+  vertex 0 0 3.2
+  vertex 5.88 -8.09 0
+  vertex 3.99 -1.3 0
+ endloop
+endfacet
+facet normal 0.65 0.18 -0.74
+ outer loop
+  vertex 0 0 -3.2
+  vertex 3.99 -1.3 0
+  vertex 5.88 -8.09 0
+ endloop
+endfacet
+facet normal 0.42 -0.53 0.74
+ outer loop
+  vertex 0 0 3.2
+  vertex 3.99 -1.3 0
+  vertex 9.51 3.09 0
+ endloop
+endfacet
+facet normal 0.42 -0.53 -0.74
+ outer loop
+  vertex 0 0 -3.2
+  vertex 9.51 3.09 0
+  vertex 3.99 -1.3 0
+ endloop
+endfacet
+facet normal 0.03 0.67 0.74
+ outer loop
+  vertex 0 0 3.2
+  vertex 9.51 3.09 0
+  vertex 2.47 3.4 0
+ endloop
+endfacet
+facet normal 0.03 0.67 -0.74
+ outer loop
+  vertex 0 0 -3.2
+  vertex 2.47 3.4 0
+  vertex 9.51 3.09 0
+ endloop
+endfacet
+facet normal 0.63 0.24 0.74
+ outer loop
+  vertex 0 0 3.2
+  vertex 2.47 3.4 0
+  vertex 0 10 0
+ endloop
+endfacet
+facet normal 0.63 0.24 -0.74
+ outer loop
+  vertex 0 0 -3.2
+  vertex 0 10 0
+  vertex 2.47 3.4 0
+ endloop
+endfacet
+endsolid star

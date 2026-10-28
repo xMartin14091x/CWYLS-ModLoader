@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner/0.9-dusk-dark.svg">
-  <img src=".github/assets/banner/0.9-dusk-light.svg" width="100%" alt="CWY:LS Mod Loader, release 0.9 · Dusk: the wordmark under an evening sky with twinkling stars, the Teacup constellation, a crescent moon and a small lit house on the hills.">
+  <img src=".github/assets/banner/0.9-dusk-light.svg" width="100%" alt="CWY:LS Mod Loader, release 0.9 · Dusk: the installer's block-letter CWY:LS, MOD LOADER and v0.9.0 · developer preview, under a pixel-art evening sky with twinkling stars, the Teacup constellation, a crescent moon and a small lit house on the hills.">
 </picture>
 
 **A mod loader for *Chill With You: Lo-Fi Story*, built so your mods keep working when the game updates.**
@@ -29,13 +29,10 @@ game again, repair their mod and hope it doesn't damage a save. **CWY:LS Mod Loa
 Mods talk to a stable API and plain content folders, and the loader keeps track of the game's internals for each
 game version.
 
-```mermaid
-flowchart LR
-    U(["Game update"]) --> C{"Startup check:<br/>339 game methods"}
-    C -->|all found| A["Every feature on"]
-    C -->|one moved| B["Only that feature<br/>switches off"]
-    B --> L["A clear log line;<br/>the game keeps running"]
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner/version-safety-dark.svg">
+  <img src=".github/assets/banner/version-safety-light.svg" width="100%" alt="When the game updates, the loader checks the 339 game methods it uses at startup. All found: every feature is on. One moved: only the feature that needs it switches off, with a clear line in the log, and the game keeps running.">
+</picture>
 
 ## ✦ What it does
 
@@ -260,8 +257,7 @@ See also [`NOTICE.md`](NOTICE.md).
 Built on [BepInEx](https://github.com/BepInEx/BepInEx) with [UnityDoorstop](https://github.com/NeighTools/UnityDoorstop),
 [HarmonyX](https://github.com/BepInEx/HarmonyX), [MonoMod](https://github.com/MonoMod/MonoMod) and
 [Mono.Cecil](https://github.com/jbevain/cecil). Their licences are in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).
-Banner lettering uses [Fraunces](https://github.com/undercasetype/Fraunces) and [Outfit](https://github.com/Outfitio/Outfit-Fonts)
-(SIL Open Font License), turned into outlines.
+The artwork uses the installer's own lettering, drawn in [DejaVu Sans Mono](https://dejavu-fonts.github.io/) and turned into outlines.
 *Chill With You: Lo-Fi Story* and everything in it belongs to Nestopi Inc.; none of it is included here.
 
 **Contributors and AI coding tools:** read [`AGENTS.md`](AGENTS.md) first.
@@ -273,152 +269,4 @@ Banner lettering uses [Fraunces](https://github.com/undercasetype/Fraunces) and 
   <img src=".github/assets/banner/sky-so-far-light.svg" width="100%" alt="The sky so far: one constellation per release. 0.9 · Dusk added the Teacup.">
 </picture>
 
-<details>
-<summary><sub>✦ psst… spin the star</sub></summary>
-
-```stl
-solid star
-facet normal -0.63 0.24 0.74
- outer loop
-  vertex 0 0 3.2
-  vertex 0 10 0
-  vertex -2.47 3.4 0
- endloop
-endfacet
-facet normal -0.63 0.24 -0.74
- outer loop
-  vertex 0 0 -3.2
-  vertex -2.47 3.4 0
-  vertex 0 10 0
- endloop
-endfacet
-facet normal -0.03 0.67 0.74
- outer loop
-  vertex 0 0 3.2
-  vertex -2.47 3.4 0
-  vertex -9.51 3.09 0
- endloop
-endfacet
-facet normal -0.03 0.67 -0.74
- outer loop
-  vertex 0 0 -3.2
-  vertex -9.51 3.09 0
-  vertex -2.47 3.4 0
- endloop
-endfacet
-facet normal -0.42 -0.53 0.74
- outer loop
-  vertex 0 0 3.2
-  vertex -9.51 3.09 0
-  vertex -3.99 -1.3 0
- endloop
-endfacet
-facet normal -0.42 -0.53 -0.74
- outer loop
-  vertex 0 0 -3.2
-  vertex -3.99 -1.3 0
-  vertex -9.51 3.09 0
- endloop
-endfacet
-facet normal -0.65 0.18 0.74
- outer loop
-  vertex 0 0 3.2
-  vertex -3.99 -1.3 0
-  vertex -5.88 -8.09 0
- endloop
-endfacet
-facet normal -0.65 0.18 -0.74
- outer loop
-  vertex 0 0 -3.2
-  vertex -5.88 -8.09 0
-  vertex -3.99 -1.3 0
- endloop
-endfacet
-facet normal 0.37 -0.56 0.74
- outer loop
-  vertex 0 0 3.2
-  vertex -5.88 -8.09 0
-  vertex 0 -4.2 0
- endloop
-endfacet
-facet normal 0.37 -0.56 -0.74
- outer loop
-  vertex 0 0 -3.2
-  vertex 0 -4.2 0
-  vertex -5.88 -8.09 0
- endloop
-endfacet
-facet normal -0.37 -0.56 0.74
- outer loop
-  vertex 0 0 3.2
-  vertex 0 -4.2 0
-  vertex 5.88 -8.09 0
- endloop
-endfacet
-facet normal -0.37 -0.56 -0.74
- outer loop
-  vertex 0 0 -3.2
-  vertex 5.88 -8.09 0
-  vertex 0 -4.2 0
- endloop
-endfacet
-facet normal 0.65 0.18 0.74
- outer loop
-  vertex 0 0 3.2
-  vertex 5.88 -8.09 0
-  vertex 3.99 -1.3 0
- endloop
-endfacet
-facet normal 0.65 0.18 -0.74
- outer loop
-  vertex 0 0 -3.2
-  vertex 3.99 -1.3 0
-  vertex 5.88 -8.09 0
- endloop
-endfacet
-facet normal 0.42 -0.53 0.74
- outer loop
-  vertex 0 0 3.2
-  vertex 3.99 -1.3 0
-  vertex 9.51 3.09 0
- endloop
-endfacet
-facet normal 0.42 -0.53 -0.74
- outer loop
-  vertex 0 0 -3.2
-  vertex 9.51 3.09 0
-  vertex 3.99 -1.3 0
- endloop
-endfacet
-facet normal 0.03 0.67 0.74
- outer loop
-  vertex 0 0 3.2
-  vertex 9.51 3.09 0
-  vertex 2.47 3.4 0
- endloop
-endfacet
-facet normal 0.03 0.67 -0.74
- outer loop
-  vertex 0 0 -3.2
-  vertex 2.47 3.4 0
-  vertex 9.51 3.09 0
- endloop
-endfacet
-facet normal 0.63 0.24 0.74
- outer loop
-  vertex 0 0 3.2
-  vertex 2.47 3.4 0
-  vertex 0 10 0
- endloop
-endfacet
-facet normal 0.63 0.24 -0.74
- outer loop
-  vertex 0 0 -3.2
-  vertex 0 10 0
-  vertex 2.47 3.4 0
- endloop
-endfacet
-endsolid star
-```
-
-</details>
+<p align="center"><sub>✦ psst… <a href=".github/assets/star.stl">spin the star</a></sub></p>
