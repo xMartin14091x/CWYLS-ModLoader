@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    P1-7 - the Game Data Bus. Sits on top of the game adapter (B) and knows the Bulbul namespace;
+    the Unity-free models, privacy rules and serializer it publishes live in CwyLs.ModLoader.Core/Data
+    so they can be unit-tested off-engine.
+  -->
+  <Import Project="../CwyLs.Plugin.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../CwyLs.ModLoader.Core/CwyLs.ModLoader.Core.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../CwyLs.ModLoader/CwyLs.ModLoader.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../CwyLs.ModLoader.Bulbul/CwyLs.ModLoader.Bulbul.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- Game assemblies. Private=false: resolved at runtime from the game's Managed folder. -->
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(GameManagedPath)/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UniTask">
+      <HintPath>$(GameManagedPath)/UniTask.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="R3">
+      <HintPath>$(GameManagedPath)/R3.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ObservableCollections">
+      <HintPath>$(GameManagedPath)/ObservableCollections.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VContainer">
+      <HintPath>$(GameManagedPath)/VContainer.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

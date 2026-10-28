@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Unit tests. Deliberately references ONLY CwyLs.ModLoader.Core.
+
+    CwyLs.ModLoader / .Bulbul / .Smoke target netstandard2.1 and reference UnityEngine and BepInEx,
+    which cannot be loaded by a net10.0 test host, so they are not testable in-process. The rule
+    for the rest of this project: anything worth a unit test goes into CwyLs.ModLoader.Core (no Unity,
+    no BepInEx) and the plugin assemblies stay as thin Unity-facing shells. P1-1 (pack model) and
+    P1-2 (JSON row parsing) land in Core for exactly this reason. Behaviour that genuinely needs
+    the engine is covered by the in-game smoke reporter instead (P0-2).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CwyLs.ModLoader.Core/CwyLs.ModLoader.Core.csproj" />
+  </ItemGroup>
+
+</Project>

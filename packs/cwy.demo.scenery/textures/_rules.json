@@ -1,0 +1,26 @@
+[
+  {
+    "material": "mt_desk_1",
+    "property": "_Color",
+    "tint": "#C9A27E",
+    "x-note": "the PC desk: walnut"
+  },
+  {
+    "material": "mt_desk_2",
+    "property": "_Color",
+    "tint": "#C9A27E",
+    "x-note": "desk skin 2: the desk uses this material when that skin is chosen"
+  },
+  {
+    "material": "mt_desk",
+    "property": "_Color",
+    "tint": "#D9BC9C",
+    "x-note": "lamp table (night, cloudy, rain) and the speaker"
+  },
+  {
+    "material": "mt_desk_dark",
+    "property": "_Color",
+    "tint": "#D9BC9C",
+    "x-note": "lamp table (day, sunset)"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "ID": "cwy_demo_script_01",
+    "TitleLocalizationID": "0",
+    "SubtitleLocalizationID": "0",
+    "Scenario": "ExtraScenario",
+    "EpisodeNumber": 1001.0,
+    "UnlockLevel": 0,
+    "UnlockStoryEpisode": "None",
+    "PlayTiming": "None",
+    "ContentType": "SmallTalk_Cicada",
+    "Arg1": "0",
+    "Arg2": "0",
+    "Arg3": "0",
+    "x-why": "A long scene through the game's own story pipeline (fade, music pause, skip, tidy). Episode 1001 is in the mod range; ContentType SmallTalk_Cicada keeps the game's ScenarioGroupMasterWrapper from offering it on its own, so it plays only by 'scene play cwy_demo_script_01' or a trigger."
+  },
+  {
+    "ID": "cwy_demo_script_02",
+    "TitleLocalizationID": "0",
+    "SubtitleLocalizationID": "0",
+    "Scenario": "MotionScenario",
+    "EpisodeNumber": 1001.0,
+    "UnlockLevel": 0,
+    "UnlockStoryEpisode": "None",
+    "PlayTiming": "None",
+    "ContentType": "None",
+    "Arg1": "0",
+    "Arg2": "0",
+    "Arg3": "0",
+    "x-why": "A one-line talk started by the scene.play action that scene 01 defers; MotionScenario episodes are picked by her idle motions (1-25 only), so 1001 is never drawn by the game."
+  }
+]

@@ -1,0 +1,77 @@
+<Project>
+
+  <!--
+    Repo-wide build settings for the CWY:LS modding solution.
+    Imported automatically at the top of every project under this directory,
+    so anything a project sets itself wins over the defaults below.
+  -->
+
+  <!-- ===== Where the game's managed assemblies live ===== -->
+  <!--
+    Windows, first match wins: SteamGameRoot given on the command line (/p:SteamGameRoot=...) or as an
+    environment variable; else a Steam library at D:\SteamLibrary when the game is installed there; else the
+    default Steam library. macOS is unchanged: always the default Steam library in the user's home.
+  -->
+  <PropertyGroup>
+    <SteamGameRoot Condition="'$(OS)' == 'Windows_NT' and '$(SteamGameRoot)' == '' and Exists('D:\SteamLibrary\steamapps\common\Chill with You Lo-Fi Story\Chill With You_Data\Managed')">D:\SteamLibrary\steamapps\common\Chill with You Lo-Fi Story</SteamGameRoot>
+    <SteamGameRoot Condition="'$(OS)' == 'Windows_NT' and '$(SteamGameRoot)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Chill with You Lo-Fi Story</SteamGameRoot>
+    <SteamGameRoot Condition="'$(OS)' != 'Windows_NT'">$(HOME)/Library/Application Support/Steam/steamapps/common/Chill with You Lo-Fi Story</SteamGameRoot>
+
+    <GameManagedPath Condition="'$(OS)' == 'Windows_NT'">$(SteamGameRoot)\Chill With You_Data\Managed</GameManagedPath>
+    <GameManagedPath Condition="'$(OS)' != 'Windows_NT'">$(SteamGameRoot)/Chill With You.app/Contents/Resources/Data/Managed</GameManagedPath>
+  </PropertyGroup>
+
+  <!--
+    BepInEx core assemblies: a local BepInEx payload folder is used when one is present (it is not part
+    of the repository). Otherwise the build compiles against the BepInEx installed in the game
+    (BepInEx/core), or any folder given with /p:BepInExCorePath=...
+  -->
+  <PropertyGroup>
+    <BepInExCorePath Condition="'$(BepInExCorePath)' == '' and Exists('$(MSBuildThisFileDirectory)tools/mac/payload/BepInEx/core/BepInEx.dll')">$(MSBuildThisFileDirectory)tools/mac/payload/BepInEx/core</BepInExCorePath>
+    <BepInExCorePath Condition="'$(BepInExCorePath)' == ''">$(SteamGameRoot)/BepInEx/core</BepInExCorePath>
+  </PropertyGroup>
+
+  <!--
+    ===== Version =====
+    One place. CwyApi.PluginVersionText must match CwyLsVersion (a test checks it). AssemblyVersion
+    stays at major.minor.0.0 within a release line, so a mod built against 0.9.0 binds to 0.9.x.
+  -->
+  <PropertyGroup Condition="$(MSBuildProjectName.StartsWith('CwyLs.ModLoader'))">
+    <CwyLsVersion>0.9.0</CwyLsVersion>
+    <CwyLsVersionSuffix>preview</CwyLsVersionSuffix>
+    <Version>$(CwyLsVersion)</Version>
+    <AssemblyVersion>$([System.Version]::Parse('$(CwyLsVersion)').ToString(2)).0.0</AssemblyVersion>
+    <FileVersion>$(CwyLsVersion).0</FileVersion>
+    <InformationalVersion>$(CwyLsVersion)-$(CwyLsVersionSuffix)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Product>CWY:LS Mod Loader</Product>
+    <Company>CWY:LS Mod Loader</Company>
+    <Copyright>Copyright (c) 2026 Martin Nakorn. PolyForm Noncommercial 1.0.0.</Copyright>
+  </PropertyGroup>
+
+  <!-- ===== Common compiler settings ===== -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <!--
+      Shipped assemblies carry no local folder names (the PDB path in the DLL was the build
+      folder, user name included). Test projects keep real paths: TestRepo finds checked-in files
+      through [CallerFilePath].
+    -->
+    <PathMap Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">$(MSBuildThisFileDirectory)=/_/</PathMap>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!--
+    Target framework for BepInEx plugin assemblies (Unity 2022.3 Mono profile).
+    A project opts in by importing src/CwyLs.Plugin.props, which also sets CWYPluginProject=true.
+    (The opt-in has to be an explicit import rather than a flag read here, because this file is
+    evaluated *before* the project body, so a flag set in the .csproj would not be visible yet.)
+  -->
+  <PropertyGroup>
+    <CWYPluginTargetFramework>netstandard2.1</CWYPluginTargetFramework>
+  </PropertyGroup>
+
+</Project>

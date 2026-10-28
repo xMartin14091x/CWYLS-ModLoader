@@ -1,0 +1,10 @@
+{
+  "id": "cwy.demo.audio",
+  "name": "CWY Demo: Audio",
+  "version": "0.1.0",
+  "author": "CWY:LS",
+  "description": "Audio demo: procedural light and heavy rain replacing the game's rain loops, and one generated lo-fi track in the music list.",
+  "gameVersion": "1.17.3",
+  "loaderVersion": "0.9.0",
+  "dependsOn": []
+}

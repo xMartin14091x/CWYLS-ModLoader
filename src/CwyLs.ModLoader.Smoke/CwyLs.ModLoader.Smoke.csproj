@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- In-game smoke reporter. Loads last; writes BepInEx/smoke-report.json. -->
+  <Import Project="../CwyLs.Plugin.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../CwyLs.ModLoader/CwyLs.ModLoader.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../CwyLs.ModLoader.Core/CwyLs.ModLoader.Core.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../CwyLs.ModLoader.Bulbul/CwyLs.ModLoader.Bulbul.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

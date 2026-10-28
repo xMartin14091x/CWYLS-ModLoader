@@ -1,0 +1,90 @@
+[
+  {
+    "ID": "cwy_demo_script_01_010",
+    "Ja": "こんにちは！この短いシーンは CWY のスクリプトコマンドで動いてるよ。",
+    "En": "Hi! This little scene runs on CWY script commands.",
+    "ZhHans": "Hi! This little scene runs on CWY script commands.",
+    "ZhHant": "Hi! This little scene runs on CWY script commands.",
+    "Pt": "Hi! This little scene runs on CWY script commands.",
+    "Ko": "Hi! This little scene runs on CWY script commands.",
+    "Ru": "Hi! This little scene runs on CWY script commands.",
+    "Voice": ""
+  },
+  {
+    "ID": "cwy_demo_script_01_030",
+    "Ja": "見ててね、3秒だけ黙ってるから。",
+    "En": "Watch: I'll stay quiet for three seconds.",
+    "ZhHans": "Watch: I'll stay quiet for three seconds.",
+    "ZhHant": "Watch: I'll stay quiet for three seconds.",
+    "Pt": "Watch: I'll stay quiet for three seconds.",
+    "Ko": "Watch: I'll stay quiet for three seconds.",
+    "Ru": "Watch: I'll stay quiet for three seconds.",
+    "Voice": ""
+  },
+  {
+    "ID": "cwy_demo_script_01_050",
+    "Ja": "今の間が cwy.wait だよ。もう一言、言いに戻ってこようか？",
+    "En": "That pause was cwy.wait. Want me to come back with one more line?",
+    "ZhHans": "That pause was cwy.wait. Want me to come back with one more line?",
+    "ZhHant": "That pause was cwy.wait. Want me to come back with one more line?",
+    "Pt": "That pause was cwy.wait. Want me to come back with one more line?",
+    "Ko": "That pause was cwy.wait. Want me to come back with one more line?",
+    "Ru": "That pause was cwy.wait. Want me to come back with one more line?",
+    "Voice": ""
+  },
+  {
+    "ID": "cwy_demo_script_01_060",
+    "Ja": "うん、戻ってきて",
+    "En": "Yes, come back",
+    "ZhHans": "Yes, come back",
+    "ZhHant": "Yes, come back",
+    "Pt": "Yes, come back",
+    "Ko": "Yes, come back",
+    "Ru": "Yes, come back",
+    "Voice": ""
+  },
+  {
+    "ID": "cwy_demo_script_01_061",
+    "Ja": "ううん、これで大丈夫",
+    "En": "No, that's all",
+    "ZhHans": "No, that's all",
+    "ZhHant": "No, that's all",
+    "Pt": "No, that's all",
+    "Ko": "No, that's all",
+    "Ru": "No, that's all",
+    "Voice": ""
+  },
+  {
+    "ID": "cwy_demo_script_01_110",
+    "Ja": "わかった！このシーンが終わったら、また顔を出すね。",
+    "En": "Okay! When this scene closes, I'll pop back in.",
+    "ZhHans": "Okay! When this scene closes, I'll pop back in.",
+    "ZhHant": "Okay! When this scene closes, I'll pop back in.",
+    "Pt": "Okay! When this scene closes, I'll pop back in.",
+    "Ko": "Okay! When this scene closes, I'll pop back in.",
+    "Ru": "Okay! When this scene closes, I'll pop back in.",
+    "Voice": ""
+  },
+  {
+    "ID": "cwy_demo_script_01_200",
+    "Ja": "そっか。またね！",
+    "En": "Alright. See you around!",
+    "ZhHans": "Alright. See you around!",
+    "ZhHant": "Alright. See you around!",
+    "Pt": "Alright. See you around!",
+    "Ko": "Alright. See you around!",
+    "Ru": "Alright. See you around!",
+    "Voice": ""
+  },
+  {
+    "ID": "cwy_demo_script_02_010",
+    "Ja": "ただいま！部屋が落ち着いたから、cwy.defer がここに連れてきてくれたよ。",
+    "En": "I'm back! cwy.defer brought me here once the room was quiet.",
+    "ZhHans": "I'm back! cwy.defer brought me here once the room was quiet.",
+    "ZhHant": "I'm back! cwy.defer brought me here once the room was quiet.",
+    "Pt": "I'm back! cwy.defer brought me here once the room was quiet.",
+    "Ko": "I'm back! cwy.defer brought me here once the room was quiet.",
+    "Ru": "I'm back! cwy.defer brought me here once the room was quiet.",
+    "Voice": ""
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "ID": "cwy_example_01_001",
+    "Ja": "モッドローダーからこんにちは。",
+    "En": "Hello from the Mod Loader.",
+    "ZhHans": "Hello from the Mod Loader.",
+    "ZhHant": "Hello from the Mod Loader.",
+    "Pt": "Hello from the Mod Loader.",
+    "Ko": "Hello from the Mod Loader.",
+    "Ru": "Hello from the Mod Loader.",
+    "Voice": "Voice_CWY_Test",
+    "x-note": "Voice_CWY_Test is the WAV in audio/voice/, registered by the P1-4 voice feature."
+  }
+]

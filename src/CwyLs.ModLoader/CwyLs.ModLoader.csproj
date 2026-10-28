@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- A - Mod Loader core. Game-agnostic: no Assembly-CSharp reference, by design. -->
+  <Import Project="../CwyLs.Plugin.props" />
+
+  <!--
+    P1-2 loaders. CwyLs.Plugin.props carries only UnityEngine + CoreModule, which every plugin needs;
+    these four are specific to this assembly, so they are declared here rather than pushed onto
+    Bulbul/Smoke/Trace as well. Private=false like every other game assembly: resolved at runtime
+    from the installed game, never copied next to the plugin DLL.
+      ImageConversionModule      Texture2D <-> PNG (ImageConversion.LoadImage / EncodeToPNG)
+      AudioModule                AudioClip, AudioType
+      UnityWebRequestModule      UnityWebRequest, DownloadHandlerAudioClip
+      UnityWebRequestAudioModule UnityWebRequestMultimedia.GetAudioClip - the Ogg decode path
+  -->
+  <!--
+    P1-9a hotkeys. UnityEngine.UI carries UnityEngine.EventSystems.EventSystem, which is how the
+    registry knows a text field has keyboard focus and a letter must stay a letter. An engine/UI
+    package assembly, not a game type, so the "no Assembly-CSharp in the core" rule still holds.
+  -->
+  <ItemGroup>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManagedPath)/UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.AudioModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestAudioModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CwyLs.ModLoader.Core/CwyLs.ModLoader.Core.csproj">
+      <!-- Not copied next to us, and not flowed on to dependents: each plugin that needs
+           Core references it explicitly, so nobody gets a stray private copy. -->
+      <Private>false</Private>
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="UnityEngine.IMGUIModule"><HintPath>$(GameManagedPath)/UnityEngine.IMGUIModule.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="UnityEngine.TextRenderingModule"><HintPath>$(GameManagedPath)/UnityEngine.TextRenderingModule.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

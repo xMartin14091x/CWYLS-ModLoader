@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Unity-free, BepInEx-free pure logic shared by the plugins.
+    Has no assembly references at all, which is what makes it unit-testable from a net10.0
+    xunit project. Anything expressible without touching UnityEngine belongs here.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <!-- RP-5: version, product and copyright come from Directory.Build.props. -->
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <!--
+    P2-3: the generated Satone name table. LogicalName is spelled out rather than left to the
+    default (RootNamespace + folder path), so the resource id in SatoneTable.ResourceName cannot
+    drift if the project is ever renamed or the file moved.
+    It lists the game's own facial, motion and state names (game 1.17.3).
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="Satone/satone-table.json">
+      <LogicalName>CwyLs.ModLoader.Core.Satone.satone-table.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

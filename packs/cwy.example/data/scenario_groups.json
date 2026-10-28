@@ -1,0 +1,17 @@
+[
+  {
+    "ID": "cwy_example_01",
+    "TitleLocalizationID": "0",
+    "SubtitleLocalizationID": "0",
+    "Scenario": "MotionScenario",
+    "EpisodeNumber": 900.0,
+    "UnlockLevel": 0,
+    "UnlockStoryEpisode": "None",
+    "PlayTiming": "None",
+    "ContentType": "None",
+    "Arg1": "0",
+    "Arg2": "0",
+    "Arg3": "0",
+    "x-why": "MotionScenario needs no unlock, tutorial or story-progress state - see data/README.md."
+  }
+]

@@ -1,0 +1,88 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    cwy.sample.hello - the sample code mod (C1-FRONTDOOR). Built separately from CwyLs.ModLoader.sln, against
+    the framework DLLs the solution already built (src/*/bin/<Configuration>/netstandard2.1), so it
+    compiles exactly the way a third-party mod does. The build copies the DLL and the manifest into
+    packs/cwy.sample.hello/, which ./deploy-packs.sh installs as <game root>/CWYLS Mods/cwy.sample.hello/.
+    Build the framework first (build.sh with the no-deploy option), then:
+      dotnet build mods-src/cwy.sample.hello -c Release
+    (XML comments cannot contain a double hyphen, hence the spelled-out option.)
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>CwySampleHello</AssemblyName>
+    <RootNamespace>CwySample.Hello</RootNamespace>
+    <Version>0.1.0</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <!-- NuGet packages' DLLs flow into the build output, so CopyToPack can ship them (none yet). -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <CwyRepoRoot Condition="'$(CwyRepoRoot)' == ''">$(MSBuildThisFileDirectory)../../</CwyRepoRoot>
+    <CwyConfiguration Condition="'$(CwyConfiguration)' == ''">Release</CwyConfiguration>
+    <PackDir>$(CwyRepoRoot)packs/cwy.sample.hello/</PackDir>
+  </PropertyGroup>
+
+  <!--
+    Every reference is Private=false: the framework, BepInEx and Unity are already loaded in the
+    game; a copy shipped in a mod folder is ignored with one MODS warning, never loaded.
+    GameManagedPath and BepInExCorePath come from the checkout's Directory.Build.props (by default
+    the installed game's Managed folder and its BepInEx/core).
+  -->
+  <ItemGroup>
+    <Reference Include="CwyLs.ModLoader">
+      <HintPath>$(CwyRepoRoot)src/CwyLs.ModLoader/bin/$(CwyConfiguration)/netstandard2.1/CwyLs.ModLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="CwyLs.ModLoader.Core">
+      <HintPath>$(CwyRepoRoot)src/CwyLs.ModLoader.Core/bin/$(CwyConfiguration)/netstandard2.1/CwyLs.ModLoader.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExCorePath)/BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.AudioModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="manifest.json" />
+  </ItemGroup>
+
+  <!--
+    The pack folder is build output: the DLL, its symbols, the manifest, and any private dependency
+    (@(ReferenceCopyLocalPaths)) the game, BepInEx or CWY:LS Mod Loader does not already provide - the same
+    step as templates/cwy-mod/MyMod.csproj, i.e. the loader's shared-name rule applied at build time.
+  -->
+  <Target Name="CopyToPack" AfterTargets="Build">
+    <PropertyGroup>
+      <_CwySharedFamilies>(?i)^(CwyLs\.ModLoader|Assembly-CSharp|UnityEngine|Unity|BepInEx|0Harmony|HarmonyX|MonoMod|Mono\.Cecil|mscorlib|netstandard)([.-].*)?$</_CwySharedFamilies>
+    </PropertyGroup>
+    <ItemGroup>
+      <_CwySharedDll Include="$(GameManagedPath)/*.dll;$(BepInExCorePath)/*.dll" />
+      <_CwyCopyLocal Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll' or '%(Extension)' == '.pdb'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_CwySharedNames>@(_CwySharedDll->'%(Filename)')</_CwySharedNames>
+      <_CwySharedNames>;$(_CwySharedNames.ToLowerInvariant());</_CwySharedNames>
+    </PropertyGroup>
+    <ItemGroup>
+      <_CwyPrivateDependency Include="@(_CwyCopyLocal)"
+        Condition="!$(_CwySharedNames.Contains(';$([System.String]::Copy('%(Filename)').ToLowerInvariant());')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('%(Filename)', '$(_CwySharedFamilies)'))" />
+    </ItemGroup>
+    <MakeDir Directories="$(PackDir)" />
+    <Copy SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).pdb;manifest.json" DestinationFolder="$(PackDir)" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="@(_CwyPrivateDependency)"
+          DestinationFiles="@(_CwyPrivateDependency->'$(PackDir)%(DestinationSubDirectory)%(Filename)%(Extension)')" SkipUnchangedFiles="false" />
+    <Message Importance="high" Text="cwy.sample.hello -> $(PackDir) (private dependencies: @(_CwyPrivateDependency->'%(Filename)%(Extension)', ', '))" />
+  </Target>
+
+</Project>

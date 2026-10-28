@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "x-made-by": "synthesised by the CWY:LS Mod Loader project; no samples, nothing from the game",
+  "tracks": [
+    {
+      "file": "rainy-desk.ogg",
+      "title": "Rainy Desk (CWY demo)",
+      "credit": "CWY:LS Mod Loader demo, generated",
+      "tag": "other"
+    }
+  ]
+}

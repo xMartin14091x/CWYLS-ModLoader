@@ -1,0 +1,3632 @@
+{
+ "schema": 1,
+ "source": {
+  "animationTypeMembers": 179,
+  "facialTypeMembers": 8,
+  "actionStateTypeMembers": 32,
+  "animatorStates": 390,
+  "animationClips": 495,
+  "novelRows": 2289
+ },
+ "counts": {
+  "facials": 20,
+  "motions": 181,
+  "states": 32,
+  "motionsFromEnum": 178,
+  "motionsFromControllerOnly": 3,
+  "motionsByCategory": {
+   "base": 25,
+   "break": 27,
+   "click_reaction": 3,
+   "desk_switch": 6,
+   "event": 6,
+   "leave_chair": 14,
+   "story": 47,
+   "system": 6,
+   "want_talk": 3,
+   "wild": 25,
+   "work": 19
+  }
+ },
+ "facials": [
+  {
+   "id": 0,
+   "name": "none",
+   "facialType": "None",
+   "state": "_None",
+   "clip": "_None",
+   "loopable": true,
+   "meshes": {
+    "eye": [],
+    "brow": [],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_n",
+     "Mouth_narrow"
+    ]
+   },
+   "usedByLines": 589,
+   "aliases": []
+  },
+  {
+   "id": 1,
+   "name": "rest",
+   "facialType": "Shy_Rest",
+   "state": "anim_face_shy_rest",
+   "clip": "anim_face_shy_rest",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink_L",
+     "Eye_blink_R"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R",
+     "Eyeblow_sad_L",
+     "Eyeblow_sad_R"
+    ],
+    "mouth": [
+     "Mouth_anger2"
+    ]
+   },
+   "usedByLines": 81,
+   "aliases": [
+    "anim_face_shy_rest",
+    "shy_rest"
+   ]
+  },
+  {
+   "id": 2,
+   "name": "fun",
+   "facialType": "Shy_Fun",
+   "state": "anim_face_shy_fun",
+   "clip": "anim_face_shy_fun",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink_L",
+     "Eye_blink_R",
+     "Eye_smile2",
+     "Eye_under_smile_L",
+     "Eye_under_smile_R"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R",
+     "Eyeblow_smile_L",
+     "Eyeblow_smile_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_narrow"
+    ]
+   },
+   "usedByLines": 109,
+   "aliases": [
+    "anim_face_shy_fun",
+    "shy_fun"
+   ]
+  },
+  {
+   "id": 3,
+   "name": "anger",
+   "facialType": "Shy_Anger",
+   "state": "anim_face_shy_anger",
+   "clip": "anim_face_shy_anger",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_anger",
+     "Eye_blink_L",
+     "Eye_blink_R"
+    ],
+    "brow": [
+     "Eyeblow_anger_L",
+     "Eyeblow_anger_R",
+     "Eyeblow_down_L",
+     "Eyeblow_down_R"
+    ],
+    "mouth": [
+     "Mouth_anger",
+     "Mouth_move_left",
+     "Mouth_narrow"
+    ]
+   },
+   "usedByLines": 5,
+   "aliases": [
+    "anim_face_shy_anger",
+    "shy_anger"
+   ]
+  },
+  {
+   "id": 4,
+   "name": "sad",
+   "facialType": "Shy_Sad",
+   "state": "anim_face_shy_sad",
+   "clip": "anim_face_shy_sad",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink_L",
+     "Eye_blink_R",
+     "Eye_sad"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R",
+     "Eyeblow_sad_L",
+     "Eyeblow_sad_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_niyari",
+     "Mouth_sad"
+    ]
+   },
+   "usedByLines": 31,
+   "aliases": [
+    "anim_face_shy_sad",
+    "shy_sad"
+   ]
+  },
+  {
+   "id": 5,
+   "name": "joy",
+   "facialType": "Shy_Joy",
+   "state": "anim_face_shy_joy",
+   "clip": "anim_face_shy_joy",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink_L",
+     "Eye_blink_R",
+     "Eye_happy",
+     "Eye_under_smile_L",
+     "Eye_under_smile_R"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R",
+     "Eyeblow_fun_L",
+     "Eyeblow_fun_R",
+     "Eyeblow_up_L",
+     "Eyeblow_up_R"
+    ],
+    "mouth": [
+     "Mouth_smile2"
+    ]
+   },
+   "usedByLines": 102,
+   "aliases": [
+    "anim_face_shy_joy",
+    "shy_joy"
+   ]
+  },
+  {
+   "id": 6,
+   "name": "surprise",
+   "facialType": "Shy_Surprise",
+   "state": "anim_face_shy_surprise",
+   "clip": "anim_face_shy_surprise",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink_L",
+     "Eye_blink_R",
+     "Eye_happy",
+     "Eye_size_small",
+     "Eye_under_sanpaku_L",
+     "Eye_under_sanpaku_R"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R",
+     "Eyeblow_fun_L",
+     "Eyeblow_fun_R",
+     "Eyeblow_up_L",
+     "Eyeblow_up_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_narrow"
+    ]
+   },
+   "usedByLines": 27,
+   "aliases": [
+    "anim_face_shy_surprise",
+    "shy_surprise"
+   ]
+  },
+  {
+   "id": 7,
+   "name": "deep",
+   "facialType": null,
+   "state": "anim_face_shy_deep",
+   "clip": "anim_face_shy_deep",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink_L",
+     "Eye_blink_R"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_narrow"
+    ]
+   },
+   "usedByLines": 45,
+   "aliases": [
+    "anim_face_shy_deep"
+   ]
+  },
+  {
+   "id": 8,
+   "name": "thinking",
+   "facialType": null,
+   "state": "anim_face_shy_thinking",
+   "clip": "anim_face_shy_thinking",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink_L",
+     "Eye_blink_R"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R",
+     "Eyeblow_sad_L",
+     "Eyeblow_sad_R"
+    ],
+    "mouth": [
+     "Mouth_anger",
+     "Mouth_anger2",
+     "Mouth_narrow"
+    ]
+   },
+   "usedByLines": 14,
+   "aliases": [
+    "anim_face_shy_thinking"
+   ]
+  },
+  {
+   "id": 9,
+   "name": "wink",
+   "facialType": null,
+   "state": "anim_face_shy_wink",
+   "clip": "anim_face_shy_wink",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink_L",
+     "Eye_blink_R"
+    ],
+    "brow": [
+     "Eyeblow_down_R",
+     "Eyeblow_smile_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_narrow",
+     "Mouth_niyari",
+     "Mouth_smile_ex"
+    ]
+   },
+   "usedByLines": 1,
+   "aliases": [
+    "anim_face_shy_wink"
+   ]
+  },
+  {
+   "id": 10,
+   "name": "smile",
+   "facialType": null,
+   "state": "anim_face_shy_smile",
+   "clip": "anim_face_shy_smile",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_smile"
+    ],
+    "brow": [
+     "Eyeblow_fun_L",
+     "Eyeblow_fun_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_narrow",
+     "Mouth_smile_ex"
+    ]
+   },
+   "usedByLines": 1,
+   "aliases": [
+    "anim_face_shy_smile"
+   ]
+  },
+  {
+   "id": 11,
+   "name": "zito",
+   "facialType": null,
+   "state": "anim_face_shy_zito",
+   "clip": "anim_face_shy_zito",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink",
+     "Eye_under_sanpaku_L",
+     "Eye_under_sanpaku_R"
+    ],
+    "brow": [
+     "Eyeblow_sad_L",
+     "Eyeblow_sad_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_narrow",
+     "Mouth_smile_ex"
+    ]
+   },
+   "usedByLines": 22,
+   "aliases": [
+    "anim_face_shy_zito"
+   ]
+  },
+  {
+   "id": 12,
+   "name": "monologue",
+   "facialType": null,
+   "state": "anim_face_shy_monologue",
+   "clip": "anim_face_shy_monologue",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink",
+     "Eye_under_sanpaku_L",
+     "Eye_under_sanpaku_R"
+    ],
+    "brow": [
+     "Eyeblow_sad_L",
+     "Eyeblow_sad_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_narrow"
+    ]
+   },
+   "usedByLines": 83,
+   "aliases": [
+    "anim_face_shy_monologue"
+   ]
+  },
+  {
+   "id": 13,
+   "name": "monologue2",
+   "facialType": null,
+   "state": "anim_face_shy_monologue2",
+   "clip": "anim_face_shy_monologue2",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_narrow",
+     "Mouth_smile"
+    ]
+   },
+   "usedByLines": 110,
+   "aliases": [
+    "anim_face_shy_monologue2"
+   ]
+  },
+  {
+   "id": 14,
+   "name": "shy",
+   "facialType": null,
+   "state": "anim_face_shy_shy",
+   "clip": "anim_face_shy_shy",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R",
+     "Eyeblow_sad_L",
+     "Eyeblow_sad_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_narrow",
+     "Mouth_smile_ex",
+     "Mouth_takurami"
+    ]
+   },
+   "usedByLines": 2,
+   "aliases": [
+    "anim_face_shy_shy"
+   ]
+  },
+  {
+   "id": 15,
+   "name": "sad2",
+   "facialType": null,
+   "state": "anim_face_shy_sad2",
+   "clip": "anim_face_shy_sad2",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink"
+    ],
+    "brow": [
+     "Eyeblow_anger_L",
+     "Eyeblow_anger_R",
+     "Eyeblow_down_L",
+     "Eyeblow_down_R",
+     "Eyeblow_sad_L",
+     "Eyeblow_sad_R"
+    ],
+    "mouth": [
+     "Mouth_anger2"
+    ]
+   },
+   "usedByLines": 16,
+   "aliases": [
+    "anim_face_shy_sad2"
+   ]
+  },
+  {
+   "id": 16,
+   "name": "rough",
+   "facialType": null,
+   "state": "anim_face_shy_rough",
+   "clip": "anim_face_shy_rough",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink",
+     "Eye_smile",
+     "Eye_under_smile_L",
+     "Eye_under_smile_R"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_n",
+     "Mouth_narrow"
+    ]
+   },
+   "usedByLines": 55,
+   "aliases": [
+    "anim_face_shy_rough"
+   ]
+  },
+  {
+   "id": 17,
+   "name": "ehehe",
+   "facialType": null,
+   "state": "anim_face_shy_ehehe",
+   "clip": "anim_face_shy_ehehe",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_smile",
+     "Eye_under_smile_L",
+     "Eye_under_smile_R"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R",
+     "Eyeblow_sad_L",
+     "Eyeblow_sad_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_n",
+     "Mouth_narrow",
+     "Mouth_smile_ex",
+     "Mouth_takurami"
+    ]
+   },
+   "usedByLines": 5,
+   "aliases": [
+    "anim_face_shy_ehehe"
+   ]
+  },
+  {
+   "id": 18,
+   "name": "open_eye",
+   "facialType": "Open_Eye",
+   "state": "_None_openEyes",
+   "clip": "_None_openEyes",
+   "loopable": true,
+   "meshes": {
+    "eye": [
+     "Eye_blink"
+    ],
+    "brow": [],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_n",
+     "Mouth_narrow"
+    ]
+   },
+   "usedByLines": 0,
+   "aliases": [
+    "eye",
+    "none_open_eyes"
+   ]
+  },
+  {
+   "id": 19,
+   "name": "sleepy",
+   "facialType": null,
+   "state": "anim_face_shy_sleepy",
+   "clip": "anim_face_shy_sleepy",
+   "loopable": false,
+   "meshes": {
+    "eye": [
+     "Eye_blink",
+     "Eye_under_smile_L",
+     "Eye_under_smile_R"
+    ],
+    "brow": [
+     "Eyeblow_down_L",
+     "Eyeblow_down_R",
+     "Eyeblow_sad_L",
+     "Eyeblow_sad_R"
+    ],
+    "mouth": [
+     "Mouth_anger2",
+     "Mouth_narrow",
+     "Mouth_smile"
+    ]
+   },
+   "usedByLines": 5,
+   "aliases": [
+    "anim_face_shy_sleepy"
+   ]
+  }
+ ],
+ "motions": [
+  {
+   "id": 0,
+   "name": "base001",
+   "animationType": "Base001",
+   "category": "base",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 454,
+   "aliases": []
+  },
+  {
+   "id": 1,
+   "name": "base001_frustration_right",
+   "animationType": "Base001_Motion1_FrustrationRight",
+   "category": "base",
+   "state": "Motion1_Start_FrustrationRight",
+   "clip": "anim_story_base001_sub_frustration1_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 31,
+   "aliases": [
+    "anim_story_base001_sub_frustration1_start",
+    "base001_motion1_frustration_right",
+    "frustration_right",
+    "motion1_start_frustration_right"
+   ]
+  },
+  {
+   "id": 2,
+   "name": "base001_frustration_left",
+   "animationType": "Base001_Motion2_FrustrationLeft",
+   "category": "base",
+   "state": "Motion2_Start_FrustrationLeft",
+   "clip": "anim_story_base001_sub_frustration2_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 25,
+   "aliases": [
+    "anim_story_base001_sub_frustration2_start",
+    "base001_motion2_frustration_left",
+    "frustration_left",
+    "motion2_start_frustration_left"
+   ]
+  },
+  {
+   "id": 3,
+   "name": "base001_press_hands",
+   "animationType": "Base001_Motion3_PressHands",
+   "category": "base",
+   "state": "Motion3_Start_PressHands",
+   "clip": "anim_story_base001_sub_presshands_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 53,
+   "aliases": [
+    "anim_story_base001_sub_presshands_start",
+    "base001_motion3_press_hands",
+    "motion3_start_press_hands",
+    "press_hands"
+   ]
+  },
+  {
+   "id": 4,
+   "name": "base001_dropshoulders",
+   "animationType": "Base001_Motion4_Dropshoulders",
+   "category": "base",
+   "state": "Motion4_Start_Dropshoulders",
+   "clip": "anim_story_base001_sub_dropshoulders_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 20,
+   "aliases": [
+    "anim_story_base001_sub_dropshoulders_start",
+    "base001_motion4_dropshoulders",
+    "dropshoulders",
+    "motion4_start_dropshoulders"
+   ]
+  },
+  {
+   "id": 5,
+   "name": "base001_shy",
+   "animationType": "Base001_Motion5_Shy",
+   "category": "base",
+   "state": "Motion5_Start_Shy",
+   "clip": "anim_story_base001_sub_shy_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 8,
+   "aliases": [
+    "anim_story_base001_sub_shy_start",
+    "base001_motion5_shy",
+    "motion5_start_shy",
+    "shy"
+   ]
+  },
+  {
+   "id": 6,
+   "name": "base001_jump",
+   "animationType": "Base001_Motion6_Jump",
+   "category": "base",
+   "state": "Motion6_Start_Jump",
+   "clip": "anim_story_base001_sub_jump_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 4,
+   "aliases": [
+    "anim_story_base001_sub_jump_start",
+    "base001_motion6_jump",
+    "jump",
+    "motion6_start_jump"
+   ]
+  },
+  {
+   "id": 7,
+   "name": "base001_confidence",
+   "animationType": "Base001_Motion7_Confidence",
+   "category": "base",
+   "state": "Motion7_Start_Confidence",
+   "clip": "anim_story_base001_sub_confidence_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_story_base001_sub_confidence_start",
+    "base001_motion7_confidence",
+    "confidence",
+    "motion7_start_confidence"
+   ]
+  },
+  {
+   "id": 8,
+   "name": "base001_thinking",
+   "animationType": "Base001_Motion8_Thinking",
+   "category": "base",
+   "state": "Motion8_Start_Thinking",
+   "clip": "anim_story_base001_sub_thinking1_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 12,
+   "aliases": [
+    "anim_story_base001_sub_thinking1_start",
+    "base001_motion8_thinking",
+    "motion8_start_thinking"
+   ]
+  },
+  {
+   "id": 9,
+   "name": "base001_start_thinking2",
+   "animationType": "Base001_Motion9_Start_Thinking2",
+   "category": "base",
+   "state": "Base001_Motion9_Start_Thinking2",
+   "clip": "anim_story_base001_sub_deep_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 22,
+   "aliases": [
+    "base001_motion9_start_thinking2",
+    "start_thinking2"
+   ]
+  },
+  {
+   "id": 10,
+   "name": "base001_start_thinking3",
+   "animationType": "Base001_Motion10_Start_Thinking3",
+   "category": "base",
+   "state": "Base001_Motion10_Start_Thinking3Start",
+   "clip": "anim_story_base001_sub_deep_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 4,
+   "aliases": [
+    "base001_motion10_start_thinking3",
+    "base001_motion10_start_thinking3_start",
+    "start_thinking3"
+   ]
+  },
+  {
+   "id": 11,
+   "name": "base001_start_lookdown",
+   "animationType": "Base001_Motion11_Start_Lookdown",
+   "category": "base",
+   "state": "Base001_Motion11_Start_Lookdown",
+   "clip": "anim_story_base001_sub_pattern1_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_pattern1_start",
+    "base001_motion11_start_lookdown",
+    "start_lookdown"
+   ]
+  },
+  {
+   "id": 12,
+   "name": "base001_start_nod",
+   "animationType": "Base001_Motion12_Start_Nod",
+   "category": "base",
+   "state": "Base001_Motion12_Start_Nod",
+   "clip": "anim_story_base001_sub_nod",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 62,
+   "aliases": [
+    "anim_story_base001_sub_nod",
+    "base001_motion12_start_nod",
+    "start_nod"
+   ]
+  },
+  {
+   "id": 13,
+   "name": "base001_start_shake_head",
+   "animationType": "Base001_Motion13_Start_ShakeHead",
+   "category": "base",
+   "state": "Base001_Motion13_Start_ShakeHead",
+   "clip": "anim_story_base001_sub_shakehead",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 4,
+   "aliases": [
+    "anim_story_base001_sub_shakehead",
+    "base001_motion13_start_shake_head",
+    "start_shake_head"
+   ]
+  },
+  {
+   "id": 14,
+   "name": "base001_start_look_penguin",
+   "animationType": "Base001_Motion14_Start_LookPenguin",
+   "category": "base",
+   "state": "Base001_Motion14_Start_LookPenguin",
+   "clip": "anim_story_base001_sub_lookpenguin_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 6,
+   "aliases": [
+    "anim_story_base001_sub_lookpenguin_start",
+    "base001_motion14_start_look_penguin",
+    "start_look_penguin"
+   ]
+  },
+  {
+   "id": 15,
+   "name": "base001_start_introduce",
+   "animationType": "Base001_Motion15_Start_Introduce",
+   "category": "base",
+   "state": "Base001_Motion15_Start_Introduce",
+   "clip": "anim_story_base001_sub_introduce_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 19,
+   "aliases": [
+    "anim_story_base001_sub_introduce_start",
+    "base001_motion15_start_introduce",
+    "start_introduce"
+   ]
+  },
+  {
+   "id": 16,
+   "name": "base001_motion16",
+   "animationType": "Base001_Motion16",
+   "category": "base",
+   "state": "Base001_Motion16",
+   "clip": "anim_story_base001_sub_12_1",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_story_base001_sub_12_1"
+   ]
+  },
+  {
+   "id": 17,
+   "name": "base001_motion17",
+   "animationType": "Base001_Motion17",
+   "category": "base",
+   "state": "Base001_Motion17",
+   "clip": "anim_story_base001_sub_125_1",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_story_base001_sub_125_1"
+   ]
+  },
+  {
+   "id": 18,
+   "name": "base001_motion18",
+   "animationType": "Base001_Motion18",
+   "category": "base",
+   "state": "Base001_Motion18",
+   "clip": "anim_story_base001_sub_20",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_20"
+   ]
+  },
+  {
+   "id": 19,
+   "name": "base001_copycat",
+   "animationType": "Base001_Motion19_Copycat",
+   "category": "base",
+   "state": "Base001_Motion19_Copycat",
+   "clip": "anim_story_base001_sub_copycat",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 3,
+   "aliases": [
+    "anim_story_base001_sub_copycat",
+    "base001_motion19_copycat",
+    "copycat"
+   ]
+  },
+  {
+   "id": 20,
+   "name": "base001_eieio",
+   "animationType": "Base001_Motion20_Eieio",
+   "category": "base",
+   "state": "Base001_Motion20_Eieio",
+   "clip": "anim_story_base001_sub_eieio",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 5,
+   "aliases": [
+    "anim_story_base001_sub_eieio",
+    "base001_motion20_eieio"
+   ]
+  },
+  {
+   "id": 21,
+   "name": "base001_distress",
+   "animationType": "Base001_Motion21_Distress",
+   "category": "base",
+   "state": "Base001_Motion21_Distress",
+   "clip": "anim_story_base001_sub_distress",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_distress",
+    "base001_motion21_distress",
+    "distress"
+   ]
+  },
+  {
+   "id": 22,
+   "name": "base001_feellarge",
+   "animationType": "Base001_Motion22_Feellarge",
+   "category": "base",
+   "state": "Base001_Motion22_Feellarge",
+   "clip": "anim_wild_feellarge",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_wild_feellarge",
+    "base001_motion22_feellarge",
+    "feellarge"
+   ]
+  },
+  {
+   "id": 23,
+   "name": "base001_look_and_regret",
+   "animationType": "Base001_Motion23_Look_And_Regret",
+   "category": "base",
+   "state": "Base001_Motion23_Look_And_Regret",
+   "clip": "anim_story_base001_sub_look_and_regrect",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_look_and_regrect",
+    "base001_motion23_look_and_regret",
+    "look_and_regret"
+   ]
+  },
+  {
+   "id": 24,
+   "name": "base001_touch_glasses",
+   "animationType": "Base001_Motion24_Touch_Glasses",
+   "category": "base",
+   "state": "Base001_Motion24_Touch_Glasses",
+   "clip": "anim_story_base001_sub_touch_glasses_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_touch_glasses_start",
+    "base001_motion24_touch_glasses",
+    "touch_glasses"
+   ]
+  },
+  {
+   "id": 50,
+   "name": "wild001_stretch_fll_body",
+   "animationType": "Wild001_Motion1_StretchFllBody",
+   "category": "wild",
+   "state": "Wild001_Motion1_StretchFllBody",
+   "clip": "anim_wild_stretchfullbody",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 15,
+   "aliases": [
+    "anim_wild_stretchfullbody",
+    "stretch_fll_body",
+    "wild001_motion1_stretch_fll_body"
+   ]
+  },
+  {
+   "id": 51,
+   "name": "wild001_stretch_shoulder",
+   "animationType": "Wild001_Motion2_StretchShoulder",
+   "category": "wild",
+   "state": "Wild001_Motion2_StretchShoulder",
+   "clip": "anim_wild_stretchshoulder",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 13,
+   "aliases": [
+    "stretch_shoulder",
+    "wild001_motion2_stretch_shoulder"
+   ]
+  },
+  {
+   "id": 52,
+   "name": "wild001_tea",
+   "animationType": "Wild001_Motion3_Tea",
+   "category": "wild",
+   "state": "Wild001_Motion3_Tea",
+   "clip": "anim_wild_tea_base",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 9,
+   "aliases": [
+    "anim_wild_tea_base",
+    "tea",
+    "wild001_motion3_tea"
+   ]
+  },
+  {
+   "id": 53,
+   "name": "wild001_guts",
+   "animationType": "Wild001_Motion4_Guts",
+   "category": "wild",
+   "state": "Wild001_Motion4_Guts",
+   "clip": "anim_wild_guts",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 12,
+   "aliases": [
+    "anim_wild_guts",
+    "wild001_motion4_guts"
+   ]
+  },
+  {
+   "id": 54,
+   "name": "wild001_wet",
+   "animationType": "Wild001_Motion5_Wet",
+   "category": "wild",
+   "state": "Wild001_Motion5_Wet",
+   "clip": "anim_wild_wet",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 20,
+   "aliases": [
+    "wet",
+    "wild001_motion5_wet"
+   ]
+  },
+  {
+   "id": 55,
+   "name": "wild001_banzai",
+   "animationType": "Wild001_Motion6_Banzai",
+   "category": "wild",
+   "state": "Wild001_Motion6_Banzai",
+   "clip": "anim_wild_banzai",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 11,
+   "aliases": [
+    "anim_wild_banzai",
+    "banzai",
+    "wild001_motion6_banzai"
+   ]
+  },
+  {
+   "id": 56,
+   "name": "wild001_eieio",
+   "animationType": "Wild001_Motion7_Eieio",
+   "category": "wild",
+   "state": "Wild001_Motion7_Eieio",
+   "clip": "anim_wild_eieio",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 4,
+   "aliases": [
+    "anim_wild_eieio",
+    "wild001_motion7_eieio"
+   ]
+  },
+  {
+   "id": 57,
+   "name": "wild001_open_window",
+   "animationType": "Wild001_Motion8_OpenWindow",
+   "category": "wild",
+   "state": "Wild001_Motion8_OpenWindow",
+   "clip": "anim_wild_window_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_window_0",
+    "open_window",
+    "wild001_motion8_open_window"
+   ]
+  },
+  {
+   "id": 58,
+   "name": "wild001_close_window",
+   "animationType": "Wild001_Motion9_CloseWindow",
+   "category": "wild",
+   "state": "Wild001_Motion9_CloseWindow",
+   "clip": "anim_wild_window_close_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_window_close_0",
+    "close_window",
+    "wild001_motion9_close_window"
+   ]
+  },
+  {
+   "id": 59,
+   "name": "wild001_breath",
+   "animationType": "Wild001_Motion10_Breath",
+   "category": "wild",
+   "state": "Wild001_Motion10_Breath",
+   "clip": "anim_wild_breath",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 3,
+   "aliases": [
+    "anim_wild_breath",
+    "breath",
+    "wild001_motion10_breath"
+   ]
+  },
+  {
+   "id": 60,
+   "name": "wild001_guts_2",
+   "animationType": "Wild001_Motion11_Guts_2",
+   "category": "wild",
+   "state": "Wild001_Motion11_Guts_2",
+   "clip": "anim_wild_guts_2",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 6,
+   "aliases": [
+    "anim_wild_guts_2",
+    "wild001_motion11_guts_2"
+   ]
+  },
+  {
+   "id": 61,
+   "name": "wild001_good",
+   "animationType": "Wild001_Motion12_Good",
+   "category": "wild",
+   "state": "Wild001_Motion12_Good",
+   "clip": "anim_wild_good",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 5,
+   "aliases": [
+    "anim_wild_good",
+    "good",
+    "wild001_motion12_good"
+   ]
+  },
+  {
+   "id": 62,
+   "name": "wild001_fidget",
+   "animationType": "Wild001_Motion13_Fidget",
+   "category": "wild",
+   "state": "Wild001_Motion13_Fidget",
+   "clip": "anim_wild_fidget",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_wild_fidget",
+    "fidget",
+    "wild001_motion13_fidget"
+   ]
+  },
+  {
+   "id": 63,
+   "name": "wild001_arm",
+   "animationType": "Wild001_Motion14_Arm",
+   "category": "wild",
+   "state": "Wild001_Motion14_Arm",
+   "clip": "anim_wild_stretch_1",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_stretch_1",
+    "arm",
+    "wild001_motion14_arm"
+   ]
+  },
+  {
+   "id": 64,
+   "name": "wild001_tired",
+   "animationType": "Wild001_Motion15_Tired",
+   "category": "wild",
+   "state": "Wild001_Motion15_Tired",
+   "clip": "anim_wild_tired",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 6,
+   "aliases": [
+    "anim_wild_tired",
+    "wild001_motion15_tired"
+   ]
+  },
+  {
+   "id": 65,
+   "name": "wild001_complete_task",
+   "animationType": "Wild001_Motion16_CompleteTask",
+   "category": "wild",
+   "state": "Wild001_Motion16_CompleteTask",
+   "clip": "anim_wild_completetask",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 5,
+   "aliases": [
+    "anim_wild_completetask",
+    "complete_task",
+    "wild001_motion16_complete_task"
+   ]
+  },
+  {
+   "id": 66,
+   "name": "wild001_deep_breath",
+   "animationType": "Wild001_Motion17_DeepBreath",
+   "category": "wild",
+   "state": "Wild001_Motion17_DeepBreath",
+   "clip": "anim_wild_deep_breath",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_wild_deep_breath",
+    "deep_breath",
+    "wild001_motion17_deep_breath"
+   ]
+  },
+  {
+   "id": 67,
+   "name": "wild001_tired_2",
+   "animationType": "Wild001_Motion18_Tired_2",
+   "category": "wild",
+   "state": "Wild001_Motion18_Tired_2",
+   "clip": "anim_wild_tired2_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 4,
+   "aliases": [
+    "anim_wild_tired2_start",
+    "wild001_motion18_tired_2"
+   ]
+  },
+  {
+   "id": 68,
+   "name": "wild001_gymnastics",
+   "animationType": "Wild001_Motion19_Gymnastics",
+   "category": "wild",
+   "state": "Wild001_Motion19_Gymnastics",
+   "clip": "anim_wild_gymnastics",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_wild_gymnastics",
+    "gymnastics",
+    "wild001_motion19_gymnastics"
+   ]
+  },
+  {
+   "id": 69,
+   "name": "wild001_stretch_2",
+   "animationType": "Wild001_Motion20_Stretch_2",
+   "category": "wild",
+   "state": "Wild001_Motion20_Stretch_2",
+   "clip": "anim_wild_stretch_2",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 9,
+   "aliases": [
+    "anim_wild_stretch_2",
+    "wild001_motion20_stretch_2"
+   ]
+  },
+  {
+   "id": 70,
+   "name": "wild001_dry_eye",
+   "animationType": "Wild001_Motion21_DryEye",
+   "category": "wild",
+   "state": "Wild001_Motion21_DryEye",
+   "clip": "anim_break_dryeye_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_dryeye_start",
+    "dry_eye",
+    "wild001_motion21_dry_eye"
+   ]
+  },
+  {
+   "id": 71,
+   "name": "wild001_guts_3",
+   "animationType": "Wild001_Motion22_Guts_3",
+   "category": "wild",
+   "state": "Wild001_Motion22_Guts_3",
+   "clip": "anim_wild_guts_3",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_wild_guts_3",
+    "wild001_motion22_guts_3"
+   ]
+  },
+  {
+   "id": 72,
+   "name": "wild001_yawn_1",
+   "animationType": "Wild001_Motion23_Yawn_1",
+   "category": "wild",
+   "state": "anim_break_yawn_1_start",
+   "clip": "anim_break_yawn_1_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 3,
+   "aliases": [
+    "anim_break_yawn_1_start",
+    "wild001_motion23_yawn_1"
+   ]
+  },
+  {
+   "id": 73,
+   "name": "wild001_yawn_2",
+   "animationType": "Wild001_Motion24_Yawn_2",
+   "category": "wild",
+   "state": "anim_break_yawn_2_start",
+   "clip": "anim_break_yawn_2_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_break_yawn_2_start",
+    "wild001_motion24_yawn_2"
+   ]
+  },
+  {
+   "id": 74,
+   "name": "wild001_memorie",
+   "animationType": "Wild001_Motion25_Memorie",
+   "category": "wild",
+   "state": "Wild001_Motion25_Memorie",
+   "clip": "anim_wild_memorie_1",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_memorie_1",
+    "memorie",
+    "wild001_motion25_memorie"
+   ]
+  },
+  {
+   "id": 100,
+   "name": "wild002_from_pc_to_book",
+   "animationType": "Wild002_FromPcToBook",
+   "category": "desk_switch",
+   "state": "Wild002_FromPcToBook",
+   "clip": "anim_wild_layout_bookfrompc",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_layout_bookfrompc",
+    "from_pc_to_book"
+   ]
+  },
+  {
+   "id": 101,
+   "name": "wild002_from_report_to_book",
+   "animationType": "Wild002_FromReportToBook",
+   "category": "desk_switch",
+   "state": "Wild002_FromReportToBook",
+   "clip": "anim_wild_layout_bookfromreport_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_layout_bookfromreport_0",
+    "from_report_to_book"
+   ]
+  },
+  {
+   "id": 102,
+   "name": "wild002_from_book_to_pc",
+   "animationType": "Wild002_FromBookToPc",
+   "category": "desk_switch",
+   "state": "Wild002_FromBookToPc",
+   "clip": "anim_wild_layout_pcfrombook_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_layout_pcfrombook_0",
+    "from_book_to_pc"
+   ]
+  },
+  {
+   "id": 103,
+   "name": "wild002_from_report_to_pc",
+   "animationType": "Wild002_FromReportToPc",
+   "category": "desk_switch",
+   "state": "Wild002_FromReportToPc",
+   "clip": "anim_wild_layout_pcfromreport_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_layout_pcfromreport_0",
+    "from_report_to_pc"
+   ]
+  },
+  {
+   "id": 104,
+   "name": "wild002_from_book_to_report",
+   "animationType": "Wild002_FromBookToReport",
+   "category": "desk_switch",
+   "state": "Wild002_FromBookToReport",
+   "clip": "anim_wild_layout_reportfrombook_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_layout_reportfrombook_0",
+    "from_book_to_report"
+   ]
+  },
+  {
+   "id": 105,
+   "name": "wild002_from_pc_to_report",
+   "animationType": "Wild002_FromPcToReport",
+   "category": "desk_switch",
+   "state": "Wild002_FromPcToReport",
+   "clip": "anim_wild_layout_reportfrompc",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_layout_reportfrompc",
+    "from_pc_to_report"
+   ]
+  },
+  {
+   "id": 150,
+   "name": "wild003_leave_chair_normal",
+   "animationType": "Wild003_LeaveChair_Normal",
+   "category": "leave_chair",
+   "state": "anim_wild_leavechair_normal_go",
+   "clip": "anim_wild_leavechair_normal_go_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "leave_chair_normal"
+   ]
+  },
+  {
+   "id": 151,
+   "name": "wild003_leave_chair_sofa",
+   "animationType": "Wild003_LeaveChair_Sofa",
+   "category": "leave_chair",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "leave_chair_sofa"
+   ]
+  },
+  {
+   "id": 152,
+   "name": "wild003_leave_chair_sofa_thinking",
+   "animationType": "Wild003_LeaveChair_Sofa_Thinking",
+   "category": "leave_chair",
+   "state": "anim_wild_leavechair_sofa_deepthink_start",
+   "clip": "anim_wild_leavechair_sofa_deepthink_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_sofa_deepthink_start",
+    "leave_chair_sofa_thinking"
+   ]
+  },
+  {
+   "id": 153,
+   "name": "wild003_leave_chair_sofa_look_outside",
+   "animationType": "Wild003_LeaveChair_Sofa_Look_Outside",
+   "category": "leave_chair",
+   "state": "anim_wild_leavechair_sofa_lookoutside_start",
+   "clip": "anim_wild_leavechair_sofa_lookoutside_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_sofa_lookoutside_start",
+    "leave_chair_sofa_look_outside"
+   ]
+  },
+  {
+   "id": 154,
+   "name": "wild003_leave_chair_sofa_control_headphone",
+   "animationType": "Wild003_LeaveChair_Sofa_Control_Headphone",
+   "category": "leave_chair",
+   "state": "anim_wild_leavechair_sofa_headphone",
+   "clip": "anim_wild_leavechair_sofa_headphone",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_sofa_headphone",
+    "leave_chair_sofa_control_headphone"
+   ]
+  },
+  {
+   "id": 160,
+   "name": "wild003_leave_chair_cup",
+   "animationType": "Wild003_LeaveChair_Cup",
+   "category": "leave_chair",
+   "state": "anim_wild_leavechair_cup_go",
+   "clip": "anim_wild_leavechair_cup_go",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_cup_go",
+    "leave_chair_cup"
+   ]
+  },
+  {
+   "id": 170,
+   "name": "wild003_leave_chair_cupcake_comeback",
+   "animationType": "Wild003_LeaveChair_Cupcake_Comeback",
+   "category": "leave_chair",
+   "state": "Wild003_LeaveChair_Cupcake_Comeback",
+   "clip": "anim_wild_leavechair_cupcake_comeback_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_cupcake_comeback_start",
+    "leave_chair_cupcake_comeback"
+   ]
+  },
+  {
+   "id": 171,
+   "name": "wild003_leave_chair_cupcake_comeback_loop",
+   "animationType": "Wild003_LeaveChair_Cupcake_Comeback_Loop",
+   "category": "leave_chair",
+   "state": "Wild003_LeaveChair_Cupcake_Comeback_Loop",
+   "clip": "anim_wild_leavechair_cupcake_comeback_camera_loop_0",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_cupcake_comeback_camera_loop_0",
+    "leave_chair_cupcake_comeback_loop"
+   ]
+  },
+  {
+   "id": 180,
+   "name": "wild003_leave_chair_cookie_comeback",
+   "animationType": "Wild003_LeaveChair_Cookie_Comeback",
+   "category": "leave_chair",
+   "state": "Wild003_LeaveChair_Cookie_Comeback",
+   "clip": "anim_wild_leavechair_cookie_comeback_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_cookie_comeback_start",
+    "leave_chair_cookie_comeback"
+   ]
+  },
+  {
+   "id": 181,
+   "name": "wild003_leave_chair_cookie_comeback_loop",
+   "animationType": "Wild003_LeaveChair_Cookie_Comeback_Loop",
+   "category": "leave_chair",
+   "state": "Wild003_LeaveChair_Cookie_Comeback_Loop",
+   "clip": "anim_wild_leavechair_cookie_comeback_camera_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_cookie_comeback_camera_loop",
+    "leave_chair_cookie_comeback_loop"
+   ]
+  },
+  {
+   "id": 190,
+   "name": "wild003_leave_chair_bread_a_comeback",
+   "animationType": "Wild003_LeaveChair_BreadA_Comeback",
+   "category": "leave_chair",
+   "state": "Wild003_LeaveChair_BreadA_Comeback",
+   "clip": "anim_wild_leavechair_bread_A_comeback_start_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_bread_a_comeback_start_0",
+    "leave_chair_bread_a_comeback"
+   ]
+  },
+  {
+   "id": 191,
+   "name": "wild003_leave_chair_bread_a_comeback_loop",
+   "animationType": "Wild003_LeaveChair_BreadA_Comeback_Loop",
+   "category": "leave_chair",
+   "state": "Wild003_LeaveChair_BreadA_Comeback_Loop",
+   "clip": "anim_wild_leavechair_bread_A_comeback_camera_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_bread_a_comeback_camera_loop",
+    "leave_chair_bread_a_comeback_loop"
+   ]
+  },
+  {
+   "id": 195,
+   "name": "wild003_leave_chair_bread_b_comeback",
+   "animationType": "Wild003_LeaveChair_BreadB_Comeback",
+   "category": "leave_chair",
+   "state": "Wild003_LeaveChair_BreadB_Comeback",
+   "clip": "anim_wild_leavechair_bread_B_comeback_start_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_bread_b_comeback_start_0",
+    "leave_chair_bread_b_comeback"
+   ]
+  },
+  {
+   "id": 196,
+   "name": "wild003_leave_chair_bread_b_comeback_loop",
+   "animationType": "Wild003_LeaveChair_BreadB_Comeback_Loop",
+   "category": "leave_chair",
+   "state": "Wild003_LeaveChair_BreadB_Comeback_Loop",
+   "clip": "anim_wild_leavechair_bread_B_comeback_camera_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_leavechair_bread_b_comeback_camera_loop",
+    "leave_chair_bread_b_comeback_loop"
+   ]
+  },
+  {
+   "id": 200,
+   "name": "work_base001",
+   "animationType": "WorkBase001",
+   "category": "work",
+   "state": "WorkBase001",
+   "clip": "anim_work_pc_base_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 12,
+   "aliases": [
+    "anim_work_pc_base_loop"
+   ]
+  },
+  {
+   "id": 201,
+   "name": "work_base001_stop",
+   "animationType": "WorkBase001_Stop",
+   "category": "work",
+   "state": "anim_work_pc_sub_stop_start",
+   "clip": "anim_work_pc_sub_stop_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 22,
+   "aliases": [
+    "anim_work_pc_sub_stop_start",
+    "stop"
+   ]
+  },
+  {
+   "id": 202,
+   "name": "work_base001_thinking",
+   "animationType": "WorkBase001_Thinking",
+   "category": "work",
+   "state": "anim_work_pc_sub_thinking_start",
+   "clip": "anim_work_pc_sub_thinking_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 3,
+   "aliases": [
+    "anim_work_pc_sub_thinking_start"
+   ]
+  },
+  {
+   "id": 203,
+   "name": "work_base001_drink_tea",
+   "animationType": "WorkBase001_DrinkTea",
+   "category": "work",
+   "state": "anim_work_pc_base_loop2_start",
+   "clip": "anim_work_pc_base_loop2_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_work_pc_base_loop2_start"
+   ]
+  },
+  {
+   "id": 204,
+   "name": "work_base001_break",
+   "animationType": "WorkBase001_Break",
+   "category": "work",
+   "state": "anim_break_movie_base_start",
+   "clip": "anim_break_movie_base_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_movie_base_start",
+    "break"
+   ]
+  },
+  {
+   "id": 205,
+   "name": "work_base001_break2",
+   "animationType": "WorkBase001_Break2",
+   "category": "work",
+   "state": "anim_wild_wet",
+   "clip": "anim_wild_wet",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "break2"
+   ]
+  },
+  {
+   "id": 250,
+   "name": "work_base002",
+   "animationType": "WorkBase002",
+   "category": "work",
+   "state": "WorkBase002",
+   "clip": "anim_work_book_base_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_work_book_base_loop"
+   ]
+  },
+  {
+   "id": 251,
+   "name": "work_base002_key_type",
+   "animationType": "WorkBase002_KeyType",
+   "category": "work",
+   "state": "anim_work_book_sub_keytype_start",
+   "clip": "anim_work_book_sub_keytype_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_work_book_sub_keytype_start",
+    "key_type"
+   ]
+  },
+  {
+   "id": 252,
+   "name": "work_base002_thinking",
+   "animationType": "WorkBase002_Thinking",
+   "category": "work",
+   "state": "anim_work_book_sub_thinking_start",
+   "clip": "anim_work_book_sub_thinking_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_work_book_sub_thinking_start"
+   ]
+  },
+  {
+   "id": 253,
+   "name": "work_base002_page_flip",
+   "animationType": "WorkBase002_PageFlip",
+   "category": "work",
+   "state": "WorkBase002_PageFlip",
+   "clip": "anim_work_book_sub_pageflip",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_work_book_sub_pageflip",
+    "page_flip"
+   ]
+  },
+  {
+   "id": 254,
+   "name": "work_base002_loop2",
+   "animationType": "WorkBase002_Loop2",
+   "category": "work",
+   "state": "anim_work_book_base_loop2_start",
+   "clip": "anim_work_book_base_loop2_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_work_book_base_loop2_start"
+   ]
+  },
+  {
+   "id": 255,
+   "name": "work_base002_loop2_page_flip",
+   "animationType": "WorkBase002_Loop2_PageFlip",
+   "category": "work",
+   "state": "anim_work_book_base_loop2_pageflip",
+   "clip": "anim_work_book_base_loop2_pageflip",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_work_book_base_loop2_pageflip",
+    "loop2_page_flip"
+   ]
+  },
+  {
+   "id": 256,
+   "name": "work_base002_drink_tea",
+   "animationType": "WorkBase002_DrinkTea",
+   "category": "work",
+   "state": "anim_work_book_base_end",
+   "clip": "anim_work_book_base_end",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_work_book_base_end"
+   ]
+  },
+  {
+   "id": 300,
+   "name": "work_base003",
+   "animationType": "WorkBase003",
+   "category": "work",
+   "state": "WorkBase003",
+   "clip": "anim_work_report_base_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_work_report_base_loop"
+   ]
+  },
+  {
+   "id": 301,
+   "name": "work_base003_small_thinking",
+   "animationType": "WorkBase003_SmallThinking",
+   "category": "work",
+   "state": "anim_work_report_sub_stop_start",
+   "clip": "anim_work_report_sub_stop_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_work_report_sub_stop_start",
+    "small_thinking"
+   ]
+  },
+  {
+   "id": 302,
+   "name": "work_base003_big_thinking",
+   "animationType": "WorkBase003_BigThinking",
+   "category": "work",
+   "state": "anim_work_report_sub_thinking_start",
+   "clip": "anim_work_report_sub_thinking_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_work_report_sub_thinking_start",
+    "big_thinking"
+   ]
+  },
+  {
+   "id": 303,
+   "name": "work_base003_loop2",
+   "animationType": "WorkBase003_Loop2",
+   "category": "work",
+   "state": "anim_work_report_base_loop2_start",
+   "clip": "anim_work_report_base_loop2_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_work_report_base_loop2_start"
+   ]
+  },
+  {
+   "id": 304,
+   "name": "work_base003_drink_tea",
+   "animationType": "WorkBase003_DrinkTea",
+   "category": "work",
+   "state": "anim_work_report_base_end",
+   "clip": "anim_work_report_base_end",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_work_report_base_end"
+   ]
+  },
+  {
+   "id": 305,
+   "name": "work_base003_brush_away_trash",
+   "animationType": "WorkBase003_BrushAwayTrash",
+   "category": "work",
+   "state": "WorkBase003_BrushAwayTrash",
+   "clip": "anim_work_report_base_loop3",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_work_report_base_loop3",
+    "brush_away_trash"
+   ]
+  },
+  {
+   "id": 400,
+   "name": "game_start_start",
+   "animationType": "GameStart_Start",
+   "category": "system",
+   "state": "GameStart_Start",
+   "clip": "anim_start_v3_full",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_start_v3_full",
+    "start"
+   ]
+  },
+  {
+   "id": 401,
+   "name": "game_start_end",
+   "animationType": "GameStart_End",
+   "category": "system",
+   "state": "GameStart_End",
+   "clip": "Bulbul_Chara_Rig_Motion_start_v3",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 2,
+   "aliases": [
+    "bulbul_chara_rig_motion_start_v3",
+    "end"
+   ]
+  },
+  {
+   "id": 402,
+   "name": "desk_click_normal_reaction",
+   "animationType": "Desk_Click_Normal_Reaction",
+   "category": "click_reaction",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "click_normal_reaction"
+   ]
+  },
+  {
+   "id": 403,
+   "name": "desk_click_work_reaction",
+   "animationType": "Desk_Click_Work_Reaction",
+   "category": "click_reaction",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "click_work_reaction"
+   ]
+  },
+  {
+   "id": 404,
+   "name": "desk_click_rest_reaction",
+   "animationType": "Desk_Click_Rest_Reaction",
+   "category": "click_reaction",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "click_rest_reaction"
+   ]
+  },
+  {
+   "id": 405,
+   "name": "enable_talk",
+   "animationType": "Enable_Talk",
+   "category": "system",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "talk"
+   ]
+  },
+  {
+   "id": 600,
+   "name": "break_base001",
+   "animationType": "BreakBase001",
+   "category": "break",
+   "state": "BreakBase001",
+   "clip": "anim_break_movie_base_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 9,
+   "aliases": [
+    "anim_break_movie_base_loop"
+   ]
+  },
+  {
+   "id": 601,
+   "name": "break_base001_laugh",
+   "animationType": "BreakBase001_Laugh",
+   "category": "break",
+   "state": "anim_break_movie_sub_laugh_start",
+   "clip": "anim_break_movie_sub_laugh_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_movie_sub_laugh_start",
+    "laugh"
+   ]
+  },
+  {
+   "id": 602,
+   "name": "break_base001_suspenseful",
+   "animationType": "BreakBase001_Suspenseful",
+   "category": "break",
+   "state": "anim_break_movie_sub_suspense_start",
+   "clip": "anim_break_movie_sub_suspense_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_movie_sub_suspense_start",
+    "suspenseful"
+   ]
+  },
+  {
+   "id": 603,
+   "name": "break_base001_out_trash",
+   "animationType": "BreakBase001_OutTrash",
+   "category": "break",
+   "state": "BreakBase001_OutTrash",
+   "clip": "anim_break_movie_sub_trash",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_movie_sub_trash",
+    "out_trash"
+   ]
+  },
+  {
+   "id": 604,
+   "name": "break_base001_loop2",
+   "animationType": "BreakBase001_Loop2",
+   "category": "break",
+   "state": "anim_break_movie_base_loop2_start",
+   "clip": "anim_break_movie_base_loop2_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_movie_base_loop2_start"
+   ]
+  },
+  {
+   "id": 650,
+   "name": "break_base002",
+   "animationType": "BreakBase002",
+   "category": "break",
+   "state": "BreakBase002",
+   "clip": "anim_break_novel_base_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 3,
+   "aliases": [
+    "anim_break_novel_base_loop"
+   ]
+  },
+  {
+   "id": 651,
+   "name": "break_base002_next_page",
+   "animationType": "BreakBase002_NextPage",
+   "category": "break",
+   "state": "BreakBase002_NextPage",
+   "clip": "anim_break_novel_sub_pageflip_next",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_break_novel_sub_pageflip_next",
+    "next_page"
+   ]
+  },
+  {
+   "id": 652,
+   "name": "break_base002_previous_page",
+   "animationType": "BreakBase002_PreviousPage",
+   "category": "break",
+   "state": "BreakBase002_PreviousPage",
+   "clip": "anim_break_novel_sub_pageflip_back",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_novel_sub_pageflip_back",
+    "previous_page"
+   ]
+  },
+  {
+   "id": 653,
+   "name": "break_base002_interest",
+   "animationType": "BreakBase002_Interest",
+   "category": "break",
+   "state": "anim_break_novel_sub_action_start",
+   "clip": "anim_break_novel_sub_action_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_novel_sub_action_start"
+   ]
+  },
+  {
+   "id": 700,
+   "name": "break_base003_listen_music_low",
+   "animationType": "BreakBase003_ListenMusicLow",
+   "category": "break",
+   "state": "anim_break_music_low_start",
+   "clip": "anim_break_music_low_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_music_low_start",
+    "listen_music_low"
+   ]
+  },
+  {
+   "id": 701,
+   "name": "break_base003_listen_music_high",
+   "animationType": "BreakBase003_ListenMusicHigh",
+   "category": "break",
+   "state": "BreakBase003_ListenMusicHigh",
+   "clip": "anim_break_music_loop_high",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_music_loop_high",
+    "listen_music_high"
+   ]
+  },
+  {
+   "id": 750,
+   "name": "break_base004",
+   "animationType": "BreakBase004",
+   "category": "break",
+   "state": "BreakBase004",
+   "clip": "anim_break_tea_base_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 10,
+   "aliases": [
+    "anim_break_tea_base_loop"
+   ]
+  },
+  {
+   "id": 751,
+   "name": "break_base004_drink_tea",
+   "animationType": "BreakBase004_DrinkTea",
+   "category": "break",
+   "state": "anim_break_tea_sub_drink_start",
+   "clip": "anim_break_tea_sub_drink",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_break_tea_sub_drink",
+    "anim_break_tea_sub_drink_start"
+   ]
+  },
+  {
+   "id": 752,
+   "name": "break_base004_stretch",
+   "animationType": "BreakBase004_Stretch",
+   "category": "break",
+   "state": "anim_break_tea_sub_rest_start",
+   "clip": "anim_break_tea_sub_unique001_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 3,
+   "aliases": [
+    "anim_break_tea_sub_rest_start",
+    "anim_break_tea_sub_unique001_start"
+   ]
+  },
+  {
+   "id": 753,
+   "name": "break_base004_drink_hot",
+   "animationType": "BreakBase004_DrinkHot",
+   "category": "break",
+   "state": "anim_break_tea_sub_hot",
+   "clip": "anim_break_tea_sub_hot",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_tea_sub_hot",
+    "drink_hot"
+   ]
+  },
+  {
+   "id": 754,
+   "name": "break_base004_use_coffee_maker",
+   "animationType": "BreakBase004_UseCoffeeMaker",
+   "category": "break",
+   "state": "anim_break_tea_sub_maker_start",
+   "clip": "anim_break_tea_sub_maker_start_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_tea_sub_maker_start",
+    "anim_break_tea_sub_maker_start_0",
+    "use_coffee_maker"
+   ]
+  },
+  {
+   "id": 755,
+   "name": "break_base004_cooling_drink_tea",
+   "animationType": "BreakBase004_CoolingDrinkTea",
+   "category": "break",
+   "state": "BreakBase004_CoolingDrinkTea",
+   "clip": "anim_break_tea_sub",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_tea_sub",
+    "cooling_drink_tea"
+   ]
+  },
+  {
+   "id": 800,
+   "name": "break_base005",
+   "animationType": "BreakBase005",
+   "category": "break",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": []
+  },
+  {
+   "id": 801,
+   "name": "break_base005_sleep",
+   "animationType": "BreakBase005_Sleep",
+   "category": "break",
+   "state": "anim_break_sleep_sub_fall_start",
+   "clip": "anim_break_sleep_sub_fall_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_sleep_sub_fall_start",
+    "sleep"
+   ]
+  },
+  {
+   "id": 802,
+   "name": "break_base005_get_up_slowly",
+   "animationType": "BreakBase005_GetUpSlowly",
+   "category": "break",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "get_up_slowly"
+   ]
+  },
+  {
+   "id": 803,
+   "name": "break_base005_jump_up",
+   "animationType": "BreakBase005_JumpUp",
+   "category": "break",
+   "state": "jumpwakeup_start",
+   "clip": "anim_break_sleep_sub_wakeup_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_sleep_sub_wakeup_start",
+    "jump_up",
+    "jumpwakeup_start"
+   ]
+  },
+  {
+   "id": 804,
+   "name": "break_base005_jump_up_end",
+   "animationType": "BreakBase005_JumpUp_End",
+   "category": "break",
+   "state": "BreakBase005_JumpUp_End",
+   "clip": "anim_wild_stretchshoulder",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "jump_up_end"
+   ]
+  },
+  {
+   "id": 850,
+   "name": "break_base006",
+   "animationType": "BreakBase006",
+   "category": "break",
+   "state": "BreakBase006",
+   "clip": "anim_break_forward_base_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_forward_base_loop"
+   ]
+  },
+  {
+   "id": 851,
+   "name": "break_base006_interest",
+   "animationType": "BreakBase006_Interest",
+   "category": "break",
+   "state": "anim_break_forward_sub_interest_start",
+   "clip": "anim_break_forward_sub_interest",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_forward_sub_interest",
+    "anim_break_forward_sub_interest_start"
+   ]
+  },
+  {
+   "id": 852,
+   "name": "break_base006_keyboard",
+   "animationType": "BreakBase006_Keyboard",
+   "category": "break",
+   "state": "BreakBase006_Keyboard",
+   "clip": "anim_break_forward_sub_keyboard",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_forward_sub_keyboard",
+    "keyboard"
+   ]
+  },
+  {
+   "id": 853,
+   "name": "break_base006_play_pen_loop",
+   "animationType": "BreakBase006_PlayPenLoop",
+   "category": "break",
+   "state": "BreakBase006_PlayPenLoop",
+   "clip": "anim_break_playingwithapen_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_playingwithapen_loop",
+    "play_pen_loop"
+   ]
+  },
+  {
+   "id": 854,
+   "name": "break_base006_drop_pen",
+   "animationType": "BreakBase006_DropPen",
+   "category": "break",
+   "state": "BreakBase006_DropPen",
+   "clip": "anim_break_playingwithapen_drop",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_break_playingwithapen_drop",
+    "drop_pen"
+   ]
+  },
+  {
+   "id": 1000,
+   "name": "story_sub_base001",
+   "animationType": "Story_SubBase001",
+   "category": "story",
+   "state": "Story_SubBase001",
+   "clip": "anim_story_subbase001_base_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 24,
+   "aliases": [
+    "anim_story_subbase001_base_loop",
+    "sub_base001"
+   ]
+  },
+  {
+   "id": 1001,
+   "name": "story_sub_base001_joy",
+   "animationType": "Story_SubBase001_Joy",
+   "category": "story",
+   "state": "Story_SubBase001_Joy",
+   "clip": "anim_story_subbase001_sub_joy",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 10,
+   "aliases": [
+    "anim_story_subbase001_sub_joy",
+    "sub_base001_joy"
+   ]
+  },
+  {
+   "id": 1002,
+   "name": "story_sub_base001_sad",
+   "animationType": "Story_SubBase001_Sad",
+   "category": "story",
+   "state": "Story_SubBase001_Sad",
+   "clip": "anim_story_subbase001_sub_sad",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 9,
+   "aliases": [
+    "anim_story_subbase001_sub_sad",
+    "sub_base001_sad"
+   ]
+  },
+  {
+   "id": 1003,
+   "name": "story_sub_base001_fun",
+   "animationType": "Story_SubBase001_Fun",
+   "category": "story",
+   "state": "Story_SubBase001_Fun",
+   "clip": "anim_story_subbase001_sub_fun",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 10,
+   "aliases": [
+    "anim_story_subbase001_sub_fun",
+    "sub_base001_fun"
+   ]
+  },
+  {
+   "id": 1004,
+   "name": "story_sub_base001_guts",
+   "animationType": "Story_SubBase001_Guts",
+   "category": "story",
+   "state": "Story_SubBase001_Guts",
+   "clip": "anim_story_subbase001_sub_guts",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_story_subbase001_sub_guts",
+    "sub_base001_guts"
+   ]
+  },
+  {
+   "id": 1100,
+   "name": "story_sub_base002",
+   "animationType": "Story_SubBase002",
+   "category": "story",
+   "state": "Story_SubBase002",
+   "clip": "anim_story_subbase_002_base_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 11,
+   "aliases": [
+    "anim_story_subbase_002_base_loop",
+    "sub_base002"
+   ]
+  },
+  {
+   "id": 1101,
+   "name": "story_sub_base002_joy",
+   "animationType": "Story_SubBase002_Joy",
+   "category": "story",
+   "state": "Story_SubBase002_Joy",
+   "clip": "anim_story_subbase002_sub_joy",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 9,
+   "aliases": [
+    "anim_story_subbase002_sub_joy",
+    "sub_base002_joy"
+   ]
+  },
+  {
+   "id": 1102,
+   "name": "story_sub_base002_sad",
+   "animationType": "Story_SubBase002_Sad",
+   "category": "story",
+   "state": "Story_SubBase002_Sad",
+   "clip": "anim_story_subbase002_sub_sad",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 4,
+   "aliases": [
+    "anim_story_subbase002_sub_sad",
+    "sub_base002_sad"
+   ]
+  },
+  {
+   "id": 1103,
+   "name": "story_sub_base002_fun",
+   "animationType": "Story_SubBase002_Fun",
+   "category": "story",
+   "state": "Story_SubBase002_Fun",
+   "clip": "anim_story_subbase002_sub_fun",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_subbase002_sub_fun",
+    "sub_base002_fun"
+   ]
+  },
+  {
+   "id": 1200,
+   "name": "story_sub_base003",
+   "animationType": "Story_SubBase003",
+   "category": "story",
+   "state": "Story_SubBase003",
+   "clip": "anim_story_subbase003_base_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 19,
+   "aliases": [
+    "anim_story_subbase003_base_loop",
+    "sub_base003"
+   ]
+  },
+  {
+   "id": 1201,
+   "name": "story_sub_base003_sad",
+   "animationType": "Story_SubBase003_Sad",
+   "category": "story",
+   "state": "Story_SubBase003_Sad",
+   "clip": "anim_story_subbase003sub_sad",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_subbase003sub_sad",
+    "sub_base003_sad"
+   ]
+  },
+  {
+   "id": 1202,
+   "name": "story_sub_base003_fun",
+   "animationType": "Story_SubBase003_Fun",
+   "category": "story",
+   "state": "Story_SubBase003_Fun",
+   "clip": "anim_story_subbase003_sub_fun",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 4,
+   "aliases": [
+    "anim_story_subbase003_sub_fun",
+    "sub_base003_fun"
+   ]
+  },
+  {
+   "id": 1300,
+   "name": "story_sub_base004",
+   "animationType": "Story_SubBase004",
+   "category": "story",
+   "state": "Story_SubBase004",
+   "clip": "anim_story_base001_sub_thinking1_loop",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 22,
+   "aliases": [
+    "anim_story_base001_sub_thinking1_loop",
+    "sub_base004"
+   ]
+  },
+  {
+   "id": 1301,
+   "name": "story_sub_base004_agree",
+   "animationType": "Story_SubBase004_Agree",
+   "category": "story",
+   "state": "Story_SubBase004_Agree",
+   "clip": "anim_story_base001_sub_thinking1_sub_agree",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 10,
+   "aliases": [
+    "anim_story_base001_sub_thinking1_sub_agree",
+    "sub_base004_agree"
+   ]
+  },
+  {
+   "id": 1302,
+   "name": "story_sub_base004_frustration",
+   "animationType": "Story_SubBase004_Frustration",
+   "category": "story",
+   "state": "Story_SubBase004_Frustration",
+   "clip": "anim_story_base001_sub_thinking1_sub_frustration",
+   "loopable": false,
+   "trigger": true,
+   "gameSetsTrigger": true,
+   "usedByLines": 9,
+   "aliases": [
+    "anim_story_base001_sub_thinking1_sub_frustration",
+    "sub_base004_frustration"
+   ]
+  },
+  {
+   "id": 1400,
+   "name": "story_sub_base005",
+   "animationType": "Story_SubBase005",
+   "category": "story",
+   "state": "Story_SubBase005",
+   "clip": "anim_story_base001_sub_27_2",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_story_base001_sub_27_2",
+    "sub_base005"
+   ]
+  },
+  {
+   "id": 1401,
+   "name": "story_sub_base005_look_down",
+   "animationType": "Story_SubBase005_LookDown",
+   "category": "story",
+   "state": "Story_SubBase005_LookDown",
+   "clip": "anim_story_base001_sub_27_3_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_story_base001_sub_27_3_start",
+    "sub_base005_look_down"
+   ]
+  },
+  {
+   "id": 1402,
+   "name": "story_sub_base005_nod",
+   "animationType": "Story_SubBase005_Nod",
+   "category": "story",
+   "state": "Story_SubBase005_Nod",
+   "clip": "anim_story_base001_sub_27_4",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 3,
+   "aliases": [
+    "anim_story_base001_sub_27_4",
+    "sub_base005_nod"
+   ]
+  },
+  {
+   "id": 1403,
+   "name": "story_sub_base005_denial",
+   "animationType": "Story_SubBase005_Denial",
+   "category": "story",
+   "state": "Story_SubBase005_Denial",
+   "clip": "anim_story_base001_sub_27_5",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_27_5",
+    "sub_base005_denial"
+   ]
+  },
+  {
+   "id": 1404,
+   "name": "story_sub_base005_speak_blur",
+   "animationType": "Story_SubBase005_SpeakBlur",
+   "category": "story",
+   "state": "Story_SubBase005_SpeakBlur",
+   "clip": "anim_story_base001_sub_27_6",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 3,
+   "aliases": [
+    "anim_story_base001_sub_27_6",
+    "sub_base005_speak_blur"
+   ]
+  },
+  {
+   "id": 1405,
+   "name": "story_sub_base005_start_climax",
+   "animationType": "Story_SubBase005_StartClimax",
+   "category": "story",
+   "state": "Story_SubBase005_StartClimax",
+   "clip": "anim_story_base001_sub_27_7",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_27_7",
+    "sub_base005_start_climax"
+   ]
+  },
+  {
+   "id": 1406,
+   "name": "story_sub_base005_climax_1",
+   "animationType": "Story_SubBase005_Climax_1",
+   "category": "story",
+   "state": "Story_SubBase005_Climax_1",
+   "clip": "anim_story_base001_sub_27_8",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_27_8"
+   ]
+  },
+  {
+   "id": 1407,
+   "name": "story_sub_base005_climax_2",
+   "animationType": "Story_SubBase005_Climax_2",
+   "category": "story",
+   "state": "Story_SubBase005_Climax_2",
+   "clip": "anim_story_base001_sub_27_8_end",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_27_8_end"
+   ]
+  },
+  {
+   "id": 1500,
+   "name": "story_sub_base006",
+   "animationType": "Story_SubBase006",
+   "category": "story",
+   "state": "Story_SubBase006",
+   "clip": "anim_story_base001_sub_28_0",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 5,
+   "aliases": [
+    "anim_story_base001_sub_28_0"
+   ]
+  },
+  {
+   "id": 1501,
+   "name": "story_sub_base006_001",
+   "animationType": "Story_SubBase006_001",
+   "category": "story",
+   "state": "Story_SubBase006_001",
+   "clip": "anim_story_base001_sub_28_3_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_story_base001_sub_28_3_0"
+   ]
+  },
+  {
+   "id": 1502,
+   "name": "story_sub_base006_002",
+   "animationType": "Story_SubBase006_002",
+   "category": "story",
+   "state": "Story_SubBase006_002",
+   "clip": "anim_story_base001_sub_28_4",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_28_4"
+   ]
+  },
+  {
+   "id": 1503,
+   "name": "story_sub_base006_003",
+   "animationType": "Story_SubBase006_003",
+   "category": "story",
+   "state": "Story_SubBase006_003",
+   "clip": "anim_story_base001_sub_28_5",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_28_5"
+   ]
+  },
+  {
+   "id": 1504,
+   "name": "motion_1504",
+   "animationType": null,
+   "category": "story",
+   "state": "Story_SubBase006_1",
+   "clip": "anim_story_base001_sub_28_1",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_28_1",
+    "story_sub_base006_1"
+   ]
+  },
+  {
+   "id": 1600,
+   "name": "story_sub_base007",
+   "animationType": "Story_SubBase007",
+   "category": "story",
+   "state": "Story_SubBase007",
+   "clip": "anim_story_base001_sub_openbook_startloop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_openbook_startloop"
+   ]
+  },
+  {
+   "id": 1601,
+   "name": "story_sub_base007_001",
+   "animationType": "Story_SubBase007_001",
+   "category": "story",
+   "state": "Story_SubBase007_001",
+   "clip": "anim_story_base001_sub_openbook_loopchange1",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_openbook_loopchange1"
+   ]
+  },
+  {
+   "id": 1602,
+   "name": "story_sub_base007_002",
+   "animationType": "Story_SubBase007_002",
+   "category": "story",
+   "state": "Story_SubBase007_002",
+   "clip": "anim_story_base001_sub_openbook_loopchange2",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_openbook_loopchange2"
+   ]
+  },
+  {
+   "id": 1603,
+   "name": "story_sub_base007_003",
+   "animationType": "Story_SubBase007_003",
+   "category": "story",
+   "state": "Story_SubBase007_003",
+   "clip": "anim_story_base001_sub_openbook_end_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_openbook_end_0"
+   ]
+  },
+  {
+   "id": 1701,
+   "name": "story_sub_base008_01_001",
+   "animationType": "Story_SubBase008_01_001",
+   "category": "story",
+   "state": "Story_SubBase008_01_001",
+   "clip": "anim_story_base001_sub_magicalprincess_1_start_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_magicalprincess_1_start_0"
+   ]
+  },
+  {
+   "id": 1702,
+   "name": "story_sub_base008_01_002",
+   "animationType": "Story_SubBase008_01_002",
+   "category": "story",
+   "state": "anim_story_base001_sub_magicalprincess_2_start",
+   "clip": "anim_story_base001_sub_magicalprincess_2_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_magicalprincess_2_start"
+   ]
+  },
+  {
+   "id": 1703,
+   "name": "story_sub_base008_01_003",
+   "animationType": "Story_SubBase008_01_003",
+   "category": "story",
+   "state": "anim_story_base001_sub_magicalprincess_2_middle",
+   "clip": "anim_story_base001_sub_magicalprincess_2_middle_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_magicalprincess_2_middle",
+    "anim_story_base001_sub_magicalprincess_2_middle_0"
+   ]
+  },
+  {
+   "id": 1704,
+   "name": "story_sub_base008_01_004",
+   "animationType": "Story_SubBase008_01_004",
+   "category": "story",
+   "state": "anim_story_base001_sub_magicalprincess_2_end",
+   "clip": "anim_story_base001_sub_magicalprincess_2_end",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_magicalprincess_2_end"
+   ]
+  },
+  {
+   "id": 1720,
+   "name": "motion_1720",
+   "animationType": null,
+   "category": "story",
+   "state": "anim_wild_leavechair_normal_go",
+   "clip": "anim_wild_leavechair_normal_go_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": []
+  },
+  {
+   "id": 1721,
+   "name": "story_sub_base008_02_001",
+   "animationType": "Story_SubBase008_02_001",
+   "category": "story",
+   "state": "anim_story_base002_sub_magicalprincess_start",
+   "clip": "anim_story_base002_sub_magicalprincess_start_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base002_sub_magicalprincess_start",
+    "anim_story_base002_sub_magicalprincess_start_0"
+   ]
+  },
+  {
+   "id": 1722,
+   "name": "story_sub_base008_02_002",
+   "animationType": "Story_SubBase008_02_002",
+   "category": "story",
+   "state": "anim_story_base002_sub_magicalprincess_look_end",
+   "clip": "anim_story_base002_sub_magicalprincess_look_end_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base002_sub_magicalprincess_look_end",
+    "anim_story_base002_sub_magicalprincess_look_end_0"
+   ]
+  },
+  {
+   "id": 1723,
+   "name": "story_sub_base008_02_003",
+   "animationType": "Story_SubBase008_02_003",
+   "category": "story",
+   "state": "anim_story_base002_sub_magicalprincess_eat_1_start",
+   "clip": "anim_story_base002_sub_magicalprincess_eat_1_start_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 3,
+   "aliases": [
+    "anim_story_base002_sub_magicalprincess_eat_1_start",
+    "anim_story_base002_sub_magicalprincess_eat_1_start_0"
+   ]
+  },
+  {
+   "id": 1724,
+   "name": "story_sub_base008_02_004",
+   "animationType": "Story_SubBase008_02_004",
+   "category": "story",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": []
+  },
+  {
+   "id": 1725,
+   "name": "story_sub_base008_02_005",
+   "animationType": "Story_SubBase008_02_005",
+   "category": "story",
+   "state": "anim_story_base002_sub_magicalprincess_thinking_start",
+   "clip": "anim_story_base002_sub_magicalprincess_thinking_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base002_sub_magicalprincess_thinking_start"
+   ]
+  },
+  {
+   "id": 1726,
+   "name": "story_sub_base008_02_006",
+   "animationType": "Story_SubBase008_02_006",
+   "category": "story",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": []
+  },
+  {
+   "id": 1727,
+   "name": "story_sub_base008_02_007",
+   "animationType": "Story_SubBase008_02_007",
+   "category": "story",
+   "state": "anim_story_base002_sub_magicalprincess_idle_3_loop",
+   "clip": "anim_story_base002_sub_magicalprincess_idle_3_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_story_base002_sub_magicalprincess_idle_3_loop"
+   ]
+  },
+  {
+   "id": 1728,
+   "name": "story_sub_base008_02_008",
+   "animationType": "Story_SubBase008_02_008",
+   "category": "story",
+   "state": "anim_story_base002_sub_magicalprincess_idle_end",
+   "clip": "anim_story_base002_sub_magicalprincess_idle_end_0",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 2,
+   "aliases": [
+    "anim_story_base002_sub_magicalprincess_idle_end",
+    "anim_story_base002_sub_magicalprincess_idle_end_0"
+   ]
+  },
+  {
+   "id": 1729,
+   "name": "story_sub_base008_02_009",
+   "animationType": "Story_SubBase008_02_009",
+   "category": "story",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": []
+  },
+  {
+   "id": 1730,
+   "name": "story_sub_base008_02_010",
+   "animationType": "Story_SubBase008_02_010",
+   "category": "story",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": []
+  },
+  {
+   "id": 5000,
+   "name": "want_talk_base_001",
+   "animationType": "WantTalk_Base_001",
+   "category": "want_talk",
+   "state": "WantTalk_Base_001",
+   "clip": "anim_base001_sub_lookaround001_loop",
+   "loopable": true,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_base001_sub_lookaround001_loop"
+   ]
+  },
+  {
+   "id": 5001,
+   "name": "want_talk_base_001_wave_hand_short_time",
+   "animationType": "WantTalk_Base_001_WaveHandShortTime",
+   "category": "want_talk",
+   "state": "WantTalk_Base_001_WaveHandShortTime",
+   "clip": "anim_wild_cheer",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_cheer",
+    "base_wave_hand_short_time"
+   ]
+  },
+  {
+   "id": 5002,
+   "name": "want_talk_base_001_leaning_forward",
+   "animationType": "WantTalk_Base_001_LeaningForward",
+   "category": "want_talk",
+   "state": "anim_wild_wanttotalk2_start",
+   "clip": "anim_wild_wanttotalk2_start",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_wanttotalk2_start",
+    "base_leaning_forward"
+   ]
+  },
+  {
+   "id": 6500,
+   "name": "game_start_base_001",
+   "animationType": "GameStart_Base_001",
+   "category": "system",
+   "state": null,
+   "clip": null,
+   "loopable": null,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": []
+  },
+  {
+   "id": 6501,
+   "name": "motion_6501",
+   "animationType": null,
+   "category": "system",
+   "state": "anim_start_haircheck",
+   "clip": "anim_start_haircheck",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_start_haircheck"
+   ]
+  },
+  {
+   "id": 7000,
+   "name": "game_end_base_001",
+   "animationType": "GameEnd_Base_001",
+   "category": "system",
+   "state": "GameEnd_Base_001",
+   "clip": "anim_wild_goodbye",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 0,
+   "aliases": [
+    "anim_wild_goodbye"
+   ]
+  },
+  {
+   "id": 10000,
+   "name": "event_christmas_start_sit_from_out_side",
+   "animationType": "Event_Christmas_StartSitFromOutSide",
+   "category": "event",
+   "state": "Event_Christmas_StartSitFromOutSide",
+   "clip": "anim_start_fromoutside_001",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_start_fromoutside_001",
+    "christmas_start_sit_from_out_side"
+   ]
+  },
+  {
+   "id": 10001,
+   "name": "event_christmas_talk_001",
+   "animationType": "Event_Christmas_Talk_001",
+   "category": "event",
+   "state": "Event_Christmas_Talk_001",
+   "clip": "anim_start_christmas_001",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_start_christmas_001",
+    "christmas_talk"
+   ]
+  },
+  {
+   "id": 10100,
+   "name": "event_new_year_countdown_001",
+   "animationType": "Event_NewYear_Countdown_001",
+   "category": "event",
+   "state": "Event_NewYear_Countdown_001",
+   "clip": "anim_story_base001_sub_newyear_countdown_1",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_newyear_countdown_1"
+   ]
+  },
+  {
+   "id": 10101,
+   "name": "event_new_year_countdown_002",
+   "animationType": "Event_NewYear_Countdown_002",
+   "category": "event",
+   "state": "Event_NewYear_Countdown_002",
+   "clip": "anim_story_base001_sub_newyear_countdown_2",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_newyear_countdown_2"
+   ]
+  },
+  {
+   "id": 10102,
+   "name": "event_new_year_countdown_003",
+   "animationType": "Event_NewYear_Countdown_003",
+   "category": "event",
+   "state": "Event_NewYear_Countdown_003",
+   "clip": "anim_story_base001_sub_newyear_countdown_3",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_newyear_countdown_3"
+   ]
+  },
+  {
+   "id": 10103,
+   "name": "event_new_year_countdown_004",
+   "animationType": "Event_NewYear_Countdown_004",
+   "category": "event",
+   "state": "Event_NewYear_Countdown_004",
+   "clip": "anim_story_base001_sub_newyear_countdown_4",
+   "loopable": false,
+   "trigger": false,
+   "gameSetsTrigger": false,
+   "usedByLines": 1,
+   "aliases": [
+    "anim_story_base001_sub_newyear_countdown_4"
+   ]
+  }
+ ],
+ "states": [
+  {
+   "id": -1,
+   "name": "none",
+   "actionStateType": "None"
+  },
+  {
+   "id": 0,
+   "name": "game_start_direction",
+   "actionStateType": "GameStartDirection"
+  },
+  {
+   "id": 1,
+   "name": "want_talk",
+   "actionStateType": "WantTalk"
+  },
+  {
+   "id": 2,
+   "name": "main_story",
+   "actionStateType": "MainStory"
+  },
+  {
+   "id": 3,
+   "name": "click_heroine",
+   "actionStateType": "ClickHeroine"
+  },
+  {
+   "id": 4,
+   "name": "wild_stretch_full_body",
+   "actionStateType": "WildStretchFullBody"
+  },
+  {
+   "id": 5,
+   "name": "wild_stretch_shoulder",
+   "actionStateType": "WildStretchShoulder"
+  },
+  {
+   "id": 6,
+   "name": "wild_tea",
+   "actionStateType": "WildTea"
+  },
+  {
+   "id": 7,
+   "name": "wild_guts",
+   "actionStateType": "WildGuts"
+  },
+  {
+   "id": 8,
+   "name": "wild_memorie",
+   "actionStateType": "WildMemorie"
+  },
+  {
+   "id": 9,
+   "name": "wild_open_window",
+   "actionStateType": "WildOpenWindow"
+  },
+  {
+   "id": 10,
+   "name": "wild_close_window",
+   "actionStateType": "WildCloseWindow"
+  },
+  {
+   "id": 11,
+   "name": "from_pc_to_book",
+   "actionStateType": "FromPcToBook"
+  },
+  {
+   "id": 12,
+   "name": "from_pc_to_report",
+   "actionStateType": "FromPcToReport"
+  },
+  {
+   "id": 13,
+   "name": "from_book_to_pc",
+   "actionStateType": "FromBookToPc"
+  },
+  {
+   "id": 14,
+   "name": "from_book_to_report",
+   "actionStateType": "FromBookToReport"
+  },
+  {
+   "id": 15,
+   "name": "from_report_to_pc",
+   "actionStateType": "FromReportToPc"
+  },
+  {
+   "id": 16,
+   "name": "from_report_to_book",
+   "actionStateType": "FromReportToBook"
+  },
+  {
+   "id": 17,
+   "name": "work_pc",
+   "actionStateType": "WorkPC"
+  },
+  {
+   "id": 18,
+   "name": "work_book",
+   "actionStateType": "WorkBook"
+  },
+  {
+   "id": 19,
+   "name": "work_report",
+   "actionStateType": "WorkReport"
+  },
+  {
+   "id": 20,
+   "name": "break_movie",
+   "actionStateType": "BreakMovie"
+  },
+  {
+   "id": 21,
+   "name": "break_read_book",
+   "actionStateType": "BreakReadBook"
+  },
+  {
+   "id": 22,
+   "name": "break_listen_music",
+   "actionStateType": "BreakListenMusic"
+  },
+  {
+   "id": 23,
+   "name": "break_tea_time",
+   "actionStateType": "BreakTeaTime"
+  },
+  {
+   "id": 24,
+   "name": "break_sleep",
+   "actionStateType": "BreakSleep"
+  },
+  {
+   "id": 25,
+   "name": "break_forward",
+   "actionStateType": "BreakForward"
+  },
+  {
+   "id": 26,
+   "name": "leave_chair_preparing",
+   "actionStateType": "LeaveChairPreparing"
+  },
+  {
+   "id": 27,
+   "name": "leave_chair_go_sofa",
+   "actionStateType": "LeaveChairGoSofa"
+  },
+  {
+   "id": 28,
+   "name": "leave_chair_go_far",
+   "actionStateType": "LeaveChairGoFar"
+  },
+  {
+   "id": 29,
+   "name": "game_end_talk",
+   "actionStateType": "GameEndTalk"
+  },
+  {
+   "id": 10000,
+   "name": "event_new_year_countdown",
+   "actionStateType": "EventNewYearCountdown"
+  }
+ ]
+}

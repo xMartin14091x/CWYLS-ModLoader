@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "name": "Rainy evening",
+  "description": "A cool, quiet rainy evening: blue-grey balance, muted colour, deep but soft shadows and a heavier vignette. Lighter by day, softer at night.",
+  "basic": {
+    "exposure": -0.25,
+    "contrast": 10,
+    "highlights": -30,
+    "shadows": 8,
+    "whites": -20,
+    "blacks": -10
+  },
+  "whiteBalance": {
+    "temperature": -28,
+    "tint": -4
+  },
+  "presence": {
+    "vibrance": -10,
+    "saturation": -22
+  },
+  "hsl": {
+    "reds": { "saturation": -15 },
+    "oranges": { "saturation": -20, "luminance": -5 },
+    "yellows": { "saturation": -35 },
+    "greens": { "hue": 30, "saturation": -40, "luminance": -10 },
+    "aquas": { "saturation": 15 },
+    "blues": { "saturation": 10, "luminance": -15 }
+  },
+  "splitToning": {
+    "shadowHue": 215,
+    "shadowSaturation": 25,
+    "highlightHue": 200,
+    "highlightSaturation": 10,
+    "balance": -20
+  },
+  "colorGrading": {
+    "midtones": { "hue": 205, "saturation": 12 }
+  },
+  "toneCurve": {
+    "blue": [[0, 14], [128, 132], [255, 250]]
+  },
+  "effects": {
+    "vignette": { "amount": -35, "midpoint": 35, "roundness": 0, "feather": 80 },
+    "grain": { "amount": 12, "size": 20 },
+    "bloom": -20
+  },
+  "day": {
+    "basic": { "exposure": -0.1 },
+    "whiteBalance": { "temperature": -18 }
+  },
+  "night": {
+    "basic": { "exposure": 0.05 },
+    "blend": 0.8
+  }
+}

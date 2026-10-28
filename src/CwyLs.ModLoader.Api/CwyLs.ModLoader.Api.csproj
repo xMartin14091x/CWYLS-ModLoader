@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    S-API: the local game API (off by default). A BepInEx plugin that hosts the Unity-free API in
+    CwyLs.ModLoader.Core/Api on 127.0.0.1 only. Game-agnostic like CwyLs.ModLoader: no Assembly-CSharp and
+    no CwyLs.ModLoader.Bulbul reference. Game state and events arrive through the framework's mod
+    backends (CwyLs.ModLoader/Mods/ModBackends.cs), which the adapter plugins register.
+  -->
+  <Import Project="../CwyLs.Plugin.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../CwyLs.ModLoader.Core/CwyLs.ModLoader.Core.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../CwyLs.ModLoader/CwyLs.ModLoader.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

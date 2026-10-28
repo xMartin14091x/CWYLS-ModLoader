@@ -1,0 +1,11 @@
+{
+  "id": "cwy.sample.hello",
+  "name": "CWY Sample: Hello",
+  "version": "0.1.0",
+  "author": "CWY:LS",
+  "description": "Sample code mod: Satone welcomes you back once per session, and the console command hello [name].",
+  "gameVersion": "1.17.3",
+  "loaderVersion": "0.9.0",
+  "entryDll": "CwySampleHello.dll",
+  "dependsOn": []
+}

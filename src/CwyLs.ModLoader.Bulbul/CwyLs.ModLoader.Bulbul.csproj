@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- B - game adapter. This is the only assembly allowed to know about the Bulbul namespace. -->
+  <Import Project="../CwyLs.Plugin.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../CwyLs.ModLoader/CwyLs.ModLoader.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <!-- CwyLs.ModLoader marks its own Core reference PrivateAssets=all, so Core does not flow to
+         dependents: "each plugin that needs Core references it explicitly" (CwyLs.ModLoader.csproj).
+         The patch-target table is Core data, so this adapter is such a plugin. Private=false:
+         build.sh ships CwyLs.ModLoader.Core.dll once, next to the other plugin assemblies. -->
+    <ProjectReference Include="../CwyLs.ModLoader.Core/CwyLs.ModLoader.Core.csproj">
+      <Private>false</Private>
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- Game assemblies. Private=false: resolved at runtime from the game's Managed folder. -->
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(GameManagedPath)/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UniTask">
+      <HintPath>$(GameManagedPath)/UniTask.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="R3">
+      <HintPath>$(GameManagedPath)/R3.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VContainer">
+      <HintPath>$(GameManagedPath)/VContainer.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GameManagedPath)/Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- P1-4 voice: UnityEngine.dll only type-forwards AudioClip, so the module itself has to
+         be referenced for VoiceFeature's AudioClip API and the GetAudioClip prefix to compile. -->
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.AudioModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- P2-4 subtitles: the panel is uGUI (Canvas, CanvasScaler, Image) with a TextMeshPro
+         label, and the Thai fallback builds a font asset from a UnityEngine.Font. Each of those
+         lives in its own module assembly. -->
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManagedPath)/UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextCoreFontEngineModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.TextCoreFontEngineModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

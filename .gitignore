@@ -1,0 +1,13 @@
+# Build output
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+.DS_Store
+__pycache__/
+/dist/
+/tools/release/vendor/
+/packs/cwy.sample.hello/*.dll
+/packs/cwy.sample.hello/*.pdb

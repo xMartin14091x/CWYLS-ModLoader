@@ -1,0 +1,11 @@
+{
+  "id": "yourname.mymod",
+  "name": "My Mod",
+  "version": "0.1.0",
+  "author": "yourname",
+  "description": "One line: what the mod does.",
+  "gameVersion": "1.17.3",
+  "loaderVersion": "0.9.0",
+  "entryDll": "MyMod.dll",
+  "dependsOn": []
+}

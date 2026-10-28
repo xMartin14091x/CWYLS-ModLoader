@@ -1,0 +1,43 @@
+<Project>
+
+  <!--
+    Shared settings + references for every BepInEx plugin assembly in this solution.
+    Import this from a plugin .csproj:  <Import Project="../CwyLs.Plugin.props" />
+
+    Every reference is <Private>false</Private>: game and BepInEx assemblies must be
+    resolved at runtime from the installed game, never copied next to our plugin DLLs.
+  -->
+
+  <PropertyGroup>
+    <CWYPluginProject>true</CWYPluginProject>
+    <TargetFramework>$(CWYPluginTargetFramework)</TargetFramework>
+    <!-- RP-5: version, product and copyright come from Directory.Build.props. -->
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <!-- BepInEx 5 core, from the repo payload (see Directory.Build.props) -->
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExCorePath)/BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExCorePath)/0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Unity engine assemblies every plugin needs -->
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>$(GameManagedPath)/UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,36 @@
+[
+  {
+    "ID": "cwy_example_01_001",
+    "ScenarioGroupID": "cwy_example_01",
+    "Command": "VoiceText",
+    "Arg1": "1",
+    "Arg2": 0.0,
+    "Arg3": "0",
+    "Arg4": "0",
+    "Talker": "Heroine",
+    "LocalizationID": "cwy_example_01_001",
+    "BodyMotion": -1,
+    "FacialMotion": -1,
+    "LookScale": 0.0,
+    "LookSpeedSeconds": 1.0,
+    "LookEaseType": "Unset",
+    "x-shape": "Same shape as the game's own single-row motion scenarios, except Arg1: for VoiceText the reader takes Arg1 = 1 as 'move her mouth'."
+  },
+  {
+    "ID": "cwy_example_01_end",
+    "ScenarioGroupID": "cwy_example_01",
+    "Command": "EndScenario",
+    "Arg1": "0",
+    "Arg2": 1.25,
+    "Arg3": "0",
+    "Arg4": "0",
+    "Talker": "None",
+    "LocalizationID": "0",
+    "BodyMotion": -1,
+    "FacialMotion": -1,
+    "LookScale": 0.0,
+    "LookSpeedSeconds": 1.0,
+    "LookEaseType": "Unset",
+    "x-shape": "Same shape as the game's own end rows - the row every multi-row short group ends with."
+  }
+]

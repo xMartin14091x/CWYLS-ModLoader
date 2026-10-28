@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    P1-0 - the game trace log.
+
+    Deliberately has NO Assembly-CSharp reference: the whole point of the trace is to survive a
+    game update, and a static reference would tie this DLL to one build's type graph. Everything
+    game-specific is reached by reflection and degrades to a null field plus one warning.
+  -->
+  <Import Project="../CwyLs.Plugin.props" />
+
+  <!--
+    Unity UI assemblies, for the sys:"ui" layer: these are engine/package types, not game types,
+    so referencing them keeps the "no Assembly-CSharp" rule intact while making Button/Toggle/
+    Slider/TMP_InputField patching readable instead of a wall of reflection.
+    Private=false: resolved at runtime from the game's Managed folder, like everything else.
+  -->
+  <ItemGroup>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManagedPath)/UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GameManagedPath)/Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.AudioModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CwyLs.ModLoader/CwyLs.ModLoader.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../CwyLs.ModLoader.Core/CwyLs.ModLoader.Core.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

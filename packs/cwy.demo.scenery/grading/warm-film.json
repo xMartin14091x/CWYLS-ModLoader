@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "name": "Warm film",
+  "description": "Warm film stock: teal shadows, warm highlights, faded blacks, soft contrast, grain and a gentle vignette. Layered over the game's own time-of-day look.",
+  "basic": {
+    "exposure": 0.1,
+    "contrast": -8,
+    "highlights": -15,
+    "shadows": 12,
+    "whites": -12,
+    "blacks": 15
+  },
+  "whiteBalance": {
+    "temperature": 14,
+    "tint": 3
+  },
+  "presence": {
+    "vibrance": 12,
+    "saturation": -6
+  },
+  "hsl": {
+    "oranges": { "saturation": -8, "luminance": 6 },
+    "greens": { "hue": 20, "saturation": -25 },
+    "blues": { "hue": -10, "saturation": -15, "luminance": -8 }
+  },
+  "splitToning": {
+    "shadowHue": 190,
+    "shadowSaturation": 28,
+    "highlightHue": 38,
+    "highlightSaturation": 32,
+    "balance": 15
+  },
+  "toneCurve": {
+    "master": [[0, 26], [64, 68], [190, 198], [255, 248]]
+  },
+  "effects": {
+    "vignette": { "amount": -22, "midpoint": 45, "roundness": 0, "feather": 70 },
+    "grain": { "amount": 28, "size": 35 },
+    "bloom": 10
+  },
+  "night": {
+    "basic": { "exposure": 0.2 },
+    "whiteBalance": { "temperature": 8 },
+    "blend": 0.85
+  }
+}

@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Tests for tools/seamcheck and for the Unity-free Trace rules it compiles in
+    (src/CwyLs.ModLoader.Trace/TraceExclusions.cs, TraceCandidates.cs). They live here rather than in
+    src/CwyLs.ModLoader.Tests because that project references only CwyLs.ModLoader.Core by design.
+
+    Run: dotnet test tools/seamcheck/Seamcheck.Tests -c Release (with an artifacts path outside src/)
+    Tests that read a real game Managed/ folder are skipped (and say so) when it is not on disk.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>CWY.Seamcheck.Tests</RootNamespace>
+    <!-- Fixtures.cs declares pointer-typed methods so the trace's "unpatchable signature" rule is testable. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Seamcheck/Seamcheck.csproj" />
+  </ItemGroup>
+
+  <!-- Trace plugin code the tool itself does not need, compiled in here to be tested Unity-free. -->
+  <ItemGroup>
+    <Compile Include="../../../src/CwyLs.ModLoader.Trace/TraceFailureText.cs" Link="Shared/TraceFailureText.cs" />
+  </ItemGroup>
+
+  <!-- Where the repository is, for the Windows Managed/ copy: tests usually run from an artifacts folder outside it. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RepoRoot</_Parameter1>
+      <_Parameter2>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../..'))</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <!--
+    The parity tests run the game's own ReflectionMemberResolver in this process; its failure
+    paths log through BepInEx and enrich messages through Harmony, so both must be loadable.
+    From the repo payload, never from the game.
+  -->
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExCorePath)/BepInEx.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExCorePath)/0Harmony.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
