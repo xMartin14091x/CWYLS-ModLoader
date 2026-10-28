@@ -1,3 +1,10 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../.github/assets/banner/docs-guide-dark.svg">
+  <img src="../../.github/assets/banner/docs-guide-light.svg" width="100%" alt="CWY:LS Mod Loader author's guide">
+</picture>
+
+<sub>**Guide** &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
+
 # CWY:LS Mod Loader author's guide
 
 CWY:LS Mod Loader is an unofficial, fan-made mod loader for *Chill with You : Lo-Fi Story*
@@ -47,6 +54,14 @@ A content pack can also be data *for* a code mod (`contentPackFor`); the code mo
 through `helper.ContentPacks`. Pick a content pack whenever files are enough: it cannot crash
 anything and needs no rebuild when the framework changes.
 
+```mermaid
+flowchart LR
+    F["CWYLS Mods/&lt;id&gt;/<br/>manifest.json"] --> R{"Resolver:<br/>versions and<br/>dependencies"}
+    R -->|content pack| P["Applied in memory as the game loads it"]
+    R -->|code mod| E["First frame:<br/>Entry(helper)"]
+    R -->|a problem| S["Skipped, with a<br/>PACKS line in the log"]
+```
+
 <!-- entryDll makes a code mod: src/CwyLs.ModLoader.Core/Packs/PackManifest.cs:204 (IsCodeMod); shared graph: src/CwyLs.ModLoader.Core/Packs/PackResolver.cs:7-11. -->
 
 ## Where things live
@@ -67,9 +82,10 @@ The game folder is where Steam installed the game. With Steam's default library 
 another library folder it is under that folder's `steamapps\common\`. In Steam, *Manage → Browse
 local files* on the game opens it.
 
-Install and update code mods with the game closed: a loaded DLL must never be overwritten. Packs
-are read once at startup, so a changed pack needs a restart too (textures are the one exception:
-they reload live, see `packs/README.md`).
+> [!WARNING]
+> Install and update code mods with the game closed: a loaded DLL must never be overwritten. Packs
+> are read once at startup, so a changed pack needs a restart too (textures are the one exception:
+> they reload live, see `packs/README.md`).
 
 <!-- PacksRoot: src/CwyLs.ModLoader/ModLoaderPaths.cs:14; DataRoot :24; mod config: src/CwyLs.ModLoader/Mods/ModHelper.cs:20,:107; mod data: src/CwyLs.ModLoader/Mods/ModFacets.Framework.cs:65,:74; console log roll: src/CwyLs.ModLoader/README.md "Where it goes"; default Steam paths: Directory.Build.props, templates/cwy-mod/MyMod.csproj. -->
 

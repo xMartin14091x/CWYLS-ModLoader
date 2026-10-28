@@ -1,3 +1,5 @@
+<sub>[Author's guide](../../docs/guide/README.md) &nbsp;·&nbsp; [Getting started](../../docs/guide/getting-started.md) &nbsp;·&nbsp; [API reference](../../docs/api/README.md)</sub>
+
 # CWY:LS Mod Loader code-mod template
 
 A copyable starting point for a code mod: a mod is a folder in `<game root>/CWYLS Mods/<id>/` with a

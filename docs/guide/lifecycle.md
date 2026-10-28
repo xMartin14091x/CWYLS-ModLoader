@@ -1,3 +1,5 @@
+<sub>[Guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; **Lifecycle** &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
+
 # Lifecycle: when your code runs
 
 A code mod has three entry points of its own (`Entry`, `GetApi`, `OnShutdown`); everything else
@@ -5,6 +7,13 @@ runs because it subscribed to something. This page shows the order, the one rule
 (no game services in `Entry`), how mods share APIs, and what happens when something throws.
 
 ## The order, from start to quit
+
+```mermaid
+flowchart LR
+    A["Framework loads, packs resolved"] --> B["Game adapter<br/>starts"] --> C["First frame:<br/><b>Entry</b>"]
+    C --> D["<b>GetApi</b>,<br/><b>OnModsReady</b>"] --> E["Save and room load:<br/><b>RoomReady</b>"]
+    E --> F["Play:<br/>your handlers"] --> G["Quit:<br/><b>OnShutdown</b>"]
+```
 
 | # | When | What happens | Your code |
 |---|---|---|---|

@@ -1,3 +1,5 @@
+<sub>[Author's guide](../../docs/guide/README.md) &nbsp;·&nbsp; [Getting started](../../docs/guide/getting-started.md) &nbsp;·&nbsp; [API reference](../../docs/api/README.md)</sub>
+
 # cwy.sample.hello
 
 The sample code mod for the CWY:LS Mod Loader front door (C1-FRONTDOOR). It uses only the mod helper:

@@ -1,3 +1,5 @@
+<sub>[Guide](README.md) &nbsp;·&nbsp; **Getting started** &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
+
 # Getting started: your first code mod
 
 By the end of this page you have a mod that loads, logs a line and reacts when the room is ready,

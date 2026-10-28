@@ -1,3 +1,5 @@
+<sub>[Guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; **Versioning** &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
+
 # Versioning and deprecation
 
 Three version numbers matter to a mod, and they move independently:
