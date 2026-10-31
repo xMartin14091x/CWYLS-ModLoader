@@ -2,15 +2,18 @@
 
 # Namespace `CwyLs.ModLoader.Core.PackLines`
 
-Assembly `CwyLs.ModLoader.Core` · 21 public type(s) · [API index](README.md)
+Assembly `CwyLs.ModLoader.Core` · 25 public type(s) · [API index](README.md)
 
 | Type | Kind | Summary |
 |---|---|---|
 | [`PackLine`](#packline) | sealed class | One language-exclusive line a pack added: a scenario group that passed `PackLineScreen`, the pool it joins, its episode number and the languages it is offered in. |
+| [`PackLineCandidate`](#packlinecandidate) | struct | One line in a weighted roll, with the weight it rolls at. |
 | [`PackLineCycleRecord`](#packlinecyclerecord) | sealed class | Where one pool's cycle stood when the last pack line in it was dealt. |
 | [`PackLineCycles`](#packlinecycles) | static class | One deck for game lines and pack lines across sessions: game and pack lines are dealt from one shared pool, one line at a time. |
 | [`PackLineFamily`](#packlinefamily) | enum | Which kind of game moment a pack-lines pool belongs to. |
 | [`PackLineHeldIds`](#packlineheldids) | sealed class | What `PackLineSaveFilter.Strip` took out of a list, with each item's original position, so `PackLineSaveFilter.Restore` can put the list back exactly. |
+| [`PackLineLastPlayed`](#packlinelastplayed) | static class | Which weighted pack line each pool played last, for the no-repeat rule of `PackLineWeights.Roll`. |
+| [`PackLinePickResult`](#packlinepickresult) | struct | What one pick did to a list, as `PackLinePoolState.EndPick` saw it. |
 | [`PackLinePool`](#packlinepool) | sealed class | One pool the game draws a line from, and that a pack line can join: its id, the `ScenarioType` its groups carry, the game's own episode range, and where the game keeps it. |
 | [`PackLinePools`](#packlinepools) | static class | Every pool a pack line can join, as observed in game 1.17.3. |
 | [`PackLinePoolState`](#packlinepoolstate) | sealed class | Our bookkeeping for one of the game's `RandomList` pools: which of the pool's pack episodes are still owed to the current cycle and which are sitting in the game's list. |
@@ -20,13 +23,14 @@ Assembly `CwyLs.ModLoader.Core` · 21 public type(s) · [API index](README.md)
 | [`PackLineReport`](#packlinereport) | static class | The text of the console's `lines list`: pure, so its wording is unit-tested. |
 | [`PackLineSaveFilter`](#packlinesavefilter) | static class | Keeps pack-line ids out of the game's save. |
 | [`PackLineScreen`](#packlinescreen) | static class | Decides which language-exclusive scenario groups (a `Languages` member in `data/scenario_groups.json`) reach the game. |
-| [`PackLineScreenResult`](#packlinescreenresult) | sealed class | What `PackLineScreen.Screen` decided: the rows to inject, the lines that may join the game's pools, and the groups it refused. |
+| [`PackLineScreenResult`](#packlinescreenresult) | sealed class | What `PackLineScreen.Screen` decided: the rows to inject, the lines that may join the game's pools, the groups it refused and the warnings that are not refusals. |
 | [`PackLineSeen`](#packlineseen) | static class | Which pack small talks the player has already heard, kept in the mod's own data folder so the game's lottery treats them as seen in later sessions - without the id ever reaching the save. |
 | [`PackLineShape`](#packlineshape) | enum | What a pool's groups must contain for the game to play them (checked by `PackLineScreen`). |
 | [`PackLineSmallTalkGate`](#packlinesmalltalkgate) | static class | The gate for the small-talk pool: keeps language-exclusive episodes out of the game's lottery cache while their language is not shown. |
 | [`PackLineTestArm`](#packlinetestarm) | sealed class | The console's `lines test <id>` for a timer line: the next time the game picks a line for that timer moment and mode, it gets this one. |
 | [`PackLineTimerMode`](#packlinetimermode) | enum | Which timer mode a `PackLineFamily.TimerLine` pool belongs to (`Bulbul.TimerMode`). |
 | [`PackLineTimerPhase`](#packlinetimerphase) | enum | Which timer moment a `PackLineFamily.TimerLine` pool speaks at. |
+| [`PackLineWeights`](#packlineweights) | static class | The weighted pick (Martin, 2026-10-31): at each pick of a pool, the weighted lines offered there - written for the pool, or copies of a `gamestart.any` / global line - share one roll. |
 
 ---
 
@@ -40,7 +44,7 @@ One language-exclusive line a pack added: a scenario group that passed [`PackLin
 
 <a id="packline--ctor"></a>
 
-### `PackLine(string groupId, PackLinePool pool, int episode, IEnumerable<string> languages, IEnumerable<string> voices = null)`
+### `PackLine(string groupId, PackLinePool pool, int episode, IEnumerable<string> languages, IEnumerable<string> voices = null, double? weight = null, string sourceGroupId = null, string spread = null)`
 
 Creates a line.
 
@@ -51,11 +55,15 @@ Creates a line.
 - `episode`: Its episode number within the pool's scenario type (1000 or more).
 - `languages`: The language codes it is offered in; normalised here. Required, non-empty.
 - `voices`: The voice clip names its rows speak (from the pack's localization rows), so the game side can skip the line while a clip of its own is not loaded yet. Null means none known.
+- `weight`: The group's `Weight` member: the chance, 0 to 1, that this line takes a pick of its pool ([`PackLineWeights`](#packlineweights)); null when absent (deck pools: one more card in the deck; startup pools: an equal share with the game's lines).
+- `sourceGroupId`: For a copy a spread `Pool` ([`PackLinePools.TryGetSpread`](#packlinepools--trygetspread)) made: the group the pack wrote. Null or blank means this line is that group itself.
+- `spread`: The spread `Pool` value the copy came from (`gamestart.any`, `*`); null or blank for none.
 
 **Exceptions**
 
 - `ArgumentException`: `groupId` is blank or `languages` holds no code.
 - `ArgumentNullException`: `pool` or `languages` is null.
+- `ArgumentOutOfRangeException`: `weight` is not a number from 0 to 1.
 
 <a id="packline--episode"></a>
 
@@ -69,6 +77,24 @@ Its episode number within [`PackLinePool.Scenario`](#packlinepool--scenario).
 
 The scenario group id, e.g. `mymod_click_work_001`; what the save filter holds back.
 
+<a id="packline--iscopy"></a>
+
+### `bool IsCopy { get; }`
+
+True for a copy a spread `Pool` made.
+
+<a id="packline--isglobal"></a>
+
+### `bool IsGlobal { get; }`
+
+True for a copy of a global line (`"Pool": "*"`).
+
+<a id="packline--isweighted"></a>
+
+### `bool IsWeighted { get; }`
+
+True when the pack wrote a `Weight`.
+
 <a id="packline--languages"></a>
 
 ### `IReadOnlyList<string> Languages { get; }`
@@ -81,11 +107,29 @@ The normalised language codes it is offered in, e.g. `th`; never empty.
 
 The pool the line joins.
 
+<a id="packline--sourcegroupid"></a>
+
+### `string SourceGroupId { get; }`
+
+The group the pack wrote: [`PackLine.GroupId`](#packline--groupid) itself, or for a copy a spread made, the group it was copied from. What the no-repeat rule compares ([`PackLineWeights`](#packlineweights)).
+
+<a id="packline--spread"></a>
+
+### `string Spread { get; }`
+
+The spread `Pool` value this copy came from (`gamestart.any`, `*`); empty for a line written for its own pool.
+
 <a id="packline--voices"></a>
 
 ### `IReadOnlyList<string> Voices { get; }`
 
 The distinct voice clip names its rows speak, in row order, as far as the pack's own localization rows tell (a row that reuses a game line's text is not listed: its clip is the game's). Empty for a text-only line.
+
+<a id="packline--weight"></a>
+
+### `double? Weight { get; }`
+
+The chance, 0 to 1, that this line takes a pick of its pool (1 = every pick); null when the pack wrote no `Weight`.
 
 <a id="packline--isofferedin"></a>
 
@@ -102,6 +146,43 @@ The gate: true when the game showing `languageCode` may offer this line. Any spe
 ### `override string ToString()`
 
 `group (pool #episode, th)`.
+
+---
+
+<a id="packlinecandidate"></a>
+
+## `PackLineCandidate`
+
+struct · `CwyLs.ModLoader.Core.PackLines.PackLineCandidate` · assembly `CwyLs.ModLoader.Core`
+
+One line in a weighted roll, with the weight it rolls at.
+
+<a id="packlinecandidate--ctor"></a>
+
+### `PackLineCandidate(PackLine line, double weight)`
+
+Creates a candidate.
+
+**Parameters**
+
+- `line`: The line. Required.
+- `weight`: The weight it rolls at: its own [`PackLine.Weight`](#packline--weight), or an implied share ([`PackLineWeights.EqualShare`](#packlineweights--equalshare)).
+
+**Exceptions**
+
+- `ArgumentNullException`: `line` is null.
+
+<a id="packlinecandidate--line"></a>
+
+### `PackLine Line { get; }`
+
+The line.
+
+<a id="packlinecandidate--weight"></a>
+
+### `double Weight { get; }`
+
+Its weight, clamped to 0..1.
 
 ---
 
@@ -219,6 +300,7 @@ Which kind of game moment a pack-lines pool belongs to.
 | <a id="packlinefamily--timerline"></a>`TimerLine` | 2 | A pomodoro or count-up timer moment: work start, break start, finish. |
 | <a id="packlinefamily--timerconversation"></a>`TimerConversation` | 3 | The answer-choice talk after a completed pomodoro (`pomodoroend_*`, `ShortConversation`). |
 | <a id="packlinefamily--smalltalk"></a>`SmallTalk` | 4 | A small talk (`SmallTalk`): data-driven, weighted by the group's own odds. |
+| <a id="packlinefamily--gamestart"></a>`GameStart` | 5 | The greeting after the startup screen (`GameStart_*`), picked by `GameStartTalkSelector.GetGameStartTalk` from decks kept in the save, so a pack line is never added to the deck: it replaces the pick for one launch. |
 
 ---
 
@@ -247,6 +329,114 @@ The ids taken out, in their original order.
 ### `static PackLineHeldIds None { get; }`
 
 Nothing held back.
+
+---
+
+<a id="packlinelastplayed"></a>
+
+## `PackLineLastPlayed`
+
+static class · `CwyLs.ModLoader.Core.PackLines.PackLineLastPlayed` · assembly `CwyLs.ModLoader.Core`
+
+Which weighted pack line each pool played last, for the no-repeat rule of [`PackLineWeights.Roll`](#packlineweights--roll). Kept in the mod's own data folder (never the save), because the startup greeting is one pick per launch: without a file, "never twice in a row" could not hold across launches.
+
+File: `{"schema":1,"last":{"gamestart":"mymod_hello","click.work":"mymod_click_001"}}`, keyed by [`PackLineLastPlayed.KeyOf`](#packlinelastplayed--keyof). Unknown or malformed content starts empty (the next pick rewrites it).
+
+<a id="packlinelastplayed--gamestartkey"></a>
+
+### `const string GameStartKey = "gamestart"`
+
+The one key every startup-greeting pool shares: consecutive launches can be different kinds.
+
+<a id="packlinelastplayed--schema"></a>
+
+### `const int Schema = 1`
+
+The file's schema number.
+
+<a id="packlinelastplayed--keyof"></a>
+
+### `static string KeyOf(PackLinePool pool)`
+
+The key a pool's last line is kept under: [`PackLineLastPlayed.GameStartKey`](#packlinelastplayed--gamestartkey) for every startup pool, else the pool id.
+
+**Parameters**
+
+- `pool`: The pool.
+
+<a id="packlinelastplayed--parse"></a>
+
+### `static Dictionary<string, string> Parse(string json, out string problem)`
+
+Reads the file. Null, empty or malformed text gives an empty map and a reason.
+
+**Parameters**
+
+- `json`: The file's text.
+- `problem`: Why nothing was read, or empty.
+
+<a id="packlinelastplayed--tojson"></a>
+
+### `static string ToJson(IReadOnlyDictionary<string, string> last)`
+
+The file's text, keys sorted so the file only changes when the map does.
+
+**Parameters**
+
+- `last`: Key to source group id.
+
+---
+
+<a id="packlinepickresult"></a>
+
+## `PackLinePickResult`
+
+struct · `CwyLs.ModLoader.Core.PackLines.PackLinePickResult` · assembly `CwyLs.ModLoader.Core`
+
+What one pick did to a list, as [`PackLinePoolState.EndPick`](#packlinepoolstate--endpick) saw it.
+
+<a id="packlinepickresult--ctor"></a>
+
+### `PackLinePickResult(bool read, int episode, bool weighted, int takenBack)`
+
+Creates a result.
+
+**Parameters**
+
+- `read`: True when the game took the list's first episode during the pick.
+- `episode`: The episode it took; 0 when `read` is false.
+- `weighted`: True when that episode was the weighted line put in front for this pick.
+- `takenBack`: How many weighted episodes the pick left in the list and were taken out again.
+
+<a id="packlinepickresult--episode"></a>
+
+### `int Episode { get; }`
+
+The episode the game took; 0 when the list was not read.
+
+<a id="packlinepickresult--read"></a>
+
+### `bool Read { get; }`
+
+True when the game took the list's first episode during the pick (the pool was read).
+
+<a id="packlinepickresult--takenback"></a>
+
+### `int TakenBack { get; }`
+
+Weighted episodes the game did not take, taken out of its list again.
+
+<a id="packlinepickresult--weighted"></a>
+
+### `bool Weighted { get; }`
+
+True when the game took the weighted line put in front for this pick.
+
+<a id="packlinepickresult--tostring"></a>
+
+### `override string ToString()`
+
+`read=True episode=1001 weighted=True takenBack=0`.
 
 ---
 
@@ -288,6 +478,12 @@ Creates a pool.
 
 What kind of game moment it belongs to.
 
+<a id="packlinepool--hasdeck"></a>
+
+### `bool HasDeck { get; }`
+
+True when the game keeps this pool in a deck the feature widens (`RandomList` or the small-talk cache); false for the startup greetings, whose decks live in the save and are never widened: every pack line there is drawn by weight ([`PackLineWeights`](#packlineweights)).
+
 <a id="packlinepool--id"></a>
 
 ### `string Id { get; }`
@@ -298,7 +494,7 @@ Stable dotted id, e.g. `click.work.morning`; what a group's `Pool` member names.
 
 ### `bool IsClickStyle { get; }`
 
-True when the game plays this pool's lines as a click-style reaction, so a test can play one through `FacilityClickHeroine`'s own pending-line slot; false for the timer lines, which only the timer's own moments play.
+True when the game plays this pool's lines as a click-style reaction, so a test can play one through `FacilityClickHeroine`'s own pending-line slot; false for the timer lines, which only the timer's own moments play, and the startup greetings, which only a launch plays.
 
 <a id="packlinepool--isdatadriven"></a>
 
@@ -391,6 +587,18 @@ Where each range comes from (game 1.17.3):
 
 Every range matches the 1.17.3 master data exactly (episodes 1..N, contiguous, in row order).
 
+<a id="packlinepools--anygamestart"></a>
+
+### `const string AnyGameStart = "gamestart.any"`
+
+The `Pool` value that offers one line in every startup-greeting pool.
+
+<a id="packlinepools--global"></a>
+
+### `const string Global = "*"`
+
+The `Pool` value that offers one line in every pool a single line can fill (a global line).
+
 <a id="packlinepools--maximumepisode"></a>
 
 ### `const int MaximumEpisode = 16777216`
@@ -407,7 +615,7 @@ The lowest episode number a pack line may use, so it can never collide with a ga
 
 ### `static IReadOnlyList<PackLinePool> All { get; }`
 
-Every pool, in the order above (43 in game 1.17.3).
+Every pool, in the order above (53: 43 as in game 1.17.3, plus 10 startup-greeting pools from 1.18.0).
 
 <a id="packlinepools--forscenario"></a>
 
@@ -431,6 +639,19 @@ Looks a pool up by id, case-insensitively.
 - `pool`: The pool, or null.
 
 **Returns:** True when the id names a pool.
+
+<a id="packlinepools--trygetspread"></a>
+
+### `static bool TryGetSpread(string id, out IReadOnlyList<PackLinePool> targets)`
+
+The pools a spread `Pool` value stands for: [`PackLinePools.AnyGameStart`](#packlinepools--anygamestart) = every [`PackLineFamily.GameStart`](#packlinefamily--gamestart) pool; [`PackLinePools.Global`](#packlinepools--global) = every pool except the answer-choice talk ([`PackLineFamily.TimerConversation`](#packlinefamily--timerconversation), which needs its choices). Some targets share a `ScenarioType` (the clock slots `selftalk.time.*`, the worked-time slots `selftalk.worked.*`); the game finds a group by `(Scenario, EpisodeNumber)`, so [`PackLineScreen`](#packlinescreen) gives each of their copies after the first its own episode number.
+
+**Parameters**
+
+- `id`: A group's `Pool` member.
+- `targets`: The pools, in catalogue order, or empty.
+
+**Returns:** True when `id` is a spread.
 
 <a id="packlinepools--tryresolve"></a>
 
@@ -462,7 +683,9 @@ The game's `RandomList` holds a shuffled cycle of the episodes min..max: `GetNex
 
 The gate keeps that behaviour: each pack episode an open gate allows is inserted at a random position in front of the last element, so it plays exactly once per cycle like a game line, the cycle's last element (and with it `_beforeLast`) stays a game episode, and a pack line can never repeat across a cycle boundary. A closed gate takes our episodes out again, so the list is the game's own; they stay owed, and come back if the language returns within the same cycle. While no language of a line is ever shown, nothing is inserted and nothing random is drawn: the game's list, odds and random-number stream are untouched.
 
-<a id="packlinepoolstate--ctor"></a>
+**Weighted lines** (a `Weight` member, [`PackLineWeights`](#packlineweights)) are never dealt: they are known ([`PackLinePoolState.IsPackEpisode`](#packlinepoolstate--ispackepisode)) but never owed or placed. At a pick, the caller rolls them and hands the winner to [`PackLinePoolState.BeginPick`](#packlinepoolstate--beginpick), which puts it in front of the list so the game's next read returns it; [`PackLinePoolState.EndPick`](#packlinepoolstate--endpick) takes it out again if the game read another list, and tells which episode the game took. A non-empty list stays non-empty and an empty one stays empty (the winner waits for the game's own refill, [`PackLinePoolState.OnCycleDuringPick`](#packlinepoolstate--oncycleduringpick)), so every emptiness check the game makes - and with it every one of its own random draws - is what it would be without us. The game's own episodes, their order and `_beforeLast` are never touched.
+
+<a id="packlinepoolstate--ctor-ienumerable-int"></a>
 
 ### `PackLinePoolState(IEnumerable<int> episodes)`
 
@@ -470,13 +693,42 @@ Creates the state for a pool whose game list was just set up.
 
 **Parameters**
 
-- `episodes`: The pool's pack episodes; null means none.
+- `episodes`: The pool's pack episodes dealt into its deck; null means none.
+
+<a id="packlinepoolstate--ctor-ienumerable-int-ienumerable-int"></a>
+
+### `PackLinePoolState(IEnumerable<int> episodes, IEnumerable<int> weighted)`
+
+Creates the state for a pool whose game list was just set up.
+
+**Parameters**
+
+- `episodes`: The pool's unweighted pack episodes, dealt into its deck; null means none.
+- `weighted`: The pool's weighted pack episodes, never dealt, only put in front for a pick they won; null means none. An episode also in `episodes` counts as dealt.
 
 <a id="packlinepoolstate--episodes"></a>
 
 ### `IReadOnlyList<int> Episodes { get; }`
 
-The pool's pack episodes, in registry order.
+The pool's pack episodes dealt into its deck (the unweighted lines), in registry order.
+
+<a id="packlinepoolstate--front"></a>
+
+### `int? Front { get; }`
+
+The weighted episode in front of the list for the current pick, or null.
+
+<a id="packlinepoolstate--haslines"></a>
+
+### `bool HasLines { get; }`
+
+True when the pool has any pack episode, dealt or weighted.
+
+<a id="packlinepoolstate--inpick"></a>
+
+### `bool InPick { get; }`
+
+True between [`PackLinePoolState.BeginPick`](#packlinepoolstate--beginpick) and [`PackLinePoolState.EndPick`](#packlinepoolstate--endpick).
 
 <a id="packlinepoolstate--owedcount"></a>
 
@@ -496,11 +748,46 @@ How many pack episodes are in the game's list right now.
 
 Pack episodes this cycle already dealt: neither owed nor in the list.
 
+<a id="packlinepoolstate--weightedepisodes"></a>
+
+### `IReadOnlyList<int> WeightedEpisodes { get; }`
+
+The pool's weighted pack episodes, in registry order: never dealt, rolled at each pick.
+
+<a id="packlinepoolstate--beginpick"></a>
+
+### `void BeginPick(IList<int> list, int? winner)`
+
+The game is about to pick (the gate ran): puts the weighted episode that won this pick's roll in front of the list, so the game's next read returns it, and notes the list's first episode so [`PackLinePoolState.EndPick`](#packlinepoolstate--endpick) can tell whether the game read this list. An empty list is left empty (its emptiness steers the game's own choices); the winner then waits for the game's refill, [`PackLinePoolState.OnCycleDuringPick`](#packlinepoolstate--oncycleduringpick). A pick that never ended is closed first.
+
+**Parameters**
+
+- `list`: The game's list. Required.
+- `winner`: The weighted episode that won the roll, or null for none (nothing is inserted).
+
+**Exceptions**
+
+- `ArgumentNullException`: `list` is null.
+
 <a id="packlinepoolstate--clone"></a>
 
 ### `PackLinePoolState Clone()`
 
 A copy with the same episodes and the same owed and placed sets, for a dry run that must not disturb the live bookkeeping (the quiet smoke check).
+
+<a id="packlinepoolstate--endpick"></a>
+
+### `PackLinePickResult EndPick(IList<int> list)`
+
+The game's pick is over: whether it read this list (the first episode at the pick is gone), which episode it took, and whether that was the weighted winner. A weighted episode still in the list (the game read another list) is taken out again, so outside a pick the list holds only the game's episodes and the dealt ones. Does nothing outside a pick.
+
+**Parameters**
+
+- `list`: The game's list. Required.
+
+**Exceptions**
+
+- `ArgumentNullException`: `list` is null.
 
 <a id="packlinepoolstate--isowed"></a>
 
@@ -516,7 +803,7 @@ True when the episode has not played yet in this cycle.
 
 ### `bool IsPackEpisode(int episode)`
 
-True when the episode is one of this pool's pack episodes.
+True when the episode is one of this pool's pack episodes, dealt or weighted.
 
 **Parameters**
 
@@ -532,11 +819,47 @@ True when the episode is in the game's list because of us.
 
 - `episode`: An episode number.
 
-<a id="packlinepoolstate--rebind"></a>
+<a id="packlinepoolstate--isweighted"></a>
+
+### `bool IsWeighted(int episode)`
+
+True when the episode is one of this pool's weighted (never dealt) pack episodes.
+
+**Parameters**
+
+- `episode`: An episode number.
+
+<a id="packlinepoolstate--oncycleduringpick"></a>
+
+### `void OnCycleDuringPick(IList<int> list)`
+
+The game refilled the list during a pick (`InitList`, after [`PackLinePoolState.StartCycle`](#packlinepoolstate--startcycle) and [`PackLinePoolState.Reconcile`](#packlinepoolstate--reconcile)): a winner that waited for it goes in front now, and the list's new first episode is what a read would take. Does nothing outside a pick.
+
+**Parameters**
+
+- `list`: The game's list. Required.
+
+**Exceptions**
+
+- `ArgumentNullException`: `list` is null.
+
+<a id="packlinepoolstate--rebind-ienumerable-int-ienumerable-int-ilist-int"></a>
+
+### `void Rebind(IEnumerable<int> episodes, IEnumerable<int> weighted, IList<int> list)`
+
+The pool's lines changed (a pack rescan or a new injection): every episode of the old sets, dealt or weighted, is taken out of the game's list; the new dealt set starts owed and unplaced, and any pick in progress is dropped.
+
+**Parameters**
+
+- `episodes`: The pool's new unweighted (dealt) pack episodes; null means none.
+- `weighted`: The pool's new weighted pack episodes; null means none.
+- `list`: The game's list; null when it is not reachable (nothing is removed then).
+
+<a id="packlinepoolstate--rebind-ienumerable-int-ilist-int"></a>
 
 ### `void Rebind(IEnumerable<int> episodes, IList<int> list)`
 
-The pool's lines changed (a pack rescan or a new injection): every episode of the old set is taken out of the game's list, and the new set starts owed and unplaced.
+The pool's lines changed (a pack rescan or a new injection): every episode of the old set is taken out of the game's list, and the new set starts owed and unplaced. The pool keeps no weighted episode (see the three-argument overload).
 
 **Parameters**
 
@@ -655,13 +978,13 @@ A registry holding no lines.
 
 ### `string Fingerprint { get; }`
 
-A stable text over every line's group, pool, episode and languages; equal fingerprints mean an identical registry, so a re-injection with unchanged packs logs nothing new.
+A stable text over every line's group, pool, episode, languages, weight and spread; equal fingerprints mean an identical registry, so a re-injection with unchanged packs logs nothing new.
 
 <a id="packlineregistry--groupids"></a>
 
 ### `IReadOnlyCollection<string> GroupIds { get; }`
 
-Every line's group id: what the save filter holds back.
+Every line's group id - every group injected for a pack line, spread copies (`<id>@<pool>`) included: what the save filter holds back.
 
 <a id="packlineregistry--languages"></a>
 
@@ -842,14 +1165,15 @@ Lists every pack line by pool, whether the game would offer it right now, the li
 
 <a id="packlinereport--weight"></a>
 
-### `static string Weight(PackLinePool pool, int packLines)`
+### `static string Weight(PackLinePool pool, int packLines, int weightedLines = 0)`
 
-How a pool's pack line weighs against a game line, for `lines list` and the README: `game 1-23 + 2 pack: each line once per 25-pick cycle`.
+How a pool's pack line weighs against a game line, for `lines list` and the README: `game 1-23 + 2 pack: each line once per 25-pick cycle`; for a startup-greeting pool, `game 1-17 + 2 pack: picked at launch by weight, ...`.
 
 **Parameters**
 
 - `pool`: The pool. Required.
-- `packLines`: How many pack lines it holds (all languages).
+- `packLines`: How many pack lines it holds (all languages); in a pool with a deck, the unweighted ones (the deck's cards).
+- `weightedLines`: In a pool with a deck, how many weighted lines roll at each pick instead of joining the deck.
 
 **Exceptions**
 
@@ -859,7 +1183,7 @@ How a pool's pack line weighs against a game line, for `lines list` and the READ
 
 ### `static string WhenArmedPlays(PackLinePool pool)`
 
-What has to happen in the game for an armed timer line to play.
+What has to happen in the game for a line under test to play (an armed timer line, a click-style line, a greeting).
 
 **Parameters**
 
@@ -925,7 +1249,26 @@ Decides which language-exclusive scenario groups (a `Languages` member in `data/
 
 **Fail soft.** While active, a malformed exclusive group is refused with one [`PackLineRejection`](#packlinerejection) and left out of the injection - a pack mistake must not reach code that would throw: `ToDictionary(EpisodeNumber)` on a duplicate small talk (`SmallTalkSelector.Setup`), `FirstOrDefault(...).LocalizationID` on a timer group without rows (`NormalWorkStartVoiceSelector` and the other timer selectors), `int.Parse`/`float.Parse` on a script argument (`ScenarioReader`) or a small-talk column (`SmallTalkSelector`).
 
-A set with no exclusive group is returned unchanged (the same instance), so packs that do not use the members load exactly as before.
+**Spreads.** A group whose `Pool` is a spread ([`PackLinePools.TryGetSpread`](#packlinepools--trygetspread): `gamestart.any`, or `*` for a global line) is written once and copied into every pool the spread stands for; its own `Scenario` is ignored (write `"None"`). Each copy is a group `<id>@<pool>` of that pool's scenario, with the same episode number, languages and weight, and its own novel rows `<row>@<pool>` (jump targets follow); the localization rows are shared. Where several target pools share a scenario (the four clock slots, the three worked-time slots), the first slot's copy keeps the written episode and each later slot's copy gets its own: the lowest episode above it (wrapping to 1000 at the top) that no group of the input writes for that scenario and no line or copy screened before it claims, so the game's `(Scenario, EpisodeNumber)` lookup and [`PackLineRegistry.TryGet`](#packlineregistry--tryget) find each slot's own copy. Each copy is screened like a group written for its pool, and if one fails the whole group is refused with one rejection naming that pool. A global line fits each pool's shape: in a timer pool its one spoken row becomes a `PomodoroVoiceText` row that speaks at once (several spoken rows: the timer pools are skipped, with one note); in small talk it gets the lottery columns `SmallTalkSelector` needs, unless it already carries valid ones.
+
+A set with no exclusive group is returned unchanged (the same instance), and so is its novel list while no spread group is accepted, so packs that do not use the members load exactly as before.
+
+<a id="packlinescreen--copyseparator"></a>
+
+### `const string CopySeparator = "@"`
+
+What a spread copy's group id and its rows' ids put between the written id and the pool id.
+
+<a id="packlinescreen--copyid"></a>
+
+### `static string CopyId(string id, string poolId)`
+
+The id of a spread copy: `<id>@<poolId>`, for its group and for each of its novel rows.
+
+**Parameters**
+
+- `id`: The id the pack wrote (group or novel row).
+- `poolId`: The pool the copy joins.
 
 <a id="packlinescreen--screen"></a>
 
@@ -949,11 +1292,11 @@ Screens the merged rows.
 
 sealed class · `CwyLs.ModLoader.Core.PackLines.PackLineScreenResult` · assembly `CwyLs.ModLoader.Core`
 
-What [`PackLineScreen.Screen`](#packlinescreen--screen) decided: the rows to inject, the lines that may join the game's pools, and the groups it refused.
+What [`PackLineScreen.Screen`](#packlinescreen--screen) decided: the rows to inject, the lines that may join the game's pools, the groups it refused and the warnings that are not refusals.
 
 <a id="packlinescreenresult--ctor"></a>
 
-### `PackLineScreenResult(MasterDataSet set, IReadOnlyList<PackLine> lines, IReadOnlyList<PackLineRejection> rejected, int heldBack, bool admitted)`
+### `PackLineScreenResult(MasterDataSet set, IReadOnlyList<PackLine> lines, IReadOnlyList<PackLineRejection> rejected, int heldBack, bool admitted, IReadOnlyList<string> notes = null)`
 
 Creates a result.
 
@@ -964,6 +1307,7 @@ Creates a result.
 - `rejected`: Refused groups, in merged order; null means none.
 - `heldBack`: Language-exclusive groups left out because pack lines are not active.
 - `admitted`: Whether pack lines were active when this was decided.
+- `notes`: Warnings that are not refusals, in merged order; null means none.
 
 **Exceptions**
 
@@ -991,7 +1335,13 @@ Language-exclusive groups left out of the injection because pack lines are not a
 
 ### `IReadOnlyList<PackLine> Lines { get; }`
 
-The language-exclusive lines that may join the game's pools; empty unless [`PackLineScreenResult.Admitted`](#packlinescreenresult--admitted).
+The language-exclusive lines that may join the game's pools, one per copy for a spread group; empty unless [`PackLineScreenResult.Admitted`](#packlinescreenresult--admitted).
+
+<a id="packlinescreenresult--notes"></a>
+
+### `IReadOnlyList<string> Notes { get; }`
+
+Warnings about accepted lines that are not refusals (a global line at `Weight` 1, a global line that skips the timer pools, ...); each is one WARN line. Never null.
 
 <a id="packlinescreenresult--rejected"></a>
 
@@ -1003,7 +1353,7 @@ Language-exclusive groups refused as malformed; each is one WARN line.
 
 ### `MasterDataSet Set { get; }`
 
-The rows to inject: the merged set itself when no group declares languages, otherwise the merged set without the language-exclusive groups that were refused or held back.
+The rows to inject: the merged set itself when no group declares languages, otherwise the merged set without the language-exclusive groups that were refused or held back, and with each accepted spread group (`"Pool": "gamestart.any"` or `"*"`) replaced by its copies: their groups take the source group's place, their novel rows go at the end, and the source's own novel rows are left out. The localization rows are always the merged ones.
 
 <a id="packlinescreenresult--tostring"></a>
 
@@ -1227,3 +1577,42 @@ Which timer moment a [`PackLineFamily.TimerLine`](#packlinefamily--timerline) po
 | <a id="packlinetimerphase--workstart"></a>`WorkStart` | 1 | A work session starts (`PomodoroVoiceSelector.TakeNextWorkStartVoice`). |
 | <a id="packlinetimerphase--breakstart"></a>`BreakStart` | 2 | A break starts (`PomodoroVoiceSelector.TakeNextBreakStartVoice`). |
 | <a id="packlinetimerphase--finish"></a>`Finish` | 3 | The timer completes (`PomodoroVoiceSelector.TakeNextFinishVoice`). |
+
+---
+
+<a id="packlineweights"></a>
+
+## `PackLineWeights`
+
+static class · `CwyLs.ModLoader.Core.PackLines.PackLineWeights` · assembly `CwyLs.ModLoader.Core`
+
+The weighted pick (Martin, 2026-10-31): at each pick of a pool, the weighted lines offered there - written for the pool, or copies of a `gamestart.any` / global line - share one roll. Pure logic; the game side supplies the candidates, the last line played and two random numbers.
+
+1. Lines with weight 0 never play.
+2. No repeat: with two or more candidates, the line that played last in this pool (by [`PackLine.SourceGroupId`](#packline--sourcegroupid)) sits this pick out - unless its weight is 1.
+3. The chance that a pack line takes the pick is the sum of the weights, capped at 1; the game's own pick runs otherwise.
+4. Which line: by weight (two lines at weight 1 split 50/50).
+
+<a id="packlineweights--equalshare"></a>
+
+### `static double EqualShare(int gameLines, int unweighted)`
+
+The weight an unweighted line rolls at in a pool without a deck (the startup greetings): an equal share with the game's lines, as if it were one more card - `1 / (gameLines + unweighted)`.
+
+**Parameters**
+
+- `gameLines`: How many lines the game itself draws from for this pick ([`PackLinePool.VanillaCount`](#packlinepool--vanillacount)).
+- `unweighted`: How many unweighted pack lines are offered for this pick.
+
+<a id="packlineweights--roll"></a>
+
+### `static PackLine Roll(IReadOnlyList<PackLineCandidate> candidates, string lastSourceGroupId, double roll, double pick)`
+
+Picks the line that takes this pick, or null for the game's own pick.
+
+**Parameters**
+
+- `candidates`: The lines offered for this pick (language and clips already checked).
+- `lastSourceGroupId`: The [`PackLine.SourceGroupId`](#packline--sourcegroupid) of the pack line this pool played last; null for none.
+- `roll`: A uniform number in \[0, 1): does a pack line take the pick.
+- `pick`: A uniform number in \[0, 1): which one.

@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "author": "CWY:LS",
   "description": "Script demo: a short scene run by cwy.flag, cwy.wait and cwy.defer, which brings Satone back with one more line after the scene ends. English and Japanese.",
-  "gameVersion": "1.17.3",
+  "gameVersion": "1.18.0",
   "loaderVersion": "0.9.0",
   "dependsOn": []
 }

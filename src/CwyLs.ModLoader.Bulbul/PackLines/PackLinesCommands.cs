@@ -10,7 +10,8 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
     /// <summary>
     /// The console's <c>lines</c> command (pack lines): <c>lines list</c> shows every pack line, its
     /// pool and whether the game would offer it now; <c>lines test &lt;group id&gt;</c> plays one through
-    /// the game's own pipeline for the final in-game check; <c>lines test off</c> disarms.
+    /// the game's own pipeline for the final in-game check (a startup greeting only plays at launch,
+    /// so for one it says how to hear it); <c>lines test off</c> disarms.
     /// </summary>
     internal static class PackLinesCommands
     {
@@ -72,6 +73,14 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             if (!PackLinesFeature.IsActive)
             {
                 return "pack lines are off: " + PackLinesFeature.InactiveReason;
+            }
+
+            // A startup greeting (its group id, or the id a gamestart.any line was written under)
+            // only plays at launch: say so rather than play it out of place.
+            var startup = PackLinesGameStart.AnswerTest(id, MainThread.IsMainThread);
+            if (startup != null)
+            {
+                return startup;
             }
 
             if (!MainThread.IsMainThread)

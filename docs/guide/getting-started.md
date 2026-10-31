@@ -178,7 +178,7 @@ types): when the room is ready, Satone welcomes you back once per session, and t
   "version": "0.1.0",
   "author": "CWY:LS",
   "description": "Sample code mod: Satone welcomes you back once per session, and the console command hello [name].",
-  "gameVersion": "1.17.3",
+  "gameVersion": "1.18.0",
   "loaderVersion": "0.9.0",
   "entryDll": "CwySampleHello.dll",
   "dependsOn": []

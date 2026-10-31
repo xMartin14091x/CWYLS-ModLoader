@@ -29,6 +29,8 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
         private static readonly HashSet<string> Reported = new HashSet<string>(StringComparer.Ordinal);
 
+        private static readonly HashSet<string> Warned = new HashSet<string>(StringComparer.Ordinal);
+
         private static readonly HashSet<string> SessionGroupIds = new HashSet<string>(StringComparer.Ordinal);
 
         // Our own generator: the game's (UnityEngine.Random) stream is never drawn from, so its
@@ -88,7 +90,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
                 foreach (var binding in root.Lists)
                 {
-                    binding.State.Rebind(Registry.EpisodesOf(binding.Pool.Id), binding.Items);
+                    binding.State.Rebind(DeckEpisodes(binding.Pool.Id), WeightedEpisodes(binding.Pool.Id), binding.Items);
                 }
             }
 
@@ -198,7 +200,10 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
             var removed = PackLineSmallTalkGate.Withdraw(cache, group => group != null && SessionGroupIds.Contains(group.ID));
 
+            // Unweighted lines go aside for the lottery gate; weighted ones never join the lottery's
+            // cache and are rolled before it (RollSmallTalk).
             var aside = new List<KeyValuePair<float, Master.ScenarioGroupData>>();
+            var weighted = new List<KeyValuePair<PackLine, Master.ScenarioGroupData>>();
             var groups = global::CwyLs.ModLoader.Bulbul.MasterData.MasterDataFeature.ResolveLoader()?.ScenarioGroupMasterList;
             foreach (var line in Registry.LinesOf("smalltalk"))
             {
@@ -214,16 +219,197 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                     }
                 }
 
-                if (group != null)
+                if (group is null)
+                {
+                    continue;
+                }
+
+                if (!line.IsWeighted)
                 {
                     aside.Add(new KeyValuePair<float, Master.ScenarioGroupData>(line.Episode, group));
+                    continue;
+                }
+
+                weighted.Add(new KeyValuePair<PackLine, Master.ScenarioGroupData>(line, group));
+                if (!IsRollableContent(group.ContentType) && Warned.Add("content:" + line.GroupId))
+                {
+                    CwyLsModLoader.Log.LogWarning(
+                        PackLineRejection.LogPrefix + " small talk '" + line.GroupId + "' has a Weight and ContentType '" + group.ContentType
+                        + "', whose special rule the weighted roll does not know; it never plays. Remove its Weight to let the "
+                        + "game's lottery (and that rule) decide, or use ContentType \"None\"");
                 }
             }
 
-            _smallTalk = new SmallTalkBinding(selector, cache, aside);
+            _smallTalk = new SmallTalkBinding(selector, cache, aside, weighted);
             ConsoleEvents.File(
-                "packlines", "bound", ("selector", "SmallTalkSelector"), ("withdrawn", removed.Count), ("aside", aside.Count), ("why", why));
+                "packlines",
+                "bound",
+                ("selector", "SmallTalkSelector"),
+                ("withdrawn", removed.Count),
+                ("aside", aside.Count),
+                ("weighted", weighted.Count),
+                ("why", why));
         }
+
+        // ---- weighted small talk ----------------------------------------------------------------
+
+        private static bool _smallTalkWon;
+
+        /// <summary>
+        /// Before the small-talk lottery (after <see cref="GateSmallTalk"/>): once the game's own two
+        /// gates pass (<c>GamePlayingDefect.IsUsing()</c> false, the interval since the last small talk
+        /// elapsed - <c>IsElapsedInterval</c>), the weighted small talks the lottery itself would admit
+        /// for <paramref name="playTiming"/> (play timing, unlock, not the episode played last, a
+        /// content type without a special rule), offered in the language shown with clips loaded, roll
+        /// once. A win does what the lottery does for its pick - <c>_currentEpisodeNumber</c> - and is
+        /// returned for the prefix to return in place of the lottery's own pick.
+        /// </summary>
+        /// <param name="selector">The <c>SmallTalkSelector</c>.</param>
+        /// <param name="playTiming">The lottery's <c>PlayTiming</c> argument, as its number.</param>
+        /// <returns>The winner's episode, or null to let the game's lottery run (it never sees a weighted line).</returns>
+        internal static float? RollSmallTalk(object selector, int playTiming)
+        {
+            _smallTalkWon = false;
+            var binding = _smallTalk;
+            if (binding is null || binding.Weighted.Count == 0 || !ReferenceEquals(binding.Selector, selector))
+            {
+                return null;
+            }
+
+            if (!SmallTalkGatesPass(selector))
+            {
+                return null;
+            }
+
+            var code = LanguageFeature.CurrentCode;
+            var before = Field(selector.GetType(), PackLinesPatchTargets.SmallTalkBeforeEpisodeField)?.GetValue(selector) is float value ? value : -1f;
+            var played = PlayedIds();
+            List<PackLineCandidate>? candidates = null;
+            foreach (var entry in binding.Weighted)
+            {
+                var line = entry.Key;
+                var group = entry.Value;
+                if (line.Weight > 0d
+                    && line.IsOfferedIn(code)
+                    && group.EpisodeNumber != before
+                    && (group.UnlockStoryEpisode == "None" || (played != null && played.Contains(group.UnlockStoryEpisode)))
+                    && TimingAdmits(playTiming, group.PlayTiming)
+                    && IsRollableContent(group.ContentType)
+                    && PackLinesVoiceCheck.FirstSilent(line) is null)
+                {
+                    (candidates ??= new List<PackLineCandidate>()).Add(new PackLineCandidate(line, line.Weight!.Value));
+                }
+            }
+
+            if (candidates is null)
+            {
+                return null;
+            }
+
+            DeckLast.TryGetValue(PackLineLastPlayed.KeyOf(SmallTalkPool), out var last);
+            var winner = PackLineWeights.Roll(candidates, last, WeightRng.NextDouble(), WeightRng.NextDouble());
+            if (winner is null)
+            {
+                return null;
+            }
+
+            var current = Field(selector.GetType(), PackLinesPatchTargets.SmallTalkCurrentEpisodeField);
+            if (current is null || current.FieldType != typeof(float))
+            {
+                return null;
+            }
+
+            DeckLast[PackLineLastPlayed.KeyOf(SmallTalkPool)] = winner.SourceGroupId;
+            ConsoleEvents.File(
+                "packlines",
+                "weighted",
+                ("pool", SmallTalkPool.Id),
+                ("group", winner.GroupId),
+                ("episode", winner.Episode),
+                ("weight", winner.Weight),
+                ("timing", playTiming));
+
+            // Last, so nothing can fail after the game's own state says "this one is next".
+            current.SetValue(selector, (float)winner.Episode);
+            _smallTalkWon = true;
+            return winner.Episode;
+        }
+
+        /// <summary>
+        /// After the small-talk lottery: when the game's own lottery picked (not a weighted win, and not
+        /// -1), the last weighted small talk may come up again.
+        /// </summary>
+        /// <param name="result">What the lottery returned.</param>
+        internal static void AfterSmallTalkLottery(float result)
+        {
+            if (_smallTalkWon)
+            {
+                _smallTalkWon = false;
+                return;
+            }
+
+            if (result != -1f)
+            {
+                DeckLast.Remove(PackLineLastPlayed.KeyOf(SmallTalkPool));
+            }
+        }
+
+        /// <summary>The lottery's first two gates, read the way <c>LotterySmallTalk</c> reads them.</summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool SmallTalkGatesPass(object selector)
+        {
+            var type = selector.GetType();
+            if (!(Field(type, PackLinesPatchTargets.SmallTalkDirectionField)?.GetValue(selector) is global::DirectionService direction)
+                || !(Field(type, PackLinesPatchTargets.SmallTalkLoaderField)?.GetValue(selector) is Game.MasterDataLoader loader)
+                || !(Field(type, PackLinesPatchTargets.SmallTalkBeforePlayField)?.GetValue(selector) is DateTime beforePlay))
+            {
+                // Cannot tell: leave the pick to the game's lottery.
+                return false;
+            }
+
+            var defect = direction.GamePlayingDefect;
+            if (defect != null && defect.IsUsing())
+            {
+                return false;
+            }
+
+            var interval = loader.SmallTalkData;
+            return interval != null && (DateTime.Now - beforePlay).TotalMinutes >= interval.IntervalMinutes;
+        }
+
+        /// <summary>
+        /// The lottery's play-timing rule (<c>LotterySmallTalk.CreateCanPlayEpisodeList</c>): a break
+        /// lottery admits <c>Break</c> and <c>GameStartAndBreak</c>; a game-start one <c>GameStart</c> and
+        /// <c>GameStartAndBreak</c>; <c>None</c> admits any.
+        /// </summary>
+        private static bool TimingAdmits(int lottery, string? groupTiming)
+        {
+            if (!Enum.TryParse<global::SmallTalkSelector.PlayTiming>(groupTiming, false, out var target))
+            {
+                return false;
+            }
+
+            switch ((global::SmallTalkSelector.PlayTiming)lottery)
+            {
+                case global::SmallTalkSelector.PlayTiming.Break:
+                    return target == global::SmallTalkSelector.PlayTiming.Break
+                           || target == global::SmallTalkSelector.PlayTiming.GameStartAndBreak;
+                case global::SmallTalkSelector.PlayTiming.GameStart:
+                case global::SmallTalkSelector.PlayTiming.GameStartAndBreak:
+                    return target == global::SmallTalkSelector.PlayTiming.GameStart
+                           || target == global::SmallTalkSelector.PlayTiming.GameStartAndBreak;
+                default:
+                    return true;
+            }
+        }
+
+        /// <summary>
+        /// A content type the lottery applies no special rule to (<c>None</c>, <c>PurchaseEnvironment</c>);
+        /// the cat-headphone, cicada and passage-of-time rules read game state the roll does not.
+        /// </summary>
+        private static bool IsRollableContent(string? contentType) =>
+            Enum.TryParse<global::SmallTalkSelector.ContentType>(contentType, false, out var content)
+            && (content == global::SmallTalkSelector.ContentType.None || content == global::SmallTalkSelector.ContentType.PurchaseEnvironment);
 
         private static Master.ScenarioGroupData? Find(IReadOnlyList<Master.ScenarioGroupData>? groups, string id)
         {
@@ -289,6 +475,10 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
 
             TrackCycle(binding);
+
+            // Refilled in the middle of a pick (GetNext on an empty list): a weighted winner that
+            // waited for the refill goes in front now, so this read returns it.
+            binding.State.OnCycleDuringPick(binding.Items);
         }
 
         /// <summary>
@@ -305,7 +495,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
 
             var binding = TimerModeIsCountup() ? pair.Value : pair.Key;
-            if (binding is null || binding.State.Episodes.Count == 0)
+            if (binding is null || !binding.State.HasLines)
             {
                 return null;
             }
@@ -708,6 +898,11 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
         /// <summary>The live state of one pool, for <c>lines list</c>; null when nothing is bound for it.</summary>
         internal static string? Describe(PackLinePool pool)
         {
+            if (pool.Family == PackLineFamily.GameStart)
+            {
+                return PackLinesGameStart.Describe(pool);
+            }
+
             if (pool.Family == PackLineFamily.SmallTalk)
             {
                 var smallTalk = _smallTalk;
@@ -725,7 +920,8 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                     }
                 }
 
-                return inCache + " of " + smallTalk.Withdrawn.Count + " in the lottery";
+                return inCache + " of " + smallTalk.Withdrawn.Count + " unweighted in the lottery"
+                       + DescribeWeighted(pool, smallTalk.Weighted.Count, "rolled before each lottery");
             }
 
             foreach (var root in new[] { _reaction, _timers })
@@ -740,12 +936,94 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                     if (string.Equals(binding.Pool.Id, pool.Id, StringComparison.Ordinal))
                     {
                         return binding.State.PlacedCount + " in the game's list (" + binding.Items.Count + " left this cycle), "
-                               + binding.State.OwedCount + " not yet played this cycle";
+                               + binding.State.OwedCount + " not yet played this cycle"
+                               + DescribeWeighted(pool, binding.State.WeightedEpisodes.Count, "rolled at each pick of this pool, never in the deck");
                     }
                 }
             }
 
             return "not set up yet (room not loaded)";
+        }
+
+        /// <summary><c>; weighted 2 (rolled at each pick..., last: x)</c>, or empty when the pool has none.</summary>
+        private static string DescribeWeighted(PackLinePool pool, int count, string how)
+        {
+            if (count == 0)
+            {
+                return string.Empty;
+            }
+
+            DeckLast.TryGetValue(PackLineLastPlayed.KeyOf(pool), out var last);
+            return "; weighted " + count + " (" + how + "; played last: " + (string.IsNullOrEmpty(last) ? "none" : last) + ")";
+        }
+
+        /// <summary>
+        /// For the smoke check: bound lists that hold a weighted episode outside a pick (there should
+        /// be none - a weighted line is only ever in front for the one pick it won).
+        /// </summary>
+        internal static List<string> StrayWeighted()
+        {
+            var stray = new List<string>();
+            foreach (var root in new[] { _reaction, _timers })
+            {
+                if (root is null)
+                {
+                    continue;
+                }
+
+                foreach (var binding in root.Lists)
+                {
+                    if (binding.State.InPick || binding.State.WeightedEpisodes.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    foreach (var episode in binding.Items)
+                    {
+                        if (binding.State.IsWeighted(episode))
+                        {
+                            stray.Add(binding.Pool.Id + " #" + episode);
+                        }
+                    }
+                }
+            }
+
+            var smallTalk = _smallTalk;
+            if (smallTalk != null)
+            {
+                foreach (var entry in smallTalk.Weighted)
+                {
+                    if (smallTalk.Cache.TryGetValue(entry.Key.Episode, out var value) && ReferenceEquals(value, entry.Value))
+                    {
+                        stray.Add("smalltalk #" + entry.Key.Episode);
+                    }
+                }
+            }
+
+            return stray;
+        }
+
+        /// <summary>For the smoke detail: how many weighted lines the bound lists and the lottery roll.</summary>
+        internal static int WeightedBoundCount
+        {
+            get
+            {
+                var count = 0;
+                foreach (var root in new[] { _reaction, _timers })
+                {
+                    if (root is null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var binding in root.Lists)
+                    {
+                        count += binding.State.WeightedEpisodes.Count;
+                    }
+                }
+
+                return count + (_smallTalk?.Weighted.Count ?? 0);
+            }
         }
 
         /// <summary>
@@ -852,7 +1130,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             {
                 if (binding != null)
                 {
-                    binding.State.Rebind(binding.State.Episodes, binding.Items);
+                    binding.State.Rebind(binding.State.Episodes, binding.State.WeightedEpisodes, binding.Items);
                 }
             }
         }
@@ -905,9 +1183,10 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             var code = LanguageFeature.CurrentCode;
             var placed = 0;
             var withdrawn = 0;
+            var fronted = 0;
             foreach (var binding in root.Lists)
             {
-                if (binding.State.Episodes.Count == 0)
+                if (!binding.State.HasLines)
                 {
                     continue;
                 }
@@ -916,12 +1195,152 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 placed += result.Placed;
                 withdrawn += result.Withdrawn;
                 TrackCycle(binding);
+
+                // Weighted lines: one roll per list, per pick. A pool without one is left exactly as
+                // the deck gate left it - no roll, no draw, nothing in front.
+                if (binding.State.WeightedEpisodes.Count > 0)
+                {
+                    var winner = RollWeighted(binding.Pool, binding.State.WeightedEpisodes, code);
+                    binding.State.BeginPick(binding.Items, winner?.Episode);
+                    if (winner != null)
+                    {
+                        fronted++;
+                    }
+                }
             }
 
             if (placed > 0 || withdrawn > 0)
             {
-                ConsoleEvents.File("packlines", "gate", ("site", site), ("lang", code), ("in", placed), ("out", withdrawn));
+                ConsoleEvents.File("packlines", "gate", ("site", site), ("lang", code), ("in", placed), ("out", withdrawn), ("weighted", fronted));
             }
+        }
+
+        // ---- weighted lines in the deck pools ---------------------------------------------------
+
+        // Their own generator, so the deck gate's insert positions are the same draws they were
+        // before weighted lines existed; neither is the game's UnityEngine.Random.
+        private static readonly Random WeightRng = new Random();
+
+        // "Never twice in a row", per pool: the weighted line the game took last, cleared as soon as
+        // the game takes anything else from that pool. In memory (a deck pool picks often).
+        private static readonly Dictionary<string, string> DeckLast = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// The weighted line that takes this pick of one list, or null: the pool's weighted lines
+        /// offered in <paramref name="code"/> with their clips loaded, rolled once
+        /// (<see cref="PackLineWeights.Roll"/>). Draws nothing when none is offered.
+        /// </summary>
+        private static PackLine? RollWeighted(PackLinePool pool, IReadOnlyList<int> weighted, string code)
+        {
+            List<PackLineCandidate>? candidates = null;
+            foreach (var episode in weighted)
+            {
+                if (Registry.TryGet(pool.Id, episode, out var line)
+                    && line != null
+                    && line.Weight > 0d
+                    && line.IsOfferedIn(code)
+                    && PackLinesVoiceCheck.FirstSilent(line) is null)
+                {
+                    (candidates ??= new List<PackLineCandidate>()).Add(new PackLineCandidate(line, line.Weight!.Value));
+                }
+            }
+
+            if (candidates is null)
+            {
+                return null;
+            }
+
+            DeckLast.TryGetValue(PackLineLastPlayed.KeyOf(pool), out var last);
+            return PackLineWeights.Roll(candidates, last, WeightRng.NextDouble(), WeightRng.NextDouble());
+        }
+
+        /// <summary>
+        /// After a click, self-talk or answer-choice pick (finalizer of <c>OneWord</c> /
+        /// <c>AnswerChoiceStory</c>): takes back the weighted lines the game did not read and records
+        /// what each read pool played.
+        /// </summary>
+        internal static void EndClickPick(object facility)
+        {
+            var selector = Read<object>(facility, PackLinesPatchTargets.ClickHeroineType, PackLinesPatchTargets.ClickSelectorField);
+            EndPick(selector != null && Roots.TryGetValue(selector, out var found) ? found : _reaction);
+        }
+
+        /// <summary>After a timer pick (finalizer of <c>TakeNext*Voice</c>): as <see cref="EndClickPick"/>.</summary>
+        internal static void EndTimerPick(object? selector)
+        {
+            EndPick(selector != null && Roots.TryGetValue(selector, out var found) ? found : _timers);
+        }
+
+        private static void EndPick(Root? root)
+        {
+            if (root is null)
+            {
+                return;
+            }
+
+            foreach (var binding in root.Lists)
+            {
+                if (!binding.State.InPick)
+                {
+                    continue;
+                }
+
+                var result = binding.State.EndPick(binding.Items);
+                if (!result.Read)
+                {
+                    // Not this pool's pick: its "last" stays as it was.
+                    continue;
+                }
+
+                var key = PackLineLastPlayed.KeyOf(binding.Pool);
+                if (result.Weighted && Registry.TryGet(binding.Pool.Id, result.Episode, out var line) && line != null)
+                {
+                    DeckLast[key] = line.SourceGroupId;
+                    ConsoleEvents.File(
+                        "packlines",
+                        "weighted",
+                        ("pool", binding.Pool.Id),
+                        ("group", line.GroupId),
+                        ("episode", line.Episode),
+                        ("weight", line.Weight));
+                }
+                else
+                {
+                    // The game's own line (or a dealt pack line) played in between: the last
+                    // weighted line may come up again.
+                    DeckLast.Remove(key);
+                }
+            }
+        }
+
+        /// <summary>The pool's unweighted pack episodes: the ones dealt into the game's deck.</summary>
+        private static List<int> DeckEpisodes(string poolId)
+        {
+            var episodes = new List<int>();
+            foreach (var line in Registry.LinesOf(poolId))
+            {
+                if (!line.IsWeighted)
+                {
+                    episodes.Add(line.Episode);
+                }
+            }
+
+            return episodes;
+        }
+
+        /// <summary>The pool's weighted pack episodes: never dealt, rolled at each pick.</summary>
+        private static List<int> WeightedEpisodes(string poolId)
+        {
+            var episodes = new List<int>();
+            foreach (var line in Registry.LinesOf(poolId))
+            {
+                if (line.IsWeighted)
+                {
+                    episodes.Add(line.Episode);
+                }
+            }
+
+            return episodes;
         }
 
         /// <summary>
@@ -950,7 +1369,8 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 return null;
             }
 
-            var binding = new ListBinding(list, items, pool, new PackLinePoolState(Registry.EpisodesOf(pool.Id)), owner);
+            var binding = new ListBinding(
+                list, items, pool, new PackLinePoolState(DeckEpisodes(pool.Id), WeightedEpisodes(pool.Id)), owner);
             Lists.Remove(list);
             Lists.Add(list, binding);
             root.Lists.Add(binding);
@@ -1056,22 +1476,30 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 new Dictionary<object, KeyValuePair<ListBinding?, ListBinding?>>();
         }
 
-        /// <summary>The small-talk lottery and the entries we keep aside.</summary>
+        /// <summary>The small-talk lottery, the unweighted entries we keep aside, and the weighted ones.</summary>
         private sealed class SmallTalkBinding
         {
             internal SmallTalkBinding(
-                object selector, Dictionary<float, Master.ScenarioGroupData> cache, List<KeyValuePair<float, Master.ScenarioGroupData>> withdrawn)
+                object selector,
+                Dictionary<float, Master.ScenarioGroupData> cache,
+                List<KeyValuePair<float, Master.ScenarioGroupData>> withdrawn,
+                List<KeyValuePair<PackLine, Master.ScenarioGroupData>> weighted)
             {
                 Selector = selector;
                 Cache = cache;
                 Withdrawn = withdrawn;
+                Weighted = weighted;
             }
 
             internal object Selector { get; }
 
             internal Dictionary<float, Master.ScenarioGroupData> Cache { get; }
 
+            /// <summary>Unweighted pack small talks: in the cache exactly while their language is shown.</summary>
             internal List<KeyValuePair<float, Master.ScenarioGroupData>> Withdrawn { get; }
+
+            /// <summary>Weighted pack small talks: never in the cache, rolled before the lottery.</summary>
+            internal List<KeyValuePair<PackLine, Master.ScenarioGroupData>> Weighted { get; }
         }
     }
 

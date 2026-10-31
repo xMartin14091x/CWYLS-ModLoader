@@ -15,13 +15,14 @@ namespace CwyLs.ModLoader.Tests
         internal const int Text = 0;
         internal const int WaitInput = 2;
         internal const int Selection = 3;
+        internal const int Jump = 4;
         internal const int EndScenario = 12;
         internal const int VoiceText = 20;
         internal const int PomodoroVoiceText = 22;
 
         internal static ScenarioGroupRow Group(
-            string id, int scenario, float episode, string[]? languages = null, string pool = "") =>
-            new ScenarioGroupRow { Id = id, Scenario = scenario, EpisodeNumber = episode, Languages = languages, Pool = pool };
+            string id, int scenario, float episode, string[]? languages = null, string pool = "", double? weight = null) =>
+            new ScenarioGroupRow { Id = id, Scenario = scenario, EpisodeNumber = episode, Languages = languages, Pool = pool, Weight = weight };
 
         internal static NovelRow Spoken(string id, string group, int command = Text, string localization = "", int bodyMotion = -1) =>
             new NovelRow

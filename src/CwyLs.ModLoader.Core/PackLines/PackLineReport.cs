@@ -59,8 +59,17 @@ namespace CwyLs.ModLoader.Core.PackLines
             foreach (var pool in lines.Pools)
             {
                 var poolLines = lines.LinesOf(pool.Id);
+                var weighted = 0;
+                foreach (var line in poolLines)
+                {
+                    if (line.IsWeighted && pool.HasDeck)
+                    {
+                        weighted++;
+                    }
+                }
+
                 sb.Append('\n').Append(pool.Id).Append("  ").Append(pool.ScenarioName).Append("  ")
-                  .Append(Weight(pool, poolLines.Count)).Append("  [").Append(pool.Selector).Append(']');
+                  .Append(Weight(pool, poolLines.Count - weighted, weighted)).Append("  [").Append(pool.Selector).Append(']');
 
                 var state = live?.Invoke(pool);
                 if (!string.IsNullOrEmpty(state))
@@ -74,6 +83,16 @@ namespace CwyLs.ModLoader.Core.PackLines
                       .Append("  ").Append(line.GroupId)
                       .Append("  ").Append(string.Join("/", line.Languages))
                       .Append("  ").Append(line.IsOfferedIn(code) ? "offered" : "not offered");
+
+                    if (line.IsWeighted)
+                    {
+                        sb.Append("  weight ").Append(line.Weight!.Value.ToString("0.###", CultureInfo.InvariantCulture));
+                    }
+
+                    if (line.IsCopy)
+                    {
+                        sb.Append("  copy of ").Append(line.SourceGroupId).Append(" (\"Pool\": \"").Append(line.Spread).Append("\")");
+                    }
                 }
             }
 
@@ -96,32 +115,46 @@ namespace CwyLs.ModLoader.Core.PackLines
 
         /// <summary>
         /// How a pool's pack line weighs against a game line, for <c>lines list</c> and the README:
-        /// <c>game 1-23 + 2 pack: each line once per 25-pick cycle</c>.
+        /// <c>game 1-23 + 2 pack: each line once per 25-pick cycle</c>; for a startup-greeting pool,
+        /// <c>game 1-17 + 2 pack: picked at launch by weight, ...</c>.
         /// </summary>
         /// <param name="pool">The pool. Required.</param>
-        /// <param name="packLines">How many pack lines it holds (all languages).</param>
+        /// <param name="packLines">How many pack lines it holds (all languages); in a pool with a deck, the unweighted ones (the deck's cards).</param>
+        /// <param name="weightedLines">In a pool with a deck, how many weighted lines roll at each pick instead of joining the deck.</param>
         /// <exception cref="ArgumentNullException"><paramref name="pool"/> is null.</exception>
-        public static string Weight(PackLinePool pool, int packLines)
+        public static string Weight(PackLinePool pool, int packLines, int weightedLines = 0)
         {
             if (pool is null)
             {
                 throw new ArgumentNullException(nameof(pool));
             }
 
+            if (!pool.HasDeck)
+            {
+                return "game " + pool.VanillaFirst.ToString(CultureInfo.InvariantCulture) + "-"
+                       + pool.VanillaLast.ToString(CultureInfo.InvariantCulture) + " + "
+                       + packLines.ToString(CultureInfo.InvariantCulture)
+                       + " pack: picked at launch by weight (no Weight = an equal share with the game's lines); the game's deck is never widened";
+            }
+
+            var rolled = weightedLines > 0
+                ? "; " + weightedLines.ToString(CultureInfo.InvariantCulture) + " weighted: roll at each pick, outside the deck"
+                : string.Empty;
+
             if (pool.IsDataDriven)
             {
                 return "data-driven + " + packLines.ToString(CultureInfo.InvariantCulture)
-                       + " pack: same lottery rules as the game's small talks";
+                       + " pack: same lottery rules as the game's small talks" + rolled;
             }
 
             var total = pool.VanillaCount + packLines;
             return "game " + pool.VanillaFirst.ToString(CultureInfo.InvariantCulture) + "-"
                    + pool.VanillaLast.ToString(CultureInfo.InvariantCulture) + " + "
                    + packLines.ToString(CultureInfo.InvariantCulture) + " pack: each line once per "
-                   + total.ToString(CultureInfo.InvariantCulture) + "-pick cycle";
+                   + total.ToString(CultureInfo.InvariantCulture) + "-pick cycle" + rolled;
         }
 
-        /// <summary>What has to happen in the game for an armed timer line to play.</summary>
+        /// <summary>What has to happen in the game for a line under test to play (an armed timer line, a click-style line, a greeting).</summary>
         /// <param name="pool">The line's pool. Required.</param>
         /// <exception cref="ArgumentNullException"><paramref name="pool"/> is null.</exception>
         public static string WhenArmedPlays(PackLinePool pool)
@@ -129,6 +162,11 @@ namespace CwyLs.ModLoader.Core.PackLines
             if (pool is null)
             {
                 throw new ArgumentNullException(nameof(pool));
+            }
+
+            if (pool.Family == PackLineFamily.GameStart)
+            {
+                return "plays only at launch, in place of the game's greeting: restart the game (Weight 1 makes it certain)";
             }
 
             string moment;

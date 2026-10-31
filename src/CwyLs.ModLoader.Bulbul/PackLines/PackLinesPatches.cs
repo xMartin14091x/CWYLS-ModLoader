@@ -20,13 +20,15 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
     ///   <listheader><term>Game member (1.17.3)</term><description>Patch and why</description></listheader>
     ///   <item><term><c>RandomList.InitList</c></term><description>Postfix: a bound list started a new cycle, so its pack episodes are owed again.</description></item>
     ///   <item><term><c>ReactionTalkSelector.Setup</c></term><description>Postfix: bind the click, self-talk, answer-choice, clock and worked-time lists.</description></item>
-    ///   <item><term><c>FacilityClickHeroine.OneWord(ScenarioType)</c>, <c>AnswerChoiceStory()</c></term><description>Prefix: every click/self-talk/answer-choice pick happens inside these two, so the gate runs here, at pick time.</description></item>
+    ///   <item><term><c>FacilityClickHeroine.OneWord(ScenarioType)</c>, <c>AnswerChoiceStory()</c></term><description>Prefix: every click/self-talk/answer-choice pick happens inside these two, so the gate runs here, at pick time, and each list with weighted lines rolls once (a winner goes in front). Finalizer: weighted lines the game did not read leave the lists again.</description></item>
     ///   <item><term><c>ReactionTalkSelector.GetNextBreakHeroineSelfShortTalkSelection</c></term><description>Postfix: a pack clock line counts toward its slot's once-a-day check.</description></item>
     ///   <item><term><c>PomodoroVoiceSelector.Setup</c></term><description>Postfix: bind the timer lists.</description></item>
-    ///   <item><term><c>PomodoroVoiceSelector.TakeNext{WorkStart,BreakStart,Finish}Voice</c></term><description>Prefix: the gate, and an armed <c>lines test</c> timer line.</description></item>
+    ///   <item><term><c>PomodoroVoiceSelector.TakeNext{WorkStart,BreakStart,Finish}Voice</c></term><description>Prefix: the gate (with the weighted roll), and an armed <c>lines test</c> timer line. Finalizer: as for the clicks.</description></item>
     ///   <item><term>the eight two-list <c>*VoiceSelector.TakeNextVoice</c></term><description>Prefix: answer for a pack episode before the game indexes its per-episode table with it (e.g. <c>NormalWorkStartVoiceSelector</c>).</description></item>
-    ///   <item><term><c>SmallTalkSelector.Setup</c>, <c>LotterySmallTalk</c></term><description>Postfix: take pack lines out of the lottery cache; prefix: put them back exactly while their language is shown.</description></item>
+    ///   <item><term><c>SmallTalkSelector.Setup</c>, <c>LotterySmallTalk</c></term><description>Postfix: take pack lines out of the lottery cache; prefix: put the unweighted ones back exactly while their language is shown, then roll the weighted ones (a win replaces the lottery); postfix: "played last" bookkeeping.</description></item>
     ///   <item><term><c>SaveDataManager.SaveScenarioProgressData</c></term><description>Prefix + finalizer: pack-line ids never reach the save file.</description></item>
+    ///   <item><term><c>GameStartTalkSelector.GetGameStartTalk(ScenarioType)</c> (1.18.0)</term><description>Postfix: a startup-greeting pack line may replace the episode the game drew (<see cref="PackLinesGameStart"/>).</description></item>
+    ///   <item><term><c>GameStartTalkSelector.UseGameStartTalk(ScenarioType)</c> (1.18.0)</term><description>Prefix: skipped once after a pack pick, so the save's greeting deck does not lose a game line the player never heard.</description></item>
     /// </list>
     /// </remarks>
     internal static class PackLinesPatches
@@ -55,14 +57,19 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
             Plan(plan, missing, typeof(global::RandomList), PackLinesPatchTargets.InitListMethod, Type.EmptyTypes, postfix: nameof(InitListPostfix));
             Plan(plan, missing, typeof(global::ReactionTalkSelector), "Setup", Type.EmptyTypes, postfix: nameof(ReactionSetupPostfix));
-            Plan(plan, missing, typeof(Game.FacilityClickHeroine), "OneWord", new[] { typeof(Master.ScenarioType) }, prefix: nameof(ClickPickPrefix));
-            Plan(plan, missing, typeof(Game.FacilityClickHeroine), "AnswerChoiceStory", Type.EmptyTypes, prefix: nameof(ClickPickPrefix));
+            Plan(plan, missing, typeof(Game.FacilityClickHeroine), "OneWord", new[] { typeof(Master.ScenarioType) },
+                prefix: nameof(ClickPickPrefix), finalizer: nameof(ClickPickFinalizer));
+            Plan(plan, missing, typeof(Game.FacilityClickHeroine), "AnswerChoiceStory", Type.EmptyTypes,
+                prefix: nameof(ClickPickPrefix), finalizer: nameof(ClickPickFinalizer));
             Plan(plan, missing, typeof(global::ReactionTalkSelector), "GetNextBreakHeroineSelfShortTalkSelection",
                 new[] { typeof(Game.TimeOfDayProvider.TimeOfDayType) }, postfix: nameof(SelfTalkPickPostfix));
             Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "Setup", Type.EmptyTypes, postfix: nameof(TimerSetupPostfix));
-            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextWorkStartVoice", Type.EmptyTypes, prefix: nameof(WorkStartPrefix));
-            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextBreakStartVoice", Type.EmptyTypes, prefix: nameof(BreakStartPrefix));
-            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextFinishVoice", Type.EmptyTypes, prefix: nameof(FinishPrefix));
+            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextWorkStartVoice", Type.EmptyTypes,
+                prefix: nameof(WorkStartPrefix), finalizer: nameof(TimerPickFinalizer));
+            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextBreakStartVoice", Type.EmptyTypes,
+                prefix: nameof(BreakStartPrefix), finalizer: nameof(TimerPickFinalizer));
+            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextFinishVoice", Type.EmptyTypes,
+                prefix: nameof(FinishPrefix), finalizer: nameof(TimerPickFinalizer));
 
             foreach (var timer in PackLinesPatchTargets.TimerSelectors)
             {
@@ -83,9 +90,13 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
             Plan(plan, missing, typeof(global::SmallTalkSelector), "Setup", Type.EmptyTypes, postfix: nameof(SmallTalkSetupPostfix));
             Plan(plan, missing, typeof(global::SmallTalkSelector), "LotterySmallTalk",
-                new[] { typeof(global::SmallTalkSelector.PlayTiming) }, prefix: nameof(LotteryPrefix));
+                new[] { typeof(global::SmallTalkSelector.PlayTiming) }, prefix: nameof(LotteryPrefix), postfix: nameof(LotteryPostfix));
             Plan(plan, missing, typeof(Game.SaveDataManager), "SaveScenarioProgressData", Type.EmptyTypes,
                 prefix: nameof(SaveProgressPrefix), finalizer: nameof(SaveProgressFinalizer));
+            Plan(plan, missing, typeof(global::GameStartTalkSelector), "GetGameStartTalk",
+                new[] { typeof(Master.ScenarioType) }, postfix: nameof(GameStartPickPostfix));
+            Plan(plan, missing, typeof(global::GameStartTalkSelector), "UseGameStartTalk",
+                new[] { typeof(Master.ScenarioType) }, prefix: nameof(GameStartUsePrefix));
 
             if (missing.Count > 0)
             {
@@ -168,6 +179,35 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             catch (Exception ex)
             {
                 PackLinesRuntime.ReportOnce("click pick", ex);
+            }
+        }
+
+        /// <summary>
+        /// Finalizer of <c>FacilityClickHeroine.OneWord(ScenarioType)</c> and <c>AnswerChoiceStory()</c>:
+        /// runs after the pick, thrown or not - weighted lines the game did not read leave its lists.
+        /// </summary>
+        internal static void ClickPickFinalizer(object __instance)
+        {
+            try
+            {
+                PackLinesRuntime.EndClickPick(__instance);
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("click pick end", ex);
+            }
+        }
+
+        /// <summary>Finalizer of <c>PomodoroVoiceSelector.TakeNext{WorkStart,BreakStart,Finish}Voice</c>: as <see cref="ClickPickFinalizer"/>.</summary>
+        internal static void TimerPickFinalizer(object __instance)
+        {
+            try
+            {
+                PackLinesRuntime.EndTimerPick(__instance);
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("timer pick end", ex);
             }
         }
 
@@ -255,8 +295,12 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
         }
 
-        /// <summary>Prefix of <c>SmallTalkSelector.LotterySmallTalk</c>.</summary>
-        internal static void LotteryPrefix(object __instance)
+        /// <summary>
+        /// Prefix of <c>SmallTalkSelector.LotterySmallTalk(PlayTiming)</c>: the unweighted lines join or
+        /// leave the lottery's cache, then the weighted ones roll; a weighted win is the lottery's
+        /// result and the lottery itself does not run.
+        /// </summary>
+        internal static bool LotteryPrefix(object __instance, global::SmallTalkSelector.PlayTiming __0, ref float __result)
         {
             try
             {
@@ -265,6 +309,36 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             catch (Exception ex)
             {
                 PackLinesRuntime.ReportOnce("small-talk lottery", ex);
+            }
+
+            try
+            {
+                // __0 binds the play timing by position, so a renamed parameter in a game update cannot unpatch us.
+                var episode = PackLinesRuntime.RollSmallTalk(__instance, (int)__0);
+                if (episode.HasValue)
+                {
+                    __result = episode.Value;
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("weighted small talk", ex);
+            }
+
+            return true;
+        }
+
+        /// <summary>Postfix of <c>SmallTalkSelector.LotterySmallTalk</c>: what the pick means for "played last".</summary>
+        internal static void LotteryPostfix(float __result)
+        {
+            try
+            {
+                PackLinesRuntime.AfterSmallTalkLottery(__result);
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("small-talk lottery end", ex);
             }
         }
 
@@ -291,6 +365,37 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             catch (Exception ex)
             {
                 PackLinesRuntime.ReportOnce("save filter restore", ex);
+            }
+        }
+
+        /// <summary>Postfix of <c>GameStartTalkSelector.GetGameStartTalk(ScenarioType)</c>: the startup greeting's pick.</summary>
+        internal static void GameStartPickPostfix(Master.ScenarioType scenarioType, ref int __result)
+        {
+            try
+            {
+                __result = PackLinesGameStart.AfterPick((int)scenarioType, __result);
+            }
+            catch (Exception ex)
+            {
+                // __result is only assigned after AfterPick returned, so the game's own pick stands.
+                PackLinesRuntime.ReportOnce("startup greeting", ex);
+            }
+        }
+
+        /// <summary>
+        /// Prefix of <c>GameStartTalkSelector.UseGameStartTalk(ScenarioType)</c>: false (skip the
+        /// game's deck advance and its save) once, right after a pack line took the pick.
+        /// </summary>
+        internal static bool GameStartUsePrefix(Master.ScenarioType scenarioType)
+        {
+            try
+            {
+                return !PackLinesGameStart.TakeUseSkip((int)scenarioType);
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("startup greeting deck", ex);
+                return true;
             }
         }
 

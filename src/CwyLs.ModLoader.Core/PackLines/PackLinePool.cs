@@ -20,6 +20,13 @@ namespace CwyLs.ModLoader.Core.PackLines
 
         /// <summary>A small talk (<c>SmallTalk</c>): data-driven, weighted by the group's own odds.</summary>
         SmallTalk,
+
+        /// <summary>
+        /// The greeting after the startup screen (<c>GameStart_*</c>), picked by
+        /// <c>GameStartTalkSelector.GetGameStartTalk</c> from decks kept in the save, so a pack line is
+        /// never added to the deck: it replaces the pick for one launch.
+        /// </summary>
+        GameStart,
     }
 
     /// <summary>What a pool's groups must contain for the game to play them (checked by <see cref="PackLineScreen"/>).</summary>
@@ -163,9 +170,16 @@ namespace CwyLs.ModLoader.Core.PackLines
         /// <summary>
         /// True when the game plays this pool's lines as a click-style reaction, so a test can play one
         /// through <c>FacilityClickHeroine</c>'s own pending-line slot; false for the timer lines, which
-        /// only the timer's own moments play.
+        /// only the timer's own moments play, and the startup greetings, which only a launch plays.
         /// </summary>
-        public bool IsClickStyle => Family != PackLineFamily.TimerLine;
+        public bool IsClickStyle => Family != PackLineFamily.TimerLine && Family != PackLineFamily.GameStart;
+
+        /// <summary>
+        /// True when the game keeps this pool in a deck the feature widens (<c>RandomList</c> or the
+        /// small-talk cache); false for the startup greetings, whose decks live in the save and are
+        /// never widened: every pack line there is drawn by weight (<see cref="PackLineWeights"/>).
+        /// </summary>
+        public bool HasDeck => Family != PackLineFamily.GameStart;
 
         /// <summary><c>id (ScenarioName, game 1-23)</c>.</summary>
         public override string ToString() =>

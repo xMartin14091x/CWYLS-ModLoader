@@ -13,7 +13,8 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 {
     /// <summary>
     /// Pack lines: new voiced Satone lines from content packs that the game offers only while one of
-    /// their languages is shown - clicks, self-talk, timer lines, the after-pomodoro talk, small talk.
+    /// their languages is shown - clicks, self-talk, timer lines, the after-pomodoro talk, small talk,
+    /// and the greeting after the startup screen.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -30,8 +31,21 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
     /// pool is the game's own, with the game's own odds and random draws.
     /// </para>
     /// <para>
+    /// <b>Weight.</b> A line with a <c>Weight</c> is never dealt into a deck: at each pick of its pool
+    /// it rolls (<see cref="PackLineWeights"/>) and, on a win, goes in front of the list the game reads
+    /// for that one pick. In the two-list pools (work/break clicks and break self-talk: general list
+    /// or time-of-day list, 50/50) each list rolls on its own, so a weight is the chance per pick of
+    /// that pool. A weighted small talk rolls before the lottery, once the lottery's own gates pass.
+    /// </para>
+    /// <para>
+    /// <b>Startup greetings.</b> The <c>gamestart.*</c> pools have no deck we may widen (the game keeps
+    /// them in the save): a pack line there replaces the game's pick for one launch, by weight, and
+    /// its clips are loaded before the greeting is picked (<see cref="PackLinesGameStart"/>).
+    /// </para>
+    /// <para>
     /// <b>Save.</b> Pack-line ids are kept out of the one save list they can reach
-    /// (<see cref="PackLineSaveFilter"/>).
+    /// (<see cref="PackLineSaveFilter"/>), and the save's startup-greeting decks never hold a pack
+    /// episode.
     /// </para>
     /// <para>
     /// <b>Fail soft.</b> A malformed line: one WARN naming the row, the line is left out. A missing
@@ -157,6 +171,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             IsActive = true;
             InactiveReason = string.Empty;
             MasterDataFeature.Injected += OnInjected;
+            PackLinesGameStart.Arm();
 
             // Lets the exclusive groups into the master data; when the game's data is already loaded
             // this re-injects at once and OnInjected runs before this returns.
@@ -189,6 +204,16 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                     }
                 }
 
+                // Warnings about accepted lines (e.g. a global line at Weight 1), once each.
+                foreach (var note in screen.Notes)
+                {
+                    if (!string.IsNullOrWhiteSpace(note) && Warned.Add("note:" + note))
+                    {
+                        CwyLsModLoader.Log.LogWarning(
+                            note.StartsWith(PackLineRejection.LogPrefix, StringComparison.Ordinal) ? note : PackLineRejection.LogPrefix + " " + note);
+                    }
+                }
+
                 var registry = PackLineRegistry.Build(screen.Lines);
                 foreach (var code in registry.Languages)
                 {
@@ -216,6 +241,9 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                     // The click and timer lists keep their cycle bookkeeping.
                     PackLinesRuntime.RefreshSmallTalk(trigger);
                 }
+
+                // The startup greeting is picked before the room is ready: queue its clips now.
+                PackLinesGameStart.Warm("injected");
             }
             catch (Exception ex)
             {
@@ -231,10 +259,20 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 ? (screen.Rejected.Count == 0 ? "ready; no pack declares a language-exclusive line" : "ready; every pack line was refused")
                 : registry + " ready";
 
+            var weighted = 0;
+            foreach (var line in registry.Lines)
+            {
+                if (line.IsWeighted)
+                {
+                    weighted++;
+                }
+            }
+
             ConsoleEvents.Setup(
                 TraceSys,
                 summary,
                 ("pools", registry.Count == 0 ? "-" : registry.DescribePools()),
+                ("weighted", weighted),
                 ("languages", registry.Languages.Count == 0 ? "-" : string.Join("/", registry.Languages)),
                 ("rejected", screen.Rejected.Count),
                 ("patches", PackLinesPatches.Count),
@@ -260,8 +298,9 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 true,
                 "Offer the new Satone lines content packs add for one language (a \"Languages\" member on a "
                 + "scenario group) while the game shows that language: clicks, self-talk, timer lines, the "
-                + "after-pomodoro talk and small talk. Off keeps every such line out of the game; the game's "
-                + "own lines are never affected either way.");
+                + "after-pomodoro talk, small talk, and the greeting after the startup screen (picked by its "
+                + "\"Weight\" at launch). Off keeps every such line out of the game; the game's own lines are "
+                + "never affected either way.");
         }
 
         private static ConfigFile OwnConfig() =>

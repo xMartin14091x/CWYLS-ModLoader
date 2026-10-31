@@ -77,7 +77,7 @@ namespace CwyLs.ModLoader.Core
     public sealed class GameVersionGate
     {
         /// <summary>The game build the patch-target tables were verified against.</summary>
-        public const string ExpectedGameVersion = "1.17.3";
+        public const string ExpectedGameVersion = "1.18.0";
 
         /// <summary>Displayed in place of a version the game did not report.</summary>
         public const string UnknownVersion = GameVersions.Unknown;

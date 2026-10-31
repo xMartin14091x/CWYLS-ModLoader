@@ -76,6 +76,14 @@ namespace CwyLs.ModLoader.Core.MasterData
         /// </summary>
         public string Pool { get; init; } = string.Empty;
 
+        /// <summary>
+        /// CWY member, not a game column (pack lines): the chance, 0 to 1, that this line takes a pick
+        /// of its pool (<c>1</c> = every pick). Null (the member is absent) keeps the default: one more
+        /// card in the game's deck, or an equal share with the game's lines in a startup-greeting pool.
+        /// Ignored for a group without <see cref="Languages"/>.
+        /// </summary>
+        public double? Weight { get; init; }
+
         /// <summary><c>id</c>.</summary>
         public override string ToString() => Id;
     }

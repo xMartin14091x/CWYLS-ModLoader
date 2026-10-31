@@ -111,6 +111,21 @@ namespace CwyLs.ModLoader.Core.PackLines
                 new PackLinePool(
                     "smalltalk", 23, "SmallTalk", PackLineFamily.SmallTalk, PackLineShape.SmallTalk,
                     0, 0, "SmallTalkSelector._cache"),
+
+                // Startup greetings (HeroineStateGameStartDirection.ReadyHeroineSpeak, game 1.18.0): the kind
+                // follows the time since the last launch; GameStartTalkSelector draws the episode from
+                // StartDirectionData's decks (in the save; ranges from StartDirectionData.Setup) or uses 1.
+                // GameStart_First_CameraTouch (the very first launch, the tutorial's) is not a pool.
+                Start("gamestart.sameday", 13, "GameStart_LessTowDays", 1, 17, "StartDirectionData._lessTowDaysTalkList"),
+                Start("gamestart.newday", 12, "GameStart_LessTowDays_CameraTouch", 1, 12, "StartDirectionData._lessTowDaysCameraTouchTalkList"),
+                Start("gamestart.newday.morning", 1400, "GameStart_LessTowDays_CameraTouch_Morning", 1, 9, "StartDirectionData._lessTowDaysCameraTouchMorningTalkList"),
+                Start("gamestart.newday.noon", 1402, "GameStart_LessTowDays_CameraTouch_Noon", 1, 4, "StartDirectionData._lessTowDaysCameraTouchNoonTalkList"),
+                Start("gamestart.newday.evening", 1404, "GameStart_LessTowDays_CameraTouch_Evening", 1, 5, "StartDirectionData._lessTowDaysCameraTouchEveningTalkList"),
+                Start("gamestart.newday.night", 1406, "GameStart_LessTowDays_CameraTouch_Night", 1, 7, "StartDirectionData._lessTowDaysCameraTouchNightTalkList"),
+                Start("gamestart.days3to14", 14, "GameStart_LessHarfMonth_CameraTouch", 1, 8, "StartDirectionData._lessHarfMonthTalkList"),
+                Start("gamestart.days15to30", 15, "GameStart_GreaterHarfMonth_CameraTouch", 1, 2, "StartDirectionData._greaterMonthTalkList"),
+                Start("gamestart.days31plus", 16, "GameStart_GreaterMonth_CameraTouch", 1, 1, "GameStartTalkSelector (always 1)"),
+                Start("gamestart.login100", 17, "GameStart_GreaterYear_AND_PlayOneHundred_CameraTouch", 1, 1, "GameStartTalkSelector (always 1)"),
             };
 
             foreach (var pool in all)
@@ -128,7 +143,7 @@ namespace CwyLs.ModLoader.Core.PackLines
             All = all;
         }
 
-        /// <summary>Every pool, in the order above (43 in game 1.17.3).</summary>
+        /// <summary>Every pool, in the order above (53: 43 as in game 1.17.3, plus 10 startup-greeting pools from 1.18.0).</summary>
         public static IReadOnlyList<PackLinePool> All { get; }
 
         /// <summary>Looks a pool up by id, case-insensitively.</summary>
@@ -224,6 +239,69 @@ namespace CwyLs.ModLoader.Core.PackLines
 
             return string.Join(", ", names);
         }
+
+        /// <summary>The <c>Pool</c> value that offers one line in every startup-greeting pool.</summary>
+        public const string AnyGameStart = "gamestart.any";
+
+        /// <summary>The <c>Pool</c> value that offers one line in every pool a single line can fill (a global line).</summary>
+        public const string Global = "*";
+
+        /// <summary>
+        /// The pools a spread <c>Pool</c> value stands for: <see cref="AnyGameStart"/> = every
+        /// <see cref="PackLineFamily.GameStart"/> pool; <see cref="Global"/> = every pool except the
+        /// answer-choice talk (<see cref="PackLineFamily.TimerConversation"/>, which needs its choices).
+        /// Some targets share a <c>ScenarioType</c> (the clock slots <c>selftalk.time.*</c>, the
+        /// worked-time slots <c>selftalk.worked.*</c>); the game finds a group by
+        /// <c>(Scenario, EpisodeNumber)</c>, so <see cref="PackLineScreen"/> gives each of their copies
+        /// after the first its own episode number.
+        /// </summary>
+        /// <param name="id">A group's <c>Pool</c> member.</param>
+        /// <param name="targets">The pools, in catalogue order, or empty.</param>
+        /// <returns>True when <paramref name="id"/> is a spread.</returns>
+        public static bool TryGetSpread(string? id, out IReadOnlyList<PackLinePool> targets)
+        {
+            var trimmed = id?.Trim();
+            if (string.Equals(trimmed, AnyGameStart, StringComparison.OrdinalIgnoreCase))
+            {
+                targets = AnyGameStartTargets;
+                return true;
+            }
+
+            if (string.Equals(trimmed, Global, StringComparison.Ordinal))
+            {
+                targets = GlobalTargets;
+                return true;
+            }
+
+            targets = Array.Empty<PackLinePool>();
+            return false;
+        }
+
+        private static IReadOnlyList<PackLinePool> AnyGameStartTargets =>
+            _anyGameStart ??= Where(p => p.Family == PackLineFamily.GameStart);
+
+        private static IReadOnlyList<PackLinePool> GlobalTargets =>
+            _global ??= Where(p => p.Family != PackLineFamily.TimerConversation);
+
+        private static IReadOnlyList<PackLinePool>? _anyGameStart;
+        private static IReadOnlyList<PackLinePool>? _global;
+
+        private static IReadOnlyList<PackLinePool> Where(Func<PackLinePool, bool> keep)
+        {
+            var list = new List<PackLinePool>();
+            foreach (var pool in All)
+            {
+                if (keep(pool))
+                {
+                    list.Add(pool);
+                }
+            }
+
+            return list;
+        }
+
+        private static PackLinePool Start(string id, int scenario, string name, int first, int last, string selector) =>
+            new PackLinePool(id, scenario, name, PackLineFamily.GameStart, PackLineShape.SpokenLine, first, last, selector);
 
         private static PackLinePool Click(string id, int scenario, string name, int first, int last, string field) =>
             new PackLinePool(id, scenario, name, PackLineFamily.ClickReaction, PackLineShape.SpokenLine, first, last, Reaction + field);

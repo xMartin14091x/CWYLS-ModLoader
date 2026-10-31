@@ -1304,6 +1304,12 @@ Player level required before the group is offered.
 
 Main-story episode that must be read first, or `"None"`.
 
+<a id="scenariogrouprow--weight"></a>
+
+### `double? Weight { get; init; }`
+
+CWY member, not a game column (pack lines): the chance, 0 to 1, that this line takes a pick of its pool (`1` = every pick). Null (the member is absent) keeps the default: one more card in the game's deck, or an equal share with the game's lines in a startup-greeting pool. Ignored for a group without [`ScenarioGroupRow.Languages`](#scenariogrouprow--languages).
+
 <a id="scenariogrouprow--tostring"></a>
 
 ### `override string ToString()`

@@ -245,7 +245,7 @@ Creates a gate for an explicit expected version (used by tests).
 
 <a id="gameversiongate--expectedgameversion"></a>
 
-### `const string ExpectedGameVersion = "1.17.3"`
+### `const string ExpectedGameVersion = "1.18.0"`
 
 The game build the patch-target tables were verified against.
 

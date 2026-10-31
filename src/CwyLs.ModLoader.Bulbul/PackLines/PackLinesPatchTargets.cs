@@ -10,7 +10,8 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Checked against game 1.17.3; each group names what it is used for. Strings only - no game
+    /// Checked against game 1.17.3 (the startup-greeting entries against 1.18.0); each group names
+    /// what it is used for. Strings only - no game
     /// type is touched - so <c>tools/seamcheck</c> can evaluate <see cref="All"/> without the game
     /// (registered by <c>PackLinesFeature.Initialize</c>).
     /// </para>
@@ -49,6 +50,15 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
         /// <summary>The save manager.</summary>
         public const string SaveDataManagerType = "Bulbul.SaveDataManager";
 
+        /// <summary>The startup-greeting selector (root namespace; game 1.18.0).</summary>
+        public const string GameStartSelectorType = "GameStartTalkSelector";
+
+        /// <summary>A scenario group row of the game's master data.</summary>
+        public const string ScenarioGroupDataType = "Bulbul.MasterData.ScenarioGroupData";
+
+        /// <summary>A scenario command row of the game's master data.</summary>
+        public const string NovelDataType = "Bulbul.MasterData.NovelData";
+
         /// <summary>The list field every selector's <c>RandomList</c> keeps its episodes in.</summary>
         public const string RandomListItemsField = "_randomList";
 
@@ -66,6 +76,21 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
         /// <summary>The small-talk lottery cache.</summary>
         public const string SmallTalkCacheField = "_cache";
+
+        /// <summary>The lottery's direction service (its first gate: <c>GamePlayingDefect.IsUsing()</c>).</summary>
+        public const string SmallTalkDirectionField = "_directionService";
+
+        /// <summary>The lottery's master-data loader (its interval: <c>SmallTalkData.IntervalMinutes</c>).</summary>
+        public const string SmallTalkLoaderField = "_masterDataLoader";
+
+        /// <summary>When the last small talk started (the lottery's interval gate).</summary>
+        public const string SmallTalkBeforePlayField = "_beforePlayDateTime";
+
+        /// <summary>The episode of the last small talk, which the lottery never picks twice in a row.</summary>
+        public const string SmallTalkBeforeEpisodeField = "_beforeEpisodeNumber";
+
+        /// <summary>The episode the lottery picked, read back by its callers (<c>CurrentEpisodeNumber</c>, <c>OnEndTalk</c>).</summary>
+        public const string SmallTalkCurrentEpisodeField = "_currentEpisodeNumber";
 
         /// <summary>The once-a-day set on the clock selectors.</summary>
         public const string PlayedEpisodesField = "_playedEpisodes";
@@ -187,6 +212,30 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 Method("packlines.smalltalk.lottery", SmallTalkSelectorType, "LotterySmallTalk",
                     "float LotterySmallTalk(SmallTalkSelector.PlayTiming)", "SmallTalkSelector+PlayTiming"),
 
+                // Weighted small talk (rolled before the lottery): the lottery's own two gates as it
+                // reads them (DirectionService.GamePlayingDefect.IsUsing(), the interval since
+                // _beforePlayDateTime against SmallTalkData.IntervalMinutes), the episode it never
+                // picks twice in a row, the field its callers read the pick from, and the group
+                // columns its admission rule reads (play timing, unlock, content type).
+                Field("packlines.smalltalk.direction", SmallTalkSelectorType, SmallTalkDirectionField, "DirectionService"),
+                Field("packlines.smalltalk.loader", SmallTalkSelectorType, SmallTalkLoaderField, "MasterDataLoader"),
+                Field("packlines.smalltalk.beforeplay", SmallTalkSelectorType, SmallTalkBeforePlayField, "DateTime"),
+                Field("packlines.smalltalk.beforeepisode", SmallTalkSelectorType, SmallTalkBeforeEpisodeField, "float"),
+                Field("packlines.smalltalk.currentepisode", SmallTalkSelectorType, SmallTalkCurrentEpisodeField, "float"),
+                new PatchTarget("packlines.direction.defect", GameAssembly, "DirectionService", MemberKind.Property, "GamePlayingDefect",
+                    expectedSignature: "GamePlayingDefectDirection GamePlayingDefect { get; }"),
+                Method("packlines.defect.isusing", "GamePlayingDefectDirection", "IsUsing", "bool IsUsing()"),
+                Field("packlines.masterdata.smalltalkdata", "Bulbul.MasterDataLoader", "SmallTalkData", "SmallTalkData"),
+                new PatchTarget("packlines.smalltalkdata.interval", GameAssembly, "Bulbul.SmallTalkData", MemberKind.Property, "IntervalMinutes",
+                    expectedSignature: "float IntervalMinutes { get; }"),
+                Field("packlines.group.playtiming", ScenarioGroupDataType, "PlayTiming", "string"),
+                Field("packlines.group.unlock", ScenarioGroupDataType, "UnlockStoryEpisode", "string"),
+                Field("packlines.group.contenttype", ScenarioGroupDataType, "ContentType", "string"),
+                new PatchTarget("packlines.smalltalk.timing.both", GameAssembly, "SmallTalkSelector+PlayTiming", MemberKind.Field, "GameStartAndBreak",
+                    isStatic: true, expectedSignature: "static SmallTalkSelector.PlayTiming GameStartAndBreak"),
+                new PatchTarget("packlines.smalltalk.content.purchase", GameAssembly, "SmallTalkSelector+ContentType", MemberKind.Field, "PurchaseEnvironment",
+                    isStatic: true, expectedSignature: "static SmallTalkSelector.ContentType PurchaseEnvironment"),
+
                 // SaveDataManager.SaveScenarioProgressData (the only writer of PlayedScenarioGroupIDs)
                 // and its ScenarioProgressData; PomodoroData.CurrentTimerMode (which timer list a
                 // two-list selector reads).
@@ -199,6 +248,22 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                     expectedSignature: "PomodoroData PomodoroData { get; set; }"),
                 new PatchTarget("packlines.timer.mode", GameAssembly, "Bulbul.PomodoroData", MemberKind.Field, "CurrentTimerMode",
                     expectedSignature: "TimerMode CurrentTimerMode"),
+
+                // GameStartTalkSelector (game 1.18.0): GetGameStartTalk draws the startup greeting's
+                // episode from StartDirectionData's decks (a pack line may replace the pick), and
+                // UseGameStartTalk advances that deck and saves it (skipped once when the pick was
+                // ours). The group fields and the novel row's group id are what the game then looks
+                // the greeting up by (HeroineStateGameStartDirection), checked before a pack line is
+                // let in. The master-data lists themselves are the adapter's own seams
+                // (masterdata.scenariogroups, masterdata.novels).
+                Method("packlines.gamestart.get", GameStartSelectorType, "GetGameStartTalk", "int GetGameStartTalk(ScenarioType)",
+                    "Bulbul.MasterData.ScenarioType"),
+                Method("packlines.gamestart.use", GameStartSelectorType, "UseGameStartTalk", "void UseGameStartTalk(ScenarioType)",
+                    "Bulbul.MasterData.ScenarioType"),
+                Field("packlines.group.id", ScenarioGroupDataType, "ID", "string"),
+                Field("packlines.group.scenario", ScenarioGroupDataType, "Scenario", "ScenarioType"),
+                Field("packlines.group.episode", ScenarioGroupDataType, "EpisodeNumber", "float"),
+                Field("packlines.novel.groupid", NovelDataType, "ScenarioGroupID", "string"),
             };
 
             foreach (var list in ReactionLists)

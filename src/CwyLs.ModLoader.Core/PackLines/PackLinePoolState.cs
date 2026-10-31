@@ -33,6 +33,39 @@ namespace CwyLs.ModLoader.Core.PackLines
         public override string ToString() => "consumed=" + Consumed + " withdrawn=" + Withdrawn + " placed=" + Placed;
     }
 
+    /// <summary>What one pick did to a list, as <see cref="PackLinePoolState.EndPick"/> saw it.</summary>
+    public readonly struct PackLinePickResult
+    {
+        /// <summary>Creates a result.</summary>
+        /// <param name="read">True when the game took the list's first episode during the pick.</param>
+        /// <param name="episode">The episode it took; 0 when <paramref name="read"/> is false.</param>
+        /// <param name="weighted">True when that episode was the weighted line put in front for this pick.</param>
+        /// <param name="takenBack">How many weighted episodes the pick left in the list and were taken out again.</param>
+        public PackLinePickResult(bool read, int episode, bool weighted, int takenBack)
+        {
+            Read = read;
+            Episode = read ? episode : 0;
+            Weighted = read && weighted;
+            TakenBack = takenBack;
+        }
+
+        /// <summary>True when the game took the list's first episode during the pick (the pool was read).</summary>
+        public bool Read { get; }
+
+        /// <summary>The episode the game took; 0 when the list was not read.</summary>
+        public int Episode { get; }
+
+        /// <summary>True when the game took the weighted line put in front for this pick.</summary>
+        public bool Weighted { get; }
+
+        /// <summary>Weighted episodes the game did not take, taken out of its list again.</summary>
+        public int TakenBack { get; }
+
+        /// <summary><c>read=True episode=1001 weighted=True takenBack=0</c>.</summary>
+        public override string ToString() =>
+            "read=" + Read + " episode=" + Episode + " weighted=" + Weighted + " takenBack=" + TakenBack;
+    }
+
     /// <summary>
     /// Our bookkeeping for one of the game's <c>RandomList</c> pools: which of the pool's
     /// pack episodes are still owed to the current cycle and which are sitting in the game's list.
@@ -55,6 +88,17 @@ namespace CwyLs.ModLoader.Core.PackLines
     /// same cycle. While no language of a line is ever shown, nothing is inserted and nothing random
     /// is drawn: the game's list, odds and random-number stream are untouched.
     /// </para>
+    /// <para>
+    /// <b>Weighted lines</b> (a <c>Weight</c> member, <see cref="PackLineWeights"/>) are never dealt:
+    /// they are known (<see cref="IsPackEpisode"/>) but never owed or placed. At a pick, the caller
+    /// rolls them and hands the winner to <see cref="BeginPick"/>, which puts it in front of the list
+    /// so the game's next read returns it; <see cref="EndPick"/> takes it out again if the game read
+    /// another list, and tells which episode the game took. A non-empty list stays non-empty and an
+    /// empty one stays empty (the winner waits for the game's own refill,
+    /// <see cref="OnCycleDuringPick"/>), so every emptiness check the game makes - and with it every
+    /// one of its own random draws - is what it would be without us. The game's own episodes, their
+    /// order and <c>_beforeLast</c> are never touched.
+    /// </para>
     /// </remarks>
     public sealed class PackLinePoolState
     {
@@ -62,16 +106,46 @@ namespace CwyLs.ModLoader.Core.PackLines
         private readonly HashSet<int> _known = new HashSet<int>();
         private readonly HashSet<int> _owed = new HashSet<int>();
         private readonly HashSet<int> _placed = new HashSet<int>();
+        private readonly List<int> _weighted = new List<int>();
+        private readonly HashSet<int> _weightedKnown = new HashSet<int>();
+
+        private bool _inPick;
+        private int? _front;
+        private int? _pending;
+        private int? _pickHead;
 
         /// <summary>Creates the state for a pool whose game list was just set up.</summary>
-        /// <param name="episodes">The pool's pack episodes; null means none.</param>
+        /// <param name="episodes">The pool's pack episodes dealt into its deck; null means none.</param>
         public PackLinePoolState(IEnumerable<int>? episodes)
+            : this(episodes, null)
         {
-            Load(episodes);
         }
 
-        /// <summary>The pool's pack episodes, in registry order.</summary>
+        /// <summary>Creates the state for a pool whose game list was just set up.</summary>
+        /// <param name="episodes">The pool's unweighted pack episodes, dealt into its deck; null means none.</param>
+        /// <param name="weighted">
+        /// The pool's weighted pack episodes, never dealt, only put in front for a pick they won; null
+        /// means none. An episode also in <paramref name="episodes"/> counts as dealt.
+        /// </param>
+        public PackLinePoolState(IEnumerable<int>? episodes, IEnumerable<int>? weighted)
+        {
+            Load(episodes, weighted);
+        }
+
+        /// <summary>The pool's pack episodes dealt into its deck (the unweighted lines), in registry order.</summary>
         public IReadOnlyList<int> Episodes => _episodes;
+
+        /// <summary>The pool's weighted pack episodes, in registry order: never dealt, rolled at each pick.</summary>
+        public IReadOnlyList<int> WeightedEpisodes => _weighted;
+
+        /// <summary>True when the pool has any pack episode, dealt or weighted.</summary>
+        public bool HasLines => _episodes.Count > 0 || _weighted.Count > 0;
+
+        /// <summary>True between <see cref="BeginPick"/> and <see cref="EndPick"/>.</summary>
+        public bool InPick => _inPick;
+
+        /// <summary>The weighted episode in front of the list for the current pick, or null.</summary>
+        public int? Front => _front;
 
         /// <summary>How many pack episodes are still owed to the current cycle.</summary>
         public int OwedCount => _owed.Count;
@@ -79,9 +153,13 @@ namespace CwyLs.ModLoader.Core.PackLines
         /// <summary>How many pack episodes are in the game's list right now.</summary>
         public int PlacedCount => _placed.Count;
 
-        /// <summary>True when the episode is one of this pool's pack episodes.</summary>
+        /// <summary>True when the episode is one of this pool's pack episodes, dealt or weighted.</summary>
         /// <param name="episode">An episode number.</param>
-        public bool IsPackEpisode(int episode) => _known.Contains(episode);
+        public bool IsPackEpisode(int episode) => _known.Contains(episode) || _weightedKnown.Contains(episode);
+
+        /// <summary>True when the episode is one of this pool's weighted (never dealt) pack episodes.</summary>
+        /// <param name="episode">An episode number.</param>
+        public bool IsWeighted(int episode) => _weightedKnown.Contains(episode);
 
         /// <summary>True when the episode is in the game's list because of us.</summary>
         /// <param name="episode">An episode number.</param>
@@ -97,7 +175,7 @@ namespace CwyLs.ModLoader.Core.PackLines
         /// </summary>
         public PackLinePoolState Clone()
         {
-            var copy = new PackLinePoolState(_episodes);
+            var copy = new PackLinePoolState(_episodes, _weighted);
             copy._owed.Clear();
             copy._owed.UnionWith(_owed);
             copy._placed.UnionWith(_placed);
@@ -191,9 +269,22 @@ namespace CwyLs.ModLoader.Core.PackLines
                 throw new ArgumentNullException(nameof(pickIndex));
             }
 
-            if (_episodes.Count == 0)
+            if (_episodes.Count == 0 && _weighted.Count == 0)
             {
                 return default;
+            }
+
+            // 0. A weighted episode is only ever in the list for the pick it won (BeginPick..EndPick);
+            //    one found outside a pick was left by a pick that never ended: out it goes.
+            var withdrawn = 0;
+            if (!_inPick && _weighted.Count > 0)
+            {
+                withdrawn += RemoveWeighted(list);
+            }
+
+            if (_episodes.Count == 0)
+            {
+                return new PackLineReconcile(0, withdrawn, 0);
             }
 
             // 1. Placed episodes the game removed were played (UseNext / RemoveFromList).
@@ -220,7 +311,6 @@ namespace CwyLs.ModLoader.Core.PackLines
             }
 
             // 3. Language not shown: out of the list, still owed to this cycle.
-            var withdrawn = 0;
             foreach (var episode in Snapshot(_placed))
             {
                 if (!isOffered(episode))
@@ -267,30 +357,161 @@ namespace CwyLs.ModLoader.Core.PackLines
 
         /// <summary>
         /// The pool's lines changed (a pack rescan or a new injection): every episode of the old set is
-        /// taken out of the game's list, and the new set starts owed and unplaced.
+        /// taken out of the game's list, and the new set starts owed and unplaced. The pool keeps no
+        /// weighted episode (see the three-argument overload).
         /// </summary>
         /// <param name="episodes">The pool's new pack episodes; null means none.</param>
         /// <param name="list">The game's list; null when it is not reachable (nothing is removed then).</param>
-        public void Rebind(IEnumerable<int>? episodes, IList<int>? list)
+        public void Rebind(IEnumerable<int>? episodes, IList<int>? list) => Rebind(episodes, null, list);
+
+        /// <summary>
+        /// The pool's lines changed (a pack rescan or a new injection): every episode of the old sets,
+        /// dealt or weighted, is taken out of the game's list; the new dealt set starts owed and
+        /// unplaced, and any pick in progress is dropped.
+        /// </summary>
+        /// <param name="episodes">The pool's new unweighted (dealt) pack episodes; null means none.</param>
+        /// <param name="weighted">The pool's new weighted pack episodes; null means none.</param>
+        /// <param name="list">The game's list; null when it is not reachable (nothing is removed then).</param>
+        public void Rebind(IEnumerable<int>? episodes, IEnumerable<int>? weighted, IList<int>? list)
         {
             if (list != null)
             {
                 for (var i = list.Count - 1; i >= 0; i--)
                 {
-                    if (_known.Contains(list[i]))
+                    if (IsPackEpisode(list[i]))
                     {
                         list.RemoveAt(i);
                     }
                 }
             }
 
-            Load(episodes);
+            Load(episodes, weighted);
         }
 
-        private void Load(IEnumerable<int>? episodes)
+        // ---- weighted lines: one pick at a time -------------------------------------------------
+
+        /// <summary>
+        /// The game is about to pick (the gate ran): puts the weighted episode that won this pick's
+        /// roll in front of the list, so the game's next read returns it, and notes the list's first
+        /// episode so <see cref="EndPick"/> can tell whether the game read this list. An empty list is
+        /// left empty (its emptiness steers the game's own choices); the winner then waits for the
+        /// game's refill, <see cref="OnCycleDuringPick"/>. A pick that never ended is closed first.
+        /// </summary>
+        /// <param name="list">The game's list. Required.</param>
+        /// <param name="winner">The weighted episode that won the roll, or null for none (nothing is inserted).</param>
+        /// <exception cref="ArgumentNullException"><paramref name="list"/> is null.</exception>
+        public void BeginPick(IList<int> list, int? winner)
+        {
+            if (list is null)
+            {
+                throw new ArgumentNullException(nameof(list));
+            }
+
+            if (_inPick)
+            {
+                EndPick(list);
+            }
+
+            _inPick = true;
+            _front = null;
+            _pending = null;
+            if (winner.HasValue && _weightedKnown.Contains(winner.Value) && !list.Contains(winner.Value))
+            {
+                if (list.Count > 0)
+                {
+                    list.Insert(0, winner.Value);
+                    _front = winner.Value;
+                }
+                else
+                {
+                    _pending = winner.Value;
+                }
+            }
+
+            _pickHead = list.Count > 0 ? list[0] : (int?)null;
+        }
+
+        /// <summary>
+        /// The game refilled the list during a pick (<c>InitList</c>, after <see cref="StartCycle"/> and
+        /// <see cref="Reconcile"/>): a winner that waited for it goes in front now, and the list's new
+        /// first episode is what a read would take. Does nothing outside a pick.
+        /// </summary>
+        /// <param name="list">The game's list. Required.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="list"/> is null.</exception>
+        public void OnCycleDuringPick(IList<int> list)
+        {
+            if (list is null)
+            {
+                throw new ArgumentNullException(nameof(list));
+            }
+
+            if (!_inPick)
+            {
+                return;
+            }
+
+            if (_pending.HasValue && list.Count > 0 && !list.Contains(_pending.Value))
+            {
+                list.Insert(0, _pending.Value);
+                _front = _pending;
+                _pending = null;
+            }
+
+            _pickHead = list.Count > 0 ? list[0] : (int?)null;
+        }
+
+        /// <summary>
+        /// The game's pick is over: whether it read this list (the first episode at the pick is gone),
+        /// which episode it took, and whether that was the weighted winner. A weighted episode still in
+        /// the list (the game read another list) is taken out again, so outside a pick the list holds
+        /// only the game's episodes and the dealt ones. Does nothing outside a pick.
+        /// </summary>
+        /// <param name="list">The game's list. Required.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="list"/> is null.</exception>
+        public PackLinePickResult EndPick(IList<int> list)
+        {
+            if (list is null)
+            {
+                throw new ArgumentNullException(nameof(list));
+            }
+
+            if (!_inPick)
+            {
+                return default;
+            }
+
+            var head = _pickHead;
+            var front = _front;
+            _inPick = false;
+            _front = null;
+            _pending = null;
+            _pickHead = null;
+
+            var read = head.HasValue && !list.Contains(head.Value);
+            var takenBack = RemoveWeighted(list);
+            return new PackLinePickResult(read, head ?? 0, read && front.HasValue && head == front, takenBack);
+        }
+
+        private int RemoveWeighted(IList<int> list)
+        {
+            var removed = 0;
+            for (var i = list.Count - 1; i >= 0; i--)
+            {
+                if (_weightedKnown.Contains(list[i]))
+                {
+                    list.RemoveAt(i);
+                    removed++;
+                }
+            }
+
+            return removed;
+        }
+
+        private void Load(IEnumerable<int>? episodes, IEnumerable<int>? weighted)
         {
             // Copied first: the caller may pass Episodes itself, which the next line clears.
             var incoming = episodes is null ? new List<int>() : new List<int>(episodes);
+            var incomingWeighted = weighted is null ? new List<int>() : new List<int>(weighted);
             _episodes.Clear();
             _known.Clear();
             foreach (var episode in incoming)
@@ -301,6 +522,20 @@ namespace CwyLs.ModLoader.Core.PackLines
                 }
             }
 
+            _weighted.Clear();
+            _weightedKnown.Clear();
+            foreach (var episode in incomingWeighted)
+            {
+                if (!_known.Contains(episode) && _weightedKnown.Add(episode))
+                {
+                    _weighted.Add(episode);
+                }
+            }
+
+            _inPick = false;
+            _front = null;
+            _pending = null;
+            _pickHead = null;
             StartCycle();
         }
 

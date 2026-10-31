@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "author": "CWY:LS",
   "description": "Reference pack: the folder layout every CWY content pack uses.",
-  "gameVersion": "1.17.3",
+  "gameVersion": "1.18.0",
   "loaderVersion": "0.1.0",
   "dependsOn": []
 }

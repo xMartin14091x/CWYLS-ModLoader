@@ -267,14 +267,14 @@ namespace CwyLs.ModLoader.Tests
         [Fact]
         public void The_gate_defaults_to_the_version_the_seams_were_read_from()
         {
-            Assert.Equal("1.17.3", GameVersionGate.ExpectedGameVersion);
+            Assert.Equal("1.18.0", GameVersionGate.ExpectedGameVersion);
 
-            var check = new GameVersionGate().Check("1.17.3");
+            var check = new GameVersionGate().Check("1.18.0");
 
             Assert.True(check.IsOk);
             Assert.Equal(GameVersionStatus.Ok, check.Status);
-            Assert.Equal("1.17.3", check.Actual);
-            Assert.Contains("1.17.3", check.Message);
+            Assert.Equal("1.18.0", check.Actual);
+            Assert.Contains("1.18.0", check.Message);
         }
 
         [Fact]

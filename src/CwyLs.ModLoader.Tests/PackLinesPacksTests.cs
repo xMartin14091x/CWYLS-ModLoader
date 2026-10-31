@@ -72,7 +72,9 @@ namespace CwyLs.ModLoader.Tests
 
             var screen = PackLineScreen.Screen(merged, MasterDataBaseline.Empty, admit: true);
             Assert.True(screen.Rejected.Count == 0, title + ": " + string.Join(" | ", screen.Rejected));
-            Assert.Equal(exclusive, screen.Lines.Count);
+
+            // A spread group ("Pool": "gamestart.any" or "*") becomes one line per copy.
+            Assert.Equal(exclusive, screen.Lines.Select(l => l.SourceGroupId).Distinct(StringComparer.Ordinal).Count());
 
             foreach (var row in merged.Novel.Where(r => r.LocalizationId != "0" && r.LocalizationId.Length > 0))
             {

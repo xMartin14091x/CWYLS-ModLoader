@@ -140,12 +140,15 @@ namespace CwyLs.ModLoader.Core.PackLines
         /// <summary>Every language code some line is offered in, in first-seen order.</summary>
         public IReadOnlyList<string> Languages { get; }
 
-        /// <summary>Every line's group id: what the save filter holds back.</summary>
+        /// <summary>
+        /// Every line's group id - every group injected for a pack line, spread copies
+        /// (<c>&lt;id&gt;@&lt;pool&gt;</c>) included: what the save filter holds back.
+        /// </summary>
         public IReadOnlyCollection<string> GroupIds { get; }
 
         /// <summary>
-        /// A stable text over every line's group, pool, episode and languages; equal fingerprints mean
-        /// an identical registry, so a re-injection with unchanged packs logs nothing new.
+        /// A stable text over every line's group, pool, episode, languages, weight and spread; equal
+        /// fingerprints mean an identical registry, so a re-injection with unchanged packs logs nothing new.
         /// </summary>
         public string Fingerprint { get; }
 
@@ -231,7 +234,9 @@ namespace CwyLs.ModLoader.Core.PackLines
             {
                 sb.Append(line.GroupId).Append('|').Append(line.Pool.Id).Append('|')
                   .Append(line.Episode.ToString(CultureInfo.InvariantCulture)).Append('|')
-                  .Append(string.Join("/", line.Languages)).Append(';');
+                  .Append(string.Join("/", line.Languages)).Append('|')
+                  .Append(line.Weight.HasValue ? line.Weight.Value.ToString("R", CultureInfo.InvariantCulture) : "-").Append('|')
+                  .Append(line.Spread).Append(';');
             }
 
             return sb.ToString();

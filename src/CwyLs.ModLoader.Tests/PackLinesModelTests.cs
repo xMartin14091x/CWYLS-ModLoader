@@ -22,10 +22,11 @@ namespace CwyLs.ModLoader.Tests
         }
 
         [Fact]
-        public void The_catalogue_has_forty_three_pools_with_unique_ids_and_the_games_scenario_names()
+        public void The_catalogue_has_fifty_three_pools_with_unique_ids_and_the_games_scenario_names()
         {
-            Assert.Equal(43, PackLinePools.All.Count);
-            Assert.Equal(43, PackLinePools.All.Select(p => p.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+            Assert.Equal(53, PackLinePools.All.Count);
+            Assert.Equal(53, PackLinePools.All.Select(p => p.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+            Assert.Equal(10, PackLinePools.All.Count(p => p.Family == PackLineFamily.GameStart));
 
             foreach (var pool in PackLinePools.All)
             {
@@ -48,13 +49,15 @@ namespace CwyLs.ModLoader.Tests
         }
 
         [Fact]
-        public void Timer_pools_carry_their_moment_and_mode_and_only_they_are_not_click_style()
+        public void Timer_pools_carry_their_moment_and_mode_and_only_timer_and_startup_pools_are_not_click_style()
         {
             Assert.Equal(PackLineTimerPhase.WorkStart, Pool("countup.start.continuous").Phase);
             Assert.Equal(PackLineTimerMode.Countup, Pool("countup.start.continuous").TimerMode);
             Assert.Equal(PackLineTimerPhase.Finish, Pool("pomodoro.finish.midway").Phase);
-            Assert.All(PackLinePools.All, p => Assert.Equal(p.Family != PackLineFamily.TimerLine, p.IsClickStyle));
+            Assert.All(PackLinePools.All, p => Assert.Equal(
+                p.Family != PackLineFamily.TimerLine && p.Family != PackLineFamily.GameStart, p.IsClickStyle));
             Assert.True(Pool("pomodoro.end").IsClickStyle);
+            Assert.All(PackLinePools.All, p => Assert.Equal(p.Family != PackLineFamily.GameStart, p.HasDeck));
         }
 
         [Fact]

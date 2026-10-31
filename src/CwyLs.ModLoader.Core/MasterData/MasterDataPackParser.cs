@@ -45,14 +45,14 @@ namespace CwyLs.ModLoader.Core.MasterData
             "LocalizationID", "BodyMotion", "FacialMotion", "LookScale", "LookSpeedSeconds", "LookEaseType"
         };
 
-        // "Languages" and "Pool" are CWY members, not game columns: they mark a group as
-        // a pack line exclusive to some languages (ScenarioGroupRow.Languages / .Pool). A file that
-        // does not use them parses to exactly the rows it did before they existed.
+        // "Languages", "Pool" and "Weight" are CWY members, not game columns: they mark a group as
+        // a pack line exclusive to some languages (ScenarioGroupRow.Languages / .Pool / .Weight). A
+        // file that does not use them parses to exactly the rows it did before they existed.
         private static readonly string[] ScenarioGroupMembers =
         {
             "ID", "TitleLocalizationID", "SubtitleLocalizationID", "Scenario", "EpisodeNumber",
             "UnlockLevel", "UnlockStoryEpisode", "PlayTiming", "ContentType", "Arg1", "Arg2", "Arg3",
-            "Languages", "Pool"
+            "Languages", "Pool", "Weight"
         };
 
         /// <summary>Parses <c>data/localization.json</c>.</summary>
@@ -181,7 +181,8 @@ namespace CwyLs.ModLoader.Core.MasterData
                 Arg2 = row.OptionalString("Arg2", "0"),
                 Arg3 = row.OptionalString("Arg3", "0"),
                 Languages = row.OptionalCodeList("Languages"),
-                Pool = row.OptionalString("Pool", string.Empty).Trim()
+                Pool = row.OptionalString("Pool", string.Empty).Trim(),
+                Weight = row.OptionalNumber("Weight")
             };
 
         /// <summary>
@@ -319,6 +320,33 @@ namespace CwyLs.ModLoader.Core.MasterData
                 }
 
                 return codes;
+            }
+
+            /// <summary>
+            /// An optional JSON number (the pack-line <c>Weight</c> member): null when the member is
+            /// absent or null; any other value but a number refuses the row. The range is the
+            /// pack-lines screen's job, so a number outside 0..1 is returned as written.
+            /// </summary>
+            internal double? OptionalNumber(string name)
+            {
+                if (!_members.TryGetValue(name, out var value) || value is null)
+                {
+                    return null;
+                }
+
+                switch (value)
+                {
+                    case long number:
+                        return number;
+
+                    case double real:
+                        return real;
+
+                    default:
+                        Reject(name, "must be a number such as 0.25 (the chance per pick, 0 to 1), not " + JsonReader.TypeName(value)
+                                     + (value is string ? " (write the number without quotes)" : string.Empty));
+                        return null;
+                }
             }
 
             internal int OptionalInt(string name, int fallback)

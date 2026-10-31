@@ -54,9 +54,9 @@ A code mod sees the game through one object: the helper its `CwyMod` receives. [
 | [`CwyLs.ModLoader.Core.Language`](CwyLs.ModLoader.Core.Language.md) | `CwyLs.ModLoader.Core` | 14 | 0 | 115 | 0 |
 | [`CwyLs.ModLoader.Core.Loaders`](CwyLs.ModLoader.Core.Loaders.md) | `CwyLs.ModLoader.Core` | 11 | 0 | 62 | 0 |
 | [`CwyLs.ModLoader.Core.Logging`](CwyLs.ModLoader.Core.Logging.md) | `CwyLs.ModLoader.Core` | 10 | 0 | 97 | 0 |
-| [`CwyLs.ModLoader.Core.MasterData`](CwyLs.ModLoader.Core.MasterData.md) | `CwyLs.ModLoader.Core` | 19 | 0 | 162 | 0 |
+| [`CwyLs.ModLoader.Core.MasterData`](CwyLs.ModLoader.Core.MasterData.md) | `CwyLs.ModLoader.Core` | 19 | 0 | 163 | 0 |
 | [`CwyLs.ModLoader.Core.Mods`](CwyLs.ModLoader.Core.Mods.md) | `CwyLs.ModLoader.Core` | 28 | 1 | 139 | 0 |
-| [`CwyLs.ModLoader.Core.PackLines`](CwyLs.ModLoader.Core.PackLines.md) | `CwyLs.ModLoader.Core` | 21 | 0 | 122 | 0 |
+| [`CwyLs.ModLoader.Core.PackLines`](CwyLs.ModLoader.Core.PackLines.md) | `CwyLs.ModLoader.Core` | 25 | 0 | 162 | 0 |
 | [`CwyLs.ModLoader.Core.Packs`](CwyLs.ModLoader.Core.Packs.md) | `CwyLs.ModLoader.Core` | 21 | 2 | 199 | 0 |
 | [`CwyLs.ModLoader.Core.Satone`](CwyLs.ModLoader.Core.Satone.md) | `CwyLs.ModLoader.Core` | 12 | 2 | 120 | 0 |
 | [`CwyLs.ModLoader.Core.Satone.Say`](CwyLs.ModLoader.Core.Satone.Say.md) | `CwyLs.ModLoader.Core` | 8 | 4 | 96 | 0 |

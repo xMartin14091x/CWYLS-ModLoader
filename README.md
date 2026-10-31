@@ -31,7 +31,7 @@ game version.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner/version-safety-dark.svg">
-  <img src=".github/assets/banner/version-safety-light.svg" width="100%" alt="When the game updates, the loader checks the 339 game methods it uses at startup. All found: every feature is on. One moved: only the feature that needs it switches off, with a clear line in the log, and the game keeps running.">
+  <img src=".github/assets/banner/version-safety-light.svg" width="100%" alt="When the game updates, the loader checks the 359 game methods and fields it uses at startup. All found: every feature is on. One moved: only the feature that needs it switches off, with a clear line in the log, and the game keeps running.">
 </picture>
 
 ## ✦ What it does
@@ -40,7 +40,7 @@ game version.
 |---|---|
 | **Content packs** | A folder with a `manifest.json`, no code at all: text and new languages, voice clips, sound effects, extra music for the player, texture swaps, scenery colour grading, new dialogue lines and short scenes. |
 | **Code mods** | A C# entry point with a helper API: game events, Satone's lines and expressions, mod windows, console commands, and game actions behind a safety gate. |
-| **Version safety** | The 339 game methods the loader relies on are checked at startup, and offline with `tools/seamcheck`. If an update moves one, only that feature switches off. |
+| **Version safety** | The 359 game methods and fields the loader relies on are checked at startup, and offline with `tools/seamcheck`. If an update moves one, only that feature switches off. |
 | **Save safety** | Mod content never goes into your save files, so they keep loading without mods. |
 | **In-game console** | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>: pack and mod status, cutscene replay with `scene play`, diagnostics. |
 | **Diagnostic trace** | For bug reports, off by default. Turn it on with `trace on`, and off again with `trace off`. |
@@ -106,6 +106,7 @@ Either way the files are moved into a dated folder inside the game folder, never
 |---|---|
 | macOS on Apple Silicon, game 1.17.3 from Steam | Install, play through Steam, uninstall back to the plain game |
 | Windows 11, game 1.17.3 | Install, loader and a content pack running in game |
+| macOS, game 1.18.0 (2026-10-31) | All 359 checks found (`tools/seamcheck`); loader and content packs running in game |
 | Intel Macs | Not tested yet |
 | Other BepInEx mods alongside | Not tested yet |
 
@@ -127,7 +128,7 @@ A mod is a folder in `CWYLS Mods` with a `manifest.json`. Files are enough for m
   "id": "my.first.pack",
   "name": "My first pack",
   "version": "0.1.0",
-  "gameVersion": "1.17.3",
+  "gameVersion": "1.18.0",
   "loaderVersion": "0.9.0"
 }
 ```

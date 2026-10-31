@@ -1,10 +1,15 @@
 # Pack lines - new Satone lines for one language
 
-A content pack can add new voiced lines to the game's own pools - clicks on Satone, her self-talk,
-the pomodoro and count-up timer lines, the after-pomodoro answer-choice talk and small talk - that
-the game offers **only while one of the line's languages is shown** (a line marked `["th"]`: only
-while ไทย is selected). In every other language the pools are the game's own: same episodes, same odds,
-same random draws, and nothing reaches the save.
+A content pack can add new voiced lines to the game's own pools - the greeting right after the
+startup screen, clicks on Satone, her self-talk, the pomodoro and count-up timer lines, the
+after-pomodoro answer-choice talk and small talk - that the game offers **only while one of the
+line's languages is shown** (a line marked `["th"]`: only while ไทย is selected). In every other
+language the pools are the game's own: same episodes, same odds, same random draws, and nothing
+reaches the save.
+
+A line is **specific** (written for one pool) or **global** (`"Pool": "*"`: written once, offered in
+every pool a single line can fill). Either can carry a **`Weight`**, the chance it takes a pick of its
+pool (§5): `"Weight": 1` makes it play every time.
 
 Entry point: `PackLinesFeature.Initialize(Config)`, called once from `BulbulPlugin.Awake` after
 `MasterDataFeature` and `LanguageFeature`. Pure logic (the screen, the gate, the save filter, the
@@ -20,7 +25,8 @@ members that the game never sees:
 | Member | Required | Meaning |
 |---|---|---|
 | `Languages` | yes | Array of language codes the line is offered in, e.g. `["th"]`. Any spelling of a code works (`TH`, `tha`, `Thai`). A game language is allowed too (`["ja"]` = Japanese only). An empty array, a non-array or a blank code refuses the row. |
-| `Pool` | only for the clock and worked-time self-talk | Which pool the group joins (table below). For every other scenario type the pool follows from `Scenario`; if you write `Pool` anyway it must match. |
+| `Pool` | for the clock and worked-time self-talk, and for spreads | Which pool the group joins (table below). For every other scenario type the pool follows from `Scenario`; if you write `Pool` anyway it must match. Two values spread one line over many pools: `"gamestart.any"` (every startup greeting kind) and `"*"` (a global line: every pool except `pomodoro.end`, which needs answer choices). A spread line writes `"Scenario": "None"`; the loader makes one copy per pool (below). |
+| `Weight` | no | The chance, from 0 to 1, that this line takes a pick of its pool: `0.25` = a quarter of the picks, `1` = every pick (§5). A JSON number, not a string. Absent: one more card in the game's deck (an equal share with the game's lines for a startup greeting). |
 
 Rules the screen (`PackLineScreen`) checks before anything is injected - a group that breaks one is
 skipped with **one WARN** naming the row (`PACKLINES skipped scenario_groups row '<id>': <reason>`),
@@ -41,10 +47,31 @@ and the rest of the pack still loads:
    waits for the motion's cue) or `Arg2` `-1`.
 7. No `WaitInput`, tutorial or `ReadNextForScript` command (they stall a short talk); a `Selection`
    or `Jump` row's `Arg1` names a row of the same group.
-8. Small talk: `PlayTiming` is `Break`, `GameStart` or `GameStartAndBreak`; `ContentType` is one of
+8. A startup greeting has no `Selection` or `StartTextLoop` row: it reads in auto mode, and a choice
+   would wait for the player.
+9. `Weight`, when present, is a number from 0 to 1. A weighted small talk has `ContentType` `None` or
+   `PurchaseEnvironment` (the roll does not apply the other types' own conditions).
+10. Small talk: `PlayTiming` is `Break`, `GameStart` or `GameStartAndBreak`; `ContentType` is one of
    the game's five names (exact case); `Arg1`/`Arg2` are whole numbers 0-100; `Arg3` is a whole number
    for `SmallTalk_Cicada`/`SmallTalk_PassageOfTime`; `UnlockStoryEpisode` is `"None"` or a group id.
-9. Every voice name the line speaks is a valid clip name (`[A-Za-z0-9_-]+`).
+11. Every voice name the line speaks is a valid clip name (`[A-Za-z0-9_-]+`).
+
+**Spread lines** (`"Pool": "gamestart.any"` or `"*"`). The loader copies the group into each pool:
+group `<id>@<pool>` with that pool's `Scenario`, novel rows `<row>@<pool>`, the same `EpisodeNumber`,
+`Languages`, `Weight` and localization rows. The clock slots share one `Scenario`
+(`HeroineSelfShortTalk_CurrentTime`) and so do the worked-time slots (`HeroineSelfShortTalk_WorkedTime`):
+there the first slot's copy keeps your `EpisodeNumber` and each later slot's copy gets the next free one
+above it, so every slot has its own (a global line at 900002 is 900002-900005 in the clock slots). Each copy is screened as if written for its pool, and if
+one copy fails, the whole line is refused with one WARN naming the pool. The group you wrote is not
+injected itself. A global line's copies are adapted to the pool:
+- **Timer pools.** A line with one spoken row speaks it as a `PomodoroVoiceText` row at once, with no
+  motion and its face kept. A line with several spoken rows skips the timer pools, with one WARN.
+- **Small talk.** The copy gets `PlayTiming` `Break`, `ContentType` `None`, `Arg1`/`Arg2` 25/5 unless
+  your group already has valid small-talk columns.
+
+A spread line claims its `EpisodeNumber` in every pool it joins (a global line also up to 3 more in the
+clock slots and 2 in the worked-time slots; never one another group writes), so give spread lines a
+range of their own, for example 900000 and up in steps of 4. `lines list` shows each copy's episode.
 
 The line's text for its language goes in the pack's `data/subtitles/<code>.json` (for Thai,
 `data/subtitles/th.json`), keyed by `LocalizationID`; the game's own text box shows it.
@@ -53,7 +80,7 @@ console's `SPEECH` lines print. The voice clip goes in the pack's language voice
 (`audio/voice/<code>/<Voice>.ogg`, see `../Voice/README.md`), which resolves only while that language
 is shown.
 
-## 2. The pools (game 1.17.3)
+## 2. The pools (game 1.17.3; startup pools 1.18.0)
 
 | Pool | `Scenario` | Game range | Where the game keeps it |
 |---|---|---|---|
@@ -74,11 +101,20 @@ is shown.
 | `countup.finish` / `.shortwork` / `.longwork` | `SpeakWord_CountupFinish` / `_Countup_ShortWorkFinish` / `_Countup_LongWorkFinish` | 1-15, 1-6, 1-7 | `_countupVoiceList` |
 | `pomodoro.end` | `ShortConversation` (the `pomodoroend_*` answer-choice talk) | 1-20 | `ReactionTalkSelector._answerChoiceEpisodeList` |
 | `smalltalk` | `SmallTalk` | data-driven (1-7) | `SmallTalkSelector._cache` |
+| `gamestart.sameday` | `GameStart_LessTowDays` (a relaunch the same day) | 1-17 | `StartDirectionData._lessTowDaysTalkList` (in the save) |
+| `gamestart.newday` | `GameStart_LessTowDays_CameraTouch` (a new day, up to 2 days away) | 1-12 | `_lessTowDaysCameraTouchTalkList` |
+| `gamestart.newday.morning` / `.noon` / `.evening` / `.night` | `GameStart_LessTowDays_CameraTouch_Morning` / `_Noon` / `_Evening` / `_Night` | 1-9, 1-4, 1-5, 1-7 | `_lessTowDaysCameraTouch{Morning,Noon,Evening,Night}TalkList` |
+| `gamestart.days3to14` | `GameStart_LessHarfMonth_CameraTouch` | 1-8 | `_lessHarfMonthTalkList` |
+| `gamestart.days15to30` | `GameStart_GreaterHarfMonth_CameraTouch` | 1-2 | `_greaterMonthTalkList` |
+| `gamestart.days31plus` | `GameStart_GreaterMonth_CameraTouch` | 1 | always 1 (`GameStartTalkSelector`) |
+| `gamestart.login100` | `GameStart_GreaterYear_AND_PlayOneHundred_CameraTouch` (every 100th launch) | 1 | always 1 |
 
-43 pools; the catalogue is `CwyLs.ModLoader.Core.PackLines.PackLinePools` (ranges as observed in game
-1.17.3, checked against the master data by `PackLinesModelTests`). Not pools: game-start greetings,
-game-end lines, leave-chair and snack lines, player-status reactions, `HeroineSelfShortTalkNormal`
-(the game never plays it) and motion lines.
+53 pools; the catalogue is `CwyLs.ModLoader.Core.PackLines.PackLinePools` (ranges as observed in game
+1.17.3 and, for the startup pools, 1.18.0; checked against the master data by `PackLinesModelTests`).
+Spreads: `gamestart.any` = the 10 startup pools; `*` = the other 52, every pool except `pomodoro.end`
+(it needs answer choices). Not pools: the very first launch's greeting (the tutorial's), the
+limited-time event openings, game-end lines, leave-chair and snack lines, player-status reactions,
+`HeroineSelfShortTalkNormal` (the game never plays it) and motion lines.
 
 When does the game reach each pool: clicking her while the timer runs → `click.work*`; on a break →
 `click.break*`; otherwise `click.normal` (and, with the timer stopped, the small-talk lottery first).
@@ -89,6 +125,11 @@ break starts or the timer completes; the game first picks the kind (long/continu
 short/long-worked/normal break, long/short/midway/normal finish) by its own rules, then a line from
 that kind's pool. `pomodoro.end` plays on a click within 20 minutes of a completed pomodoro, with the
 game's own probability. Small talk: a break click with the timer stopped, or the first launch of a day.
+Startup: once per launch, right after the startup screen, unless it is the very first launch (the
+tutorial) or a limited-time event opening plays instead (each event's once). The game picks the kind by
+the time since the last launch: every 100th launch → `gamestart.login100`; the same day →
+`gamestart.sameday`; a new day up to 2 days away → 35 % a time-of-day kind, else `gamestart.newday`;
+3-14 days → `gamestart.days3to14`; 15-30 → `gamestart.days15to30`; more → `gamestart.days31plus`.
 
 ## 3. Worked examples
 
@@ -562,6 +603,124 @@ seen this session, `UnlockStoryEpisode` `"None"` or a main episode that must hav
 
 Clips: `Voice_My_SmallTalk_001_001.ogg` and `_002.ogg` in `packs/my.lines/audio/voice/th/`.
 
+### Startup greeting, every kind (`gamestart.any`)
+
+The first line after the startup screen, on every launch that reaches a greeting, while ไทย is shown.
+One `Text` row, as in the game's greetings: `BodyMotion` -1 lets the camera-touch kinds play their own
+"touch the camera" motion first. `"Weight": 1` takes every launch (an unweighted line would get an
+equal share with the game's greetings of that kind, e.g. 1 in 18 for `gamestart.sameday`).
+`"Scenario": "None"` because the loader writes each copy's own (`my_hello@gamestart.sameday`, ...).
+
+```json scenario_groups.json
+[
+  {
+    "ID": "my_hello",
+    "Scenario": "None",
+    "EpisodeNumber": 900001,
+    "Languages": ["th"],
+    "Pool": "gamestart.any",
+    "Weight": 1
+  }
+]
+```
+
+```json novel.json
+[
+  {
+    "ID": "my_hello_001",
+    "ScenarioGroupID": "my_hello",
+    "Command": "Text",
+    "Arg1": "0",
+    "Arg2": 1.0,
+    "Arg3": "0",
+    "Talker": "Heroine",
+    "LocalizationID": "my_hello_001",
+    "BodyMotion": -1,
+    "FacialMotion": 10,
+    "LookScale": 0.0,
+    "LookSpeedSeconds": 1.0
+  }
+]
+```
+
+```json localization.json
+[
+  {
+    "ID": "my_hello_001",
+    "Ja": "",
+    "En": "Hey, what's up? Did you just call me?",
+    "Voice": "Voice_My_Hello_001"
+  }
+]
+```
+
+```json th.json
+{
+  "my_hello_001": "Hey, what's up? Did you just call me?"
+}
+```
+
+Clip: `packs/my.lines/audio/voice/th/Voice_My_Hello_001.ogg`. For one kind only, write its `Scenario`
+(e.g. `"GameStart_LessTowDays"`) and leave `Pool` out, as for any other pool.
+
+### A global line (`*`)
+
+Written once, offered in every pool but the answer-choice talk (§2): clicks, all self-talk, timer lines,
+small talk and the startup greeting. `"Weight": 0.05` = about one pick in twenty of each pool it joins.
+In the timer pools the row is spoken as a `PomodoroVoiceText` row with no motion; in small talk the
+copy plays on break clicks (`PlayTiming` `Break`).
+
+```json scenario_groups.json
+[
+  {
+    "ID": "my_global_001",
+    "Scenario": "None",
+    "EpisodeNumber": 900002,
+    "Languages": ["th"],
+    "Pool": "*",
+    "Weight": 0.05
+  }
+]
+```
+
+```json novel.json
+[
+  {
+    "ID": "my_global_001",
+    "ScenarioGroupID": "my_global_001",
+    "Command": "Text",
+    "Arg1": "0",
+    "Arg2": 1.0,
+    "Arg3": "0",
+    "Talker": "Heroine",
+    "LocalizationID": "my_global_001",
+    "BodyMotion": -1,
+    "FacialMotion": 10,
+    "LookScale": 0.5,
+    "LookSpeedSeconds": 1.0
+  }
+]
+```
+
+```json localization.json
+[
+  {
+    "ID": "my_global_001",
+    "Ja": "",
+    "En": "I'm glad you're here.",
+    "Voice": "Voice_My_Global_001"
+  }
+]
+```
+
+```json th.json
+{
+  "my_global_001": "I'm glad you're here."
+}
+```
+
+Clip: `packs/my.lines/audio/voice/th/Voice_My_Global_001.ogg`.
+
 ## 4. How the gate works
 
 - **Injection.** The groups are merged with the pack's other rows, screened, and injected only while
@@ -588,21 +747,57 @@ Clips: `Voice_My_SmallTalk_001_001.ogg` and `_002.ogg` in `packs/my.lines/audio/
   returns within the cycle; one that already played this cycle does not.
 - **Timer lists.** Two-list timer selectors index a per-episode table with the drawn number
   (e.g. `NormalWorkStartVoiceSelector`); the feature answers for its own episodes before that line runs.
+- **Weighted lines.** They never join the lists above. At a pick, a winning weighted line is put at
+  the front of the list the game is about to read and taken back if the game read another list; the
+  game's own episodes, their order and `_beforeLast` are untouched (§5).
+- **Startup greetings.** A postfix on `GameStartTalkSelector.GetGameStartTalk` rolls the startup lines
+  of the kind the game chose. On a win it first checks that the game's own lookup (the first group with
+  that `Scenario` and `EpisodeNumber`, and its first novel row) finds exactly that line, then returns
+  its episode; otherwise the game's greeting stays, with one WARN.
 
-## 5. Weight: a pack line against a game line
+## 5. Weight
 
-- **Fixed pools (clicks, self-talk, timer lines, `pomodoro.end`).** A pack line is one more card in
-  the deck: with `N` game lines and `K` pack lines offered, each line - game or pack - plays exactly
-  once per `N + K`-pick cycle. Example: `click.work.morning` (5) + 2 pack lines = once per 7 morning picks each.
+**A line with `Weight`** (0 to 1) is never dealt into the game's deck. At every pick of its pool, the
+weighted lines offered there (in the language shown, clips loaded) share one roll, specific and global
+lines alike:
+
+- The chance that one of them takes the pick is the sum of their weights, capped at 1. Otherwise the
+  game's own pick runs, which can still be an unweighted pack line.
+- Which one: by weight. Two lines at `1` split the picks 50/50; `1` and `0.5` split them 2:1.
+- No repeat: with two or more weighted lines offered, the one that played last in this pool sits the
+  pick out, unless its weight is 1. Once the game's own line has played in between, it may come up again.
+- `0` never plays (a quick way to switch a line off); `1` plays at every pick of its pool.
+
+| Pool picks | Lines offered | Result |
+|---|---|---|
+| any | one line, `"Weight": 0.25` | about 1 pick in 4 is that line, the rest the game's |
+| any | two lines, `0.25` each | about half the picks are one of them, never the same one twice in a row |
+| any | one line, `"Weight": 1` | every pick is that line |
+| `gamestart.*` | the line above as `gamestart.any`, `1` | it is the first line of every launch that reaches a greeting |
+
+Where "a pick of its pool" is, pool by pool:
 - **Two-list pools.** Work and break clicks and break self-talk choose 50/50 between the general list
-  and the time-of-day list each pick (`ReactionTalkSelector`). A pack
-  line competes inside its own list only, so a line in `click.work.morning` (5 game lines) comes up
-  far more often than one in `click.work` (23): about 0.5 / (5 + K) against 0.5 / (23 + K') per pick.
-- **Timer kinds.** The game first decides the kind (e.g. long start: loop 1 and at least 120 min of
-  work, 60 %), then picks from that kind's pool, so a line in `pomodoro.start.long` only plays on long
-  starts, and so on.
-- **Clock and worked-time lines.** Same slot, same once-a-day rule; with `K` pack lines a slot's
-  lines rotate through their cycle day by day.
+  and the time-of-day list each time (`ReactionTalkSelector`). A weighted line rolls only when its own
+  list is read: `click.work.morning` at `0.5` is half of the morning list's picks, about a quarter of
+  all work clicks in the morning.
+- **Timer kinds.** The game first decides the kind (long, continuous or normal start, and so on), then
+  reads that kind's pool; a weighted line rolls when its kind comes up.
+- **Clock and worked-time lines.** Their slot's once-a-day rule still applies; the roll happens when
+  the slot plays.
+- **Small talk.** The roll happens when the game would hold a small-talk lottery at all (its 10-minute
+  interval has passed), among the weighted small talks the game itself would accept now (play timing,
+  unlock, not the one just played). A winner takes the lottery before the `Arg1`/`Arg2` odds.
+- **Startup greetings.** There is no deck to join (it lives in the save), so every startup line rolls.
+  An unweighted one rolls at an equal share with the game's greetings of that kind,
+  `1 / (game lines + unweighted pack lines)`: one line in `gamestart.sameday` (17 game lines) gets 1/18.
+
+**A line without `Weight`** works as before:
+- **Fixed pools (clicks, self-talk, timer lines, `pomodoro.end`).** A pack line is one more card in
+  the deck: with `N` game lines and `K` pack lines offered, each line, game or pack, plays exactly
+  once per `N + K`-pick cycle. Example: `click.work.morning` (5) + 2 pack lines = once per 7 morning
+  picks each. In the two-list pools a line competes inside its own list only, so a line in
+  `click.work.morning` (5 game lines) comes up far more often than one in `click.work` (23): about
+  0.5 / (5 + K) against 0.5 / (23 + K') per pick.
 - **Small talk.** Exactly the game's rules: the 10-minute interval, unlock, play timing and content
   type, then each candidate qualifies when its `Arg1` (unseen) / `Arg2` (seen) is at least a random
   0-100, and one qualifier is picked uniformly (`SmallTalkSelector.LotterySmallTalk`).
@@ -626,18 +821,26 @@ Clips: `Voice_My_SmallTalk_001_001.ogg` and `_002.ogg` in `packs/my.lines/audio/
   `StartDirectionData`'s game-start lists, which are not pools here).
 - Achievements: `AchievementService.OnEndSmallTalk` reacts to episodes 1-4 only; pack episodes are
   1000+. Talk counters (`TALK_WORKING_COUNT`, ...) count clicks, not lines, exactly as in the game.
+- Startup greetings: the game's greeting decks are `StartDirectionData`'s `RandomList`s, which are saved.
+  They are never widened and never hold a pack episode: only the episode `GetGameStartTalk` returns
+  changes, for that launch. After a pack pick, `UseGameStartTalk` is skipped once, so the deck keeps the
+  game line it drew (the player did not hear it) and the save that call makes does not happen. The
+  greeting is read without the talk log; a copy's id (`<id>@<pool>`) is held back by the filter above
+  like any pack id. Which startup line played last (for the no-repeat rule) lives in
+  `BepInEx/data/packlines/last.json`, never in the save.
 
 ## 7. Config, console, smoke checks, trace
 
 | Item | Value |
 |---|---|
 | Config | `[PackLines] Enabled = true` (adapter .cfg). Off: no pack line is injected or offered. |
-| SETUP line | at the first injection: `SETUP  30 line(s) in 12 pool(s) ready  src=packlines pools=click.work:3,... languages=th rejected=0 patches=20` |
-| WARN lines | one per refused line: `PACKLINES skipped scenario_groups row '<id>': <reason>`; one when the feature turns off: `PACKLINES off: missing seam(s): ...` |
-| Console | `lines list` - every line by pool, offered or not right now, the pool's live state, refusals, the armed test. `lines test <groupId>` - a click-style line (clicks, self-talk, `pomodoro.end`, small talk) plays now through the game's own click reaction (the slot the game uses for a pending line in `FacilityClickHeroine`); a timer line is armed and replaces the game's pick at the next matching timer moment. `lines test off` disarms. The line must be offered in the language shown. |
-| Smoke (quiet, read-only) | `pl.lines.patches`, `pl.lines.registry`, `pl.lines.pools` (the gate run on copies of the game's lists: any other language → 0 pack lines and the game's episodes untouched; each line language → exactly its owed lines), `pl.lines.savefilter` |
-| Trace (file only, sys `packlines`) | `armed`, `off`, `bound`, `gate`, `cycle`, `pick`, `clock`, `test`, `saveFilter` |
-| Patch targets | `PackLinesPatchTargets.All` (94: the 20 patched methods, `FacilityClickHeroine.ReactionReady` for `lines test`, and the 73 fields/properties read), registered by `Initialize`; `tools/seamcheck` finds the table by its IL scan |
+| SETUP line | at the first injection: `SETUP  30 line(s) in 12 pool(s) ready  src=packlines pools=click.work:3,... languages=th rejected=0 weighted=2 patches=22` |
+| WARN lines | one per refused line: `PACKLINES skipped scenario_groups row '<id>': <reason>`; one per note on an accepted line (a global line at Weight 1, a global line with several spoken rows, a spread `Pool` without `Languages`); one when the feature turns off: `PACKLINES off: missing seam(s): ...` |
+| Console | `lines list` - every line by pool, offered or not right now, the pool's live state, refusals, the armed test. `lines test <groupId>` - a click-style line (clicks, self-talk, `pomodoro.end`, small talk) plays now through the game's own click reaction (the slot the game uses for a pending line in `FacilityClickHeroine`); a timer line is armed and replaces the game's pick at the next matching timer moment. `lines test off` disarms. The line must be offered in the language shown. A startup line (its copy id or the id you wrote) answers that it plays only at launch, whether it is offered now and whether its clips are loaded. `lines list` shows each line's weight, each copy's source, and per pool the weighted lines and the one played last. |
+| Smoke (quiet, read-only) | `pl.lines.patches`, `pl.lines.registry`, `pl.lines.pools` (the gate run on copies of the game's lists: any other language → 0 pack lines and the game's episodes untouched; each line language → exactly its owed lines), `pl.lines.savefilter`; `pl.lines.gamestart` (each startup line's group and first novel row are found the way the game looks them up). `pl.lines.pools` also fails when a weighted line sits in a game list between picks. |
+| Trace (file only, sys `packlines`) | `armed`, `off`, `bound`, `gate`, `cycle`, `cycleRestored`, `pick`, `weighted`, `clock`, `test`, `saveFilter`, `seen`, `seenSaved`; startup: `startWarm` (clips queued before the room), `pick`, `startKept` (the game's greeting stayed, and why), `startDeckKept` (the save deck was not advanced) |
+| Mod data (never the save) | `BepInEx/data/packlines/seen.json` (pack small talks heard), `cycles.json` (deck lines dealt this cycle), `last.json` (the startup line played last) |
+| Patch targets | `PackLinesPatchTargets.All` (115: the 22 patched methods, the members read by reflection and `FacilityClickHeroine.ReactionReady` for `lines test`), registered by `Initialize`; `tools/seamcheck` finds the table by its IL scan (game 1.18.0: all 359 loader targets found) |
 
 ## 8. Known limits
 
@@ -648,3 +851,11 @@ Clips: `Voice_My_SmallTalk_001_001.ogg` and `_002.ogg` in `packs/my.lines/audio/
 - `lines test` for a click-style line takes the slot the game uses for a pending "you came back" line;
   if one was pending it is dropped. Asleep, she only wakes up; wanting to talk, her story comes first.
 - A pack line that reuses a game line's localization row is not clip-checked (its clip is the game's).
+- Startup lines never play on the very first launch (the tutorial greeting) or on a launch where a
+  limited-time event opening plays instead (Halloween 2026, Christmas 2025; once each).
+- A startup line plays only if its clips have loaded by the time the game picks the greeting, about
+  half a second before the room is ready. The loader queues startup clips first, as soon as the lines
+  are injected and the language is known; a line whose clip is still loading sits that launch out (the
+  game's greeting plays, and the trace `startKept` names the clip). It never plays silent.
+- Global lines skip `pomodoro.end` (§2), and a global line with several spoken rows skips the timer
+  pools.

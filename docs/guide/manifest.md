@@ -21,7 +21,7 @@ A **content pack** (`packs/cwy.example/manifest.json`):
   "version": "0.1.0",
   "author": "CWY:LS",
   "description": "Reference pack: the folder layout every CWY content pack uses.",
-  "gameVersion": "1.17.3",
+  "gameVersion": "1.18.0",
   "loaderVersion": "0.1.0",
   "dependsOn": []
 }
@@ -37,7 +37,7 @@ added; made-up ids): the same fields plus `entryDll`.
   "version": "0.1.0",
   "author": "yourname",
   "description": "One line: what the mod does.",
-  "gameVersion": "1.17.3",
+  "gameVersion": "1.18.0",
   "loaderVersion": "0.9.0",
   "entryDll": "MyMod.dll",
   "dependsOn": [
@@ -72,7 +72,7 @@ Only `id`, `name` and `version` are required. Names are case-sensitive (`depends
 | `version` | string, SemVer 2.0.0 | e.g. `1.0.0`, `0.2.0-rc.1` | Your pack's own version; what `minVersion` in other manifests compares against |
 | `author` | string | optional | |
 | `description` | string | optional, one line | |
-| `gameVersion` | string | optional | The game build you made and tested it with, e.g. `1.17.3`. **Informational:** on another build the pack still loads, with one `PACKS` warning naming both versions. Update it once you have tested on the new build |
+| `gameVersion` | string | optional | The game build you made and tested it with, e.g. `1.18.0`. **Informational:** on another build the pack still loads, with one `PACKS` warning naming both versions. Update it once you have tested on the new build |
 | `minGameVersion` | SemVer | optional, full `major.minor.patch`, inclusive | Oldest game build the pack supports. On an older game: skipped as `GameVersionTooOld` |
 | `maxGameVersion` | SemVer | optional, full `major.minor.patch`, inclusive, not below `minGameVersion` | Newest game build the pack supports. On a newer game: skipped as `GameVersionTooNew`. Set both to the same version to pin exactly one build |
 | `loaderVersion` | SemVer | optional | **The framework minimum**: the oldest CWY:LS Mod Loader API that can load this pack or mod. The running API is `0.9.0` (`CwyApi.Version`); anything newer than that is skipped as `CoreVersionTooOld`. Set it to the version you built against. (The name is historical; it is the one minimum-framework field, for packs and code mods alike) |
