@@ -106,7 +106,7 @@ Either way the files are moved into a dated folder inside the game folder, never
 |---|---|
 | macOS on Apple Silicon, game 1.17.3 from Steam | Install, play through Steam, uninstall back to the plain game |
 | Windows 11, game 1.17.3 | Install, loader and a content pack running in game |
-| macOS, game 1.18.0 (2026-10-31) | All 359 checks found (`tools/seamcheck`); loader and content packs running in game |
+| Game 1.18.0 (2026-10-31) | All 359 checks found on macOS and Windows (`tools/seamcheck`); on macOS, loader and content packs running in game |
 | Intel Macs | Not tested yet |
 | Other BepInEx mods alongside | Not tested yet |
 

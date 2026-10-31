@@ -74,7 +74,7 @@ if [ "$RUN_TESTS" -eq 1 ]; then
   # Managed/ DLLs (and in the Windows reference copy when present). A missing seam stops here.
   echo
   echo "==> seamcheck"
-  SC_PLATFORM=mac; [ -d "$HERE/_ref/win-1.17.3/Managed" ] && SC_PLATFORM=all
+  SC_PLATFORM=mac; [ -d "$HERE/_ref/win-1.18.0/Managed" ] && SC_PLATFORM=all
   "$HERE/tools/seamcheck/seamcheck.sh" --platform "$SC_PLATFORM"
   dotnet test "$HERE/tools/seamcheck/Seamcheck.Tests/Seamcheck.Tests.csproj" -c "$CONFIG"
 fi

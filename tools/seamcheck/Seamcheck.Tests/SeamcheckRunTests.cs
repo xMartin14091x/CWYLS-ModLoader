@@ -32,7 +32,7 @@ namespace CWY.Seamcheck.Tests
             var options = SeamcheckOptions.Parse(new[] { "--platform", "all", "--repo", "/repo", "--json", "o.json", "--verbose" }, "/h");
 
             Assert.Equal(new[] { "mac", "win" }, options.Platforms.Select(p => p.Key));
-            Assert.Equal("/repo/_ref/win-1.17.3/Managed", options.Platforms[1].ManagedDirectory);
+            Assert.Equal("/repo/_ref/win-1.18.0/Managed", options.Platforms[1].ManagedDirectory);
             Assert.Equal(TracePlatforms.Windows, options.Platforms[1].TracePlatform);
             Assert.Equal("o.json", options.JsonPath);
             Assert.True(options.Verbose);

@@ -33,13 +33,13 @@ namespace CWY.Seamcheck
             + "  --platform   mac (default), win, or all (both, plus a per-platform difference list)\n"
             + "  --managed    the Managed/ folder to read; only with a single platform. Defaults:\n"
             + "               mac  <Steam>/steamapps/common/Chill with You Lo-Fi Story/.../Data/Managed\n"
-            + "               win  <repo>/_ref/win-1.17.3/Managed (a copy of a Windows install's Managed/)\n"
+            + "               win  <repo>/_ref/win-1.18.0/Managed (a copy of a Windows install's Managed/)\n"
             + "  --json       also write the full result as JSON (schema cwy.seamcheck/1)\n"
             + "  --repo       repository root, for the win default (seamcheck.sh passes it)\n"
             + "  --verbose    print debug diagnostics to stderr\n";
 
         /// <summary>Folder of a copy of a Windows install's Managed/, relative to the repository root.</summary>
-        internal const string WindowsReferenceFolder = "_ref/win-1.17.3/Managed";
+        internal const string WindowsReferenceFolder = "_ref/win-1.18.0/Managed";
 
         /// <summary>The macOS player's Managed/ folder under a Steam library root.</summary>
         internal const string MacManagedUnderSteam =

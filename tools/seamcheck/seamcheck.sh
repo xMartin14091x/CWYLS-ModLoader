@@ -3,7 +3,7 @@
 # folder, without running the game. Details: tools/seamcheck/README.md.
 #
 #   tools/seamcheck/seamcheck.sh                        the local macOS install (default)
-#   tools/seamcheck/seamcheck.sh --platform win         a copy of a Windows install's Managed/ in _ref/win-1.17.3/Managed
+#   tools/seamcheck/seamcheck.sh --platform win         a copy of a Windows install's Managed/ in _ref/win-1.18.0/Managed
 #   tools/seamcheck/seamcheck.sh --platform all         both, plus the per-platform differences
 #   tools/seamcheck/seamcheck.sh --managed <dir> [--platform mac|win]
 #   tools/seamcheck/seamcheck.sh --json out.json        also write the JSON report
