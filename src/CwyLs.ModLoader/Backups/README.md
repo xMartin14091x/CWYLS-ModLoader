@@ -19,7 +19,7 @@ and `Application.version`. It adds no patch target.
 | What | `Application.persistentDataPath/SaveData`, all of it: every Steam account, the demo and release folders, the game's own `.bak` files. Symbolic links are not followed (normally there are none) |
 | Live save, macOS | `~/Library/Application Support/nestopi/Chill With You/SaveData` |
 | Live save, Windows | `%USERPROFILE%\AppData\LocalLow\nestopi\Chill With You\SaveData` |
-| Backups | `Application.persistentDataPath/CWYLS Backups/`, next to `SaveData`: macOS `~/Library/Application Support/nestopi/Chill With You/CWYLS Backups`, Windows `%USERPROFILE%\AppData\LocalLow\nestopi\Chill With You\CWYLS Backups`. Outside the game folder, so uninstalling or reinstalling the game in Steam leaves them alone (Martin, 2026-11-01: "keep the backup somewhere safe") |
+| Backups | `Application.persistentDataPath/CWYLS Backups/`, next to `SaveData`: macOS `~/Library/Application Support/nestopi/Chill With You/CWYLS Backups`, Windows `%USERPROFILE%\AppData\LocalLow\nestopi\Chill With You\CWYLS Backups`. Outside the game folder, so uninstalling or reinstalling the game in Steam leaves them alone |
 | When | once per launch, synchronously, in the first plugin's `Awake` (below). About 200 KB, a few milliseconds; the SETUP line prints `ms=` |
 | Steam Cloud | never sees the backups: they are outside `SaveData`, the folder Steam Cloud syncs (its marker file is in `SaveData/Release`). Unverified: that Steam's Auto-Cloud rules for this game cover nothing else in that folder. The runner refuses to run if the backups folder is inside the save folder or the other way round |
 

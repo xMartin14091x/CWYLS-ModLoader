@@ -30,7 +30,7 @@ Assembly `CwyLs.ModLoader.Core` · 25 public type(s) · [API index](README.md)
 | [`PackLineTestArm`](#packlinetestarm) | sealed class | The console's `lines test <id>` for a timer line: the next time the game picks a line for that timer moment and mode, it gets this one. |
 | [`PackLineTimerMode`](#packlinetimermode) | enum | Which timer mode a `PackLineFamily.TimerLine` pool belongs to (`Bulbul.TimerMode`). |
 | [`PackLineTimerPhase`](#packlinetimerphase) | enum | Which timer moment a `PackLineFamily.TimerLine` pool speaks at. |
-| [`PackLineWeights`](#packlineweights) | static class | The weighted pick (Martin, 2026-10-31): at each pick of a pool, the weighted lines offered there - written for the pool, or copies of a `gamestart.any` / global line - share one roll. |
+| [`PackLineWeights`](#packlineweights) | static class | The weighted pick: at each pick of a pool, the weighted lines offered there - written for the pool, or copies of a `gamestart.any` / global line - share one roll. |
 
 ---
 
@@ -1586,7 +1586,7 @@ Which timer moment a [`PackLineFamily.TimerLine`](#packlinefamily--timerline) po
 
 static class · `CwyLs.ModLoader.Core.PackLines.PackLineWeights` · assembly `CwyLs.ModLoader.Core`
 
-The weighted pick (Martin, 2026-10-31): at each pick of a pool, the weighted lines offered there - written for the pool, or copies of a `gamestart.any` / global line - share one roll. Pure logic; the game side supplies the candidates, the last line played and two random numbers.
+The weighted pick: at each pick of a pool, the weighted lines offered there - written for the pool, or copies of a `gamestart.any` / global line - share one roll. Pure logic; the game side supplies the candidates, the last line played and two random numbers.
 
 1. Lines with weight 0 never play.
 2. No repeat: with two or more candidates, the line that played last in this pool (by [`PackLine.SourceGroupId`](#packline--sourcegroupid)) sits this pick out - unless its weight is 1.

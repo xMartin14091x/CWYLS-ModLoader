@@ -24,7 +24,7 @@ namespace CwyLs.ModLoader.Core.PackLines
     }
 
     /// <summary>
-    /// The weighted pick (Martin, 2026-10-31): at each pick of a pool, the weighted lines offered there -
+    /// The weighted pick: at each pick of a pool, the weighted lines offered there -
     /// written for the pool, or copies of a <c>gamestart.any</c> / global line - share one roll. Pure
     /// logic; the game side supplies the candidates, the last line played and two random numbers.
     /// </summary>

@@ -8,7 +8,7 @@ using Xunit;
 namespace CwyLs.ModLoader.Tests
 {
     /// <summary>
-    /// Weighted pack lines (Martin, 2026-10-31): the <c>Weight</c> member of
+    /// Weighted pack lines: the <c>Weight</c> member of
     /// <c>data/scenario_groups.json</c>, the screen's range check, the weighted pick
     /// (<see cref="PackLineWeights"/>) and the last-played file (<see cref="PackLineLastPlayed"/>).
     /// </summary>

@@ -8,7 +8,7 @@ using Xunit;
 namespace CwyLs.ModLoader.Tests
 {
     /// <summary>
-    /// Startup-greeting pools and spread lines (Martin, 2026-10-31): a <c>GameStart_*</c> line joins its
+    /// Startup-greeting pools and spread lines: a <c>GameStart_*</c> line joins its
     /// pool, <c>"Pool": "gamestart.any"</c> copies a line into every startup pool and <c>"Pool": "*"</c>
     /// (a global line) into every pool a single line can fill, each copy screened for its pool.
     /// </summary>

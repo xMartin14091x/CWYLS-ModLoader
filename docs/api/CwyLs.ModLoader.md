@@ -85,7 +85,7 @@ The directories the framework owns. Resolved from BepInEx's own path table rathe
 
 ### `static string BackupsRoot { get; }`
 
-Launch save backups, next to the game's own save folder: &lt;Application.persistentDataPath&gt;/CWYLS Backups (macOS `~/Library/Application Support/nestopi/Chill With You`, Windows `%USERPROFILE%\AppData\LocalLow\nestopi\Chill With You`). Outside the game folder, so uninstalling or reinstalling the game in Steam leaves them alone (Martin, 2026-11-01: "keep the backup somewhere safe"), and outside `SaveData`, the folder Steam Cloud syncs. Created by the backup feature when it first makes one, not by [`ModLoaderPaths.EnsureCreated`](#modloaderpaths--ensurecreated).
+Launch save backups, next to the game's own save folder: &lt;Application.persistentDataPath&gt;/CWYLS Backups (macOS `~/Library/Application Support/nestopi/Chill With You`, Windows `%USERPROFILE%\AppData\LocalLow\nestopi\Chill With You`). Outside the game folder, so uninstalling or reinstalling the game in Steam leaves them alone, and outside `SaveData`, the folder Steam Cloud syncs. Created by the backup feature when it first makes one, not by [`ModLoaderPaths.EnsureCreated`](#modloaderpaths--ensurecreated).
 
 <a id="modloaderpaths--dataroot"></a>
 
