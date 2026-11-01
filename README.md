@@ -42,6 +42,7 @@ game version.
 | **Code mods** | A C# entry point with a helper API: game events, Satone's lines and expressions, mod windows, console commands, and game actions behind a safety gate. |
 | **Version safety** | The 359 game methods and fields the loader relies on are checked at startup, and offline with `tools/seamcheck`. If an update moves one, only that feature switches off. |
 | **Save safety** | Mod content never goes into your save files, so they keep loading without mods. |
+| **Save backups** | Every launch copies your save folder to `CWYLS Backups`, next to the game's own save folder and outside the game folder, so uninstalling the game keeps them (skipped when nothing changed). It keeps the last 5, plus one per day for 7 days, one per week for 3 weeks and one per month for 3 months. Restore by hand with the game closed; `saves` in the console shows how. |
 | **In-game console** | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>: pack and mod status, cutscene replay with `scene play`, diagnostics. |
 | **Diagnostic trace** | For bug reports, off by default. Turn it on with `trace on`, and off again with `trace off`. |
 | **Local game API** | For tools on your own computer. Off by default, and only reachable from this computer. |
@@ -93,7 +94,7 @@ Run the installer again and choose one of these:
 - **Uninstall the mod loader** removes the loader and keeps BepInEx.
 - **Uninstall everything** removes BepInEx too. On macOS, also clear the game's **Launch Options** in Steam afterwards; the installer reminds you.
 
-Either way the files are moved into a dated folder inside the game folder, never deleted. Your mods in `CWYLS Mods` and your saves stay where they are.
+Either way the files are moved into a dated folder inside the game folder, never deleted. Your mods in `CWYLS Mods`, your saves and your save backups stay where they are.
 
 </details>
 

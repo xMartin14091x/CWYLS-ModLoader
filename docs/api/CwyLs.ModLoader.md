@@ -81,6 +81,12 @@ static class · `CwyLs.ModLoader.ModLoaderPaths` · assembly `CwyLs.ModLoader`
 
 The directories the framework owns. Resolved from BepInEx's own path table rather than from anything hard-coded, so the same DLL works on macOS and Windows, and named here once so that no plugin builds its own `Path.Combine(BepInExRootPath, …)` and drifts.
 
+<a id="modloaderpaths--backupsroot"></a>
+
+### `static string BackupsRoot { get; }`
+
+Launch save backups, next to the game's own save folder: &lt;Application.persistentDataPath&gt;/CWYLS Backups (macOS `~/Library/Application Support/nestopi/Chill With You`, Windows `%USERPROFILE%\AppData\LocalLow\nestopi\Chill With You`). Outside the game folder, so uninstalling or reinstalling the game in Steam leaves them alone (Martin, 2026-11-01: "keep the backup somewhere safe"), and outside `SaveData`, the folder Steam Cloud syncs. Created by the backup feature when it first makes one, not by [`ModLoaderPaths.EnsureCreated`](#modloaderpaths--ensurecreated).
+
 <a id="modloaderpaths--dataroot"></a>
 
 ### `static string DataRoot { get; }`

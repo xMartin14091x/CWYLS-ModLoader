@@ -61,7 +61,10 @@ can delete yourself. On macOS, also clear the game's Launch Options in Steam.
 SAVES
 -----
 The loader keeps mod content out of the game's save files, so your saves stay loadable
-without mods. Back them up anyway before trying new mods.
+without mods. Each time the game starts with the loader, your save folder is also copied
+to "CWYLS Backups" next to it (the last 5, then one per day, week and month). It sits outside
+the game folder, so uninstalling the game keeps your backups.
+To restore one, quit the game first; type "saves" in the console to see how.
 
 
 LICENCE

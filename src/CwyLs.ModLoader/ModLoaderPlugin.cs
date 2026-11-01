@@ -62,6 +62,11 @@ namespace CwyLs.ModLoader
             CwyLsModLoader.Log.LogDebug(
                 $"packs: {ModLoaderPaths.PacksRoot}; trace: {ModLoaderPaths.TraceRoot}; data: {ModLoaderPaths.DataRoot}");
 
+            // Launch save backup: here, the first plugin's Awake (frame 0, inside the chainloader), before the
+            // game's DI scope and Steam exist - every game save write needs both - so the copy is the save as the
+            // last session left it. Synchronous (about 200 KB); a failure is one WARN and the game starts as usual.
+            Backups.SaveBackupFeature.Initialize(Config);
+
             // C1-FRONTDOOR: the one main-thread dispatcher and its hidden host, before anything can
             // post to it. Awake runs on the main thread, which is what Arm captures.
             Threading.MainThread.Arm(Config);

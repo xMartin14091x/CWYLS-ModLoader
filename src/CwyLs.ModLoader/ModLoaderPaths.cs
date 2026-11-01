@@ -13,6 +13,17 @@ namespace CwyLs.ModLoader
         /// <summary>Content packs live beside the game, not inside BepInEx: &lt;game root&gt;/CWYLS Mods.</summary>
         public static string PacksRoot => Path.Combine(Paths.GameRootPath, "CWYLS Mods");
 
+        /// <summary>
+        /// Launch save backups, next to the game's own save folder: &lt;Application.persistentDataPath&gt;/CWYLS Backups
+        /// (macOS <c>~/Library/Application Support/nestopi/Chill With You</c>, Windows
+        /// <c>%USERPROFILE%\AppData\LocalLow\nestopi\Chill With You</c>). Outside the game folder, so uninstalling or
+        /// reinstalling the game in Steam leaves them alone (Martin, 2026-11-01: "keep the backup somewhere safe"), and
+        /// outside <c>SaveData</c>, the folder Steam Cloud syncs. Created by the backup feature when it first makes
+        /// one, not by <see cref="EnsureCreated"/>.
+        /// </summary>
+        public static string BackupsRoot =>
+            Path.Combine(UnityEngine.Application.persistentDataPath, Core.Backups.SaveBackupNames.RootFolderName);
+
         /// <summary>Trace/JSONL output of the game trace: &lt;BepInEx&gt;/trace.</summary>
         public static string TraceRoot => Path.Combine(Paths.BepInExRootPath, "trace");
 

@@ -252,12 +252,12 @@ plain_install() {
 plain_uninstall() {
   if game_running; then say "The game is running. Quit it first."; return 1; fi
   loader_installed || { say "The mod loader is not installed."; return 0; }
-  if do_uninstall_loader; then log_line "uninstalled the loader (plain) -> $MOVED_TO"; say "Removed. Moved to $MOVED_TO; delete it whenever you like. BepInEx and your mods stay."; return 0; fi
+  if do_uninstall_loader; then log_line "uninstalled the loader (plain) -> $MOVED_TO"; say "Removed. Moved to $MOVED_TO; delete it whenever you like. BepInEx, your mods and your save backups stay."; return 0; fi
   say "ERROR: $ERR"; return 1
 }
 plain_uninstall_all() {
   if game_running; then say "The game is running. Quit it first."; return 1; fi
-  if do_uninstall_all; then say "BepInEx and the mod loader moved to $MOVED_TO. Your mods and saves stay. Also clear the game's Launch Options in Steam."; return 0; fi
+  if do_uninstall_all; then say "BepInEx and the mod loader moved to $MOVED_TO. Your mods, saves and save backups stay. Also clear the game's Launch Options in Steam."; return 0; fi
   say "ERROR: $ERR"; return 1
 }
 
@@ -1131,7 +1131,7 @@ TEXTS=(
 "Recolour the room: a warm film look, a rainy evening, or your own."
 "New lines and short scenes for Satone, or a whole new language."
 "A documented C# API, built to keep working when the game updates."
-"Nothing goes into your save files, and uninstalling leaves no trace."
+"Nothing goes into your save files, and every launch backs them up."
 )
 NCARD=${#TITLES[@]}
 BIGW=0; for w in "${WORDS[@]}"; do bigrows "$w"; [ ${#B0} -gt $BIGW ] && BIGW=${#B0}; done

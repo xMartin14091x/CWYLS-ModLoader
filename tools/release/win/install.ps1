@@ -377,13 +377,13 @@ function Plain-Uninstall {
     if (-not (Loader-Installed)) { Say 'The mod loader is not installed.'; return $true }
     if (Do-UninstallLoader) {
         Log-Line "uninstalled the loader (plain) -> $($script:MOVED_TO)"
-        Say "Removed. Moved to $($script:MOVED_TO); delete it whenever you like. BepInEx and your mods stay."; return $true
+        Say "Removed. Moved to $($script:MOVED_TO); delete it whenever you like. BepInEx, your mods and your save backups stay."; return $true
     }
     Say "ERROR: $($script:ERR)"; return $false
 }
 function Plain-UninstallAll {
     if (Test-GameRunning) { Say 'The game is running. Quit it first.'; return $false }
-    if (Do-UninstallAll) { Say "BepInEx and the mod loader moved to $($script:MOVED_TO). Your mods and saves stay."; return $true }
+    if (Do-UninstallAll) { Say "BepInEx and the mod loader moved to $($script:MOVED_TO). Your mods, saves and save backups stay."; return $true }
     Say "ERROR: $($script:ERR)"; return $false
 }
 $CTRLC_LINE = [string][char]3
@@ -1389,7 +1389,7 @@ try {
             'Recolour the room: a warm film look, a rainy evening, or your own.',
             'New lines and short scenes for Satone, or a whole new language.',
             'A documented C# API, built to keep working when the game updates.',
-            'Nothing goes into your save files, and uninstalling leaves no trace.'
+            'Nothing goes into your save files, and every launch backs them up.'
         )
         $NCARD = $TITLES.Count
         $BIGW = 0; foreach ($wd in $WORDS) { $bw = (Big-Rows $wd)[0].Length; if ($bw -gt $BIGW) { $BIGW = $bw } }

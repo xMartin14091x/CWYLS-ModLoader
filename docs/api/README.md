@@ -36,13 +36,14 @@ A code mod sees the game through one object: the helper its `CwyMod` receives. [
 
 | Namespace | Assembly | Types | Mod API types | Members | Not documented |
 |---|---|---|---|---|---|
-| [`CwyLs.ModLoader`](CwyLs.ModLoader.md) | `CwyLs.ModLoader` | 8 | 0 | 23 | 0 |
+| [`CwyLs.ModLoader`](CwyLs.ModLoader.md) | `CwyLs.ModLoader` | 8 | 0 | 24 | 0 |
 | [`CwyLs.ModLoader.Actions`](CwyLs.ModLoader.Actions.md) | `CwyLs.ModLoader` | 1 | 0 | 13 | 0 |
 | [`CwyLs.ModLoader.Console`](CwyLs.ModLoader.Console.md) | `CwyLs.ModLoader` | 3 | 0 | 65 | 0 |
 | [`CwyLs.ModLoader.Core`](CwyLs.ModLoader.Core.md) | `CwyLs.ModLoader.Core` | 14 | 0 | 78 | 4 |
 | [`CwyLs.ModLoader.Core.Actions`](CwyLs.ModLoader.Core.Actions.md) | `CwyLs.ModLoader.Core` | 45 | 9 | 269 | 0 |
 | [`CwyLs.ModLoader.Core.Api`](CwyLs.ModLoader.Core.Api.md) | `CwyLs.ModLoader.Core` | 54 | 0 | 362 | 0 |
 | [`CwyLs.ModLoader.Core.Audio`](CwyLs.ModLoader.Core.Audio.md) | `CwyLs.ModLoader.Core` | 44 | 11 | 223 | 0 |
+| [`CwyLs.ModLoader.Core.Backups`](CwyLs.ModLoader.Core.Backups.md) | `CwyLs.ModLoader.Core` | 17 | 0 | 111 | 0 |
 | [`CwyLs.ModLoader.Core.Bus`](CwyLs.ModLoader.Core.Bus.md) | `CwyLs.ModLoader.Core` | 2 | 0 | 18 | 1 |
 | [`CwyLs.ModLoader.Core.Conditions`](CwyLs.ModLoader.Core.Conditions.md) | `CwyLs.ModLoader.Core` | 20 | 11 | 133 | 0 |
 | [`CwyLs.ModLoader.Core.Console`](CwyLs.ModLoader.Core.Console.md) | `CwyLs.ModLoader.Core` | 37 | 1 | 264 | 0 |
