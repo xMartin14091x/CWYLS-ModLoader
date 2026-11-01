@@ -1,4 +1,9 @@
-<sub>[Guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; **Lifecycle** &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../.github/assets/banner/docs-lifecycle-dark.svg">
+  <img src="../../.github/assets/banner/docs-lifecycle-light.svg" width="100%" alt="CWY:LS Mod Loader: Lifecycle">
+</picture>
+
+<sub>[Guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; **Lifecycle** &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [Translate](translate.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
 
 # Lifecycle: when your code runs
 

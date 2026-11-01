@@ -1,4 +1,9 @@
-<sub>[Guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; **Troubleshooting** &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../.github/assets/banner/docs-troubleshooting-dark.svg">
+  <img src="../../.github/assets/banner/docs-troubleshooting-light.svg" width="100%" alt="CWY:LS Mod Loader: Troubleshooting">
+</picture>
+
+<sub>[Guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; **Troubleshooting** &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [Translate](translate.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
 
 # Troubleshooting
 

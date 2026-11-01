@@ -1,4 +1,9 @@
-<sub>[Author's guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifests](manifest.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md)</sub>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../.github/assets/banner/docs-translate-dark.svg">
+  <img src="../../.github/assets/banner/docs-translate-light.svg" width="100%" alt="CWY:LS Mod Loader: Translate the game">
+</picture>
+
+<sub>[Guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; **Translate** &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
 
 # Translate the game
 
