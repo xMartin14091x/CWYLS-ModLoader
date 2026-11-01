@@ -2,12 +2,12 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner/0.9-dusk-dark.svg">
-  <img src=".github/assets/banner/0.9-dusk-light.svg" width="100%" alt="CWY:LS Mod Loader, release 0.9 · Dusk: the installer's block-letter CWY:LS, MOD LOADER and v0.9.0 · developer preview, under a pixel-art evening sky with twinkling stars, the Teacup constellation, a crescent moon and a small lit house on the hills.">
+  <img src=".github/assets/banner/0.9-dusk-light.svg" width="100%" alt="CWY:LS Mod Loader, release 0.9 · Dusk: the installer's block-letter CWY:LS, MOD LOADER and v0.9.1 · developer preview, under a pixel-art evening sky with twinkling stars, the Teacup constellation, a crescent moon and a small lit house on the hills.">
 </picture>
 
 **A mod loader for *Chill With You: Lo-Fi Story*, built so your mods keep working when the game updates.**
 
-[![0.9 preview · Dusk](https://img.shields.io/badge/0.9_preview-Dusk-f5a9c2?style=for-the-badge&labelColor=1a1f3f&logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xMCAtMTAgMjAgMjAiPjxwYXRoIGZpbGw9IiNmNWE5YzIiIGQ9Ik0wLC0xMFExLjYsLTEuNiAxMCwwUTEuNiwxLjYgMCwxMFEtMS42LDEuNiAtMTAsMFEtMS42LC0xLjYgMCwtMTBaIi8%2BPC9zdmc%2B)](https://github.com/xMartin14091x/CWYLS-ModLoader/releases)
+[![0.9.1 preview · Dusk](https://img.shields.io/badge/0.9.1_preview-Dusk-f5a9c2?style=for-the-badge&labelColor=1a1f3f&logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xMCAtMTAgMjAgMjAiPjxwYXRoIGZpbGw9IiNmNWE5YzIiIGQ9Ik0wLC0xMFExLjYsLTEuNiAxMCwwUTEuNiwxLjYgMCwxMFEtMS42LDEuNiAtMTAsMFEtMS42LC0xLjYgMCwtMTBaIi8%2BPC9zdmc%2B)](https://github.com/xMartin14091x/CWYLS-ModLoader/releases)
 [![runs on macOS · Windows](https://img.shields.io/badge/runs_on-macOS_%C2%B7_Windows-b9a7e8?style=for-the-badge&labelColor=1a1f3f)](#-install)
 [![licence PolyForm NC](https://img.shields.io/badge/licence-PolyForm_NC-9fd9c2?style=for-the-badge&labelColor=1a1f3f)](LICENSE.md)
 
