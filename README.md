@@ -11,7 +11,7 @@
 [![runs on macOS · Windows](https://img.shields.io/badge/runs_on-macOS_%C2%B7_Windows-b9a7e8?style=for-the-badge&labelColor=1a1f3f)](#-install)
 [![licence PolyForm NC](https://img.shields.io/badge/licence-PolyForm_NC-9fd9c2?style=for-the-badge&labelColor=1a1f3f)](LICENSE.md)
 
-[**Download**](https://github.com/xMartin14091x/CWYLS-ModLoader/releases) &nbsp;·&nbsp; [**Make mods**](docs/guide/) &nbsp;·&nbsp; [**API reference**](docs/api/) &nbsp;·&nbsp; [**Discord**](https://discord.gg/z7vQ63cH6B) &nbsp;·&nbsp; [**Report a problem**](https://github.com/xMartin14091x/CWYLS-ModLoader/issues)
+[**Download**](https://github.com/xMartin14091x/CWYLS-ModLoader/releases) &nbsp;·&nbsp; [**Nexus Mods**](https://www.nexusmods.com/chillwithyoulofistory/mods/16) &nbsp;·&nbsp; [**Make mods**](docs/guide/) &nbsp;·&nbsp; [**API reference**](docs/api/) &nbsp;·&nbsp; [**Discord**](https://discord.gg/z7vQ63cH6B) &nbsp;·&nbsp; [**Report a problem**](https://github.com/xMartin14091x/CWYLS-ModLoader/issues)
 
 </div>
 
@@ -49,7 +49,7 @@ game version.
 
 ## ▶ Install
 
-Download the zip for your system from **[Releases](https://github.com/xMartin14091x/CWYLS-ModLoader/releases)** and unzip it.
+Download the zip for your system from **[Releases](https://github.com/xMartin14091x/CWYLS-ModLoader/releases)** or **[Nexus Mods](https://www.nexusmods.com/chillwithyoulofistory/mods/16)** and unzip it.
 
 <div align="center">
 <picture>
