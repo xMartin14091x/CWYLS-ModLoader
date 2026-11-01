@@ -94,10 +94,12 @@ local files* on the game opens it.
 These are not optional. They come from the licence (`LICENSE.md`), from [`NOTICE.md`](../../NOTICE.md)
 and [`AGENTS.md`](../../AGENTS.md), and from the game's own terms.
 
-1. **Free of charge, no commercial use.** CWY:LS Mod Loader is licensed under PolyForm
-   Noncommercial 1.0.0 with the Required Notices at the top of `LICENSE.md`. Mods, content packs
-   and other works made for or with the loader must be distributed free of charge. Anyone who gets
-   a copy of CWY:LS Mod Loader from you must also get the licence terms and the Required Notices.
+1. **Free of charge, never sold.** CWY:LS Mod Loader is licensed under PolyForm Noncommercial
+   1.0.0 with the Additional Terms at the top of `LICENSE.md`. Mods, content packs and other works
+   made for or with the loader must be shared free of charge, with nothing behind a paywall (tips
+   are fine). The loader and its code are never sold, in any form. Videos and streams of your mods
+   are fine, paid ones included. Anyone who gets a copy of CWY:LS Mod Loader from you must also get
+   the whole `LICENSE.md`.
 2. **Paid game content is never modded.** No unlocking of the shop, DLC, the full version or level
    caps, or collaboration content, by any route.
 3. **Account linking, cloud sync, social sharing and the shop are off limits.** Do not read, change
@@ -114,4 +116,4 @@ and [`AGENTS.md`](../../AGENTS.md), and from the game's own terms.
 
 This is a summary for authors, not legal advice.
 
-<!-- Rule 1: LICENSE.md (Required Notices), NOTICE.md; rules 2-4: AGENTS.md "Project rules", NOTICE.md; rule 5: AGENTS.md "Protected controls", NOTICE.md; rule 6: NOTICE.md. -->
+<!-- Rule 1: LICENSE.md (Additional Terms), NOTICE.md; rules 2-4: AGENTS.md "Project rules", NOTICE.md; rule 5: AGENTS.md "Protected controls", NOTICE.md; rule 6: NOTICE.md. -->

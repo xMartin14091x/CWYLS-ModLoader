@@ -251,9 +251,10 @@ Each release is a later hour of the same night, and adds one constellation to th
 
 ## ⚖ Licence and credits
 
-[PolyForm Noncommercial 1.0.0](LICENSE.md), with the Required Notices at the top of that file:
-- no commercial use;
-- mods made for or with the loader must be free;
+[PolyForm Noncommercial 1.0.0](LICENSE.md), with the Additional Terms at the top of that file:
+- no selling the loader or its code, in any form, changed or not;
+- videos, streams and other content made with it are fine, paid ones included;
+- mods made for or with the loader must be free (tips are fine);
 - copies and changed versions must keep the **demo lock**.
 
 See also [`NOTICE.md`](NOTICE.md).

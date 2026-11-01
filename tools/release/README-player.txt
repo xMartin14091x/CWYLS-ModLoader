@@ -69,6 +69,7 @@ To restore one, quit the game first; type "saves" in the console to see how.
 
 LICENCE
 -------
-PolyForm Noncommercial 1.0.0, see LICENSE.md and NOTICE.md. No commercial use; mods made
-for or with the loader must be free. BepInEx and the libraries it bundles keep their own
+PolyForm Noncommercial 1.0.0 with the Additional Terms in LICENSE.md; see also NOTICE.md.
+Never sold, in any form; videos and streams are fine, paid ones included; mods made for or
+with the loader must be free; the demo lock stays. BepInEx and the libraries it bundles keep their own
 licences: see THIRD-PARTY-NOTICES.md.

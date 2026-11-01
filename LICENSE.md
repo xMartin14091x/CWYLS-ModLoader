@@ -1,7 +1,27 @@
 Required Notice: Copyright (c) 2026 Martin Nakorn
 Required Notice: CWY:LS Mod Loader is an unofficial, fan-made project for Chill with You : Lo-Fi Story. It is not made or endorsed by Nestopi Inc. The game, its code and its assets are the property of Nestopi Inc. and are not covered by this license.
-Required Notice: Mods, content packs and other works made for or with CWY:LS Mod Loader must be distributed free of charge.
-Required Notice: CWY:LS Mod Loader may be used only with the full Steam release of Chill with You : Lo-Fi Story. Copies and changed versions must keep its demo lock (see AGENTS.md, "Protected controls").
+Required Notice: CWY:LS Mod Loader is licensed under the Additional Terms below together with the PolyForm Noncommercial License 1.0.0. Every copy and every changed version must carry this whole file.
+Required Notice: In short: no selling the software or its code, in any form; videos and streams are fine, paid ones included; mods made for or with it must be free; the demo lock stays.
+
+# Additional Terms
+
+These terms are part of the license for CWY:LS Mod Loader. They add to the PolyForm Noncommercial License 1.0.0 below, and where the two differ, these terms win. Like the rest of the license, you must agree to them as both strict obligations and conditions to all your licenses, and breaking one ends your licenses as described under [Violations](#violations).
+
+## 1. No Selling
+
+You may not sell the software or charge for it in any way: not for a copy, a download, access to it, an installer or a bundle that contains it. This covers the whole software and every part of it, compiled or as source code, changed or unchanged, alone or together with anything else, and it applies whether or not the sale would otherwise infringe the licensor's copyright.
+
+## 2. Videos, Streams and Other Content
+
+You may use the software, and mods made for it, to make and share videos, streams, screenshots, guides, reviews and similar content, including content that earns money from ads, sponsorships, subscriptions, donations or platform payouts. That is a permitted purpose. It does not let you sell the software ([No Selling](#1-no-selling)) or a mod ([Mods Stay Free](#3-mods-stay-free)).
+
+## 3. Mods Stay Free
+
+If you share a mod, content pack or other work made for or with the software, you must share it free of charge: no price, no paywall, and no part of it kept for people who pay (for example early access for supporters). Voluntary tips and donations are fine. A mod that contains any part of the software is also covered by [No Selling](#1-no-selling).
+
+## 4. The Demo Lock Stays
+
+The software runs only with the full Steam release of Chill with You : Lo-Fi Story, never with its free demo. Every copy and every changed version you make, use or share must keep that demo lock working (see AGENTS.md, "Protected controls"). You may make it stricter, or fix it where it wrongly blocks the full game; you may not remove, disable, weaken or get around it.
 
 # PolyForm Noncommercial License 1.0.0
 
