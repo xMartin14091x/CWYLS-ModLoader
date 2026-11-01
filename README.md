@@ -11,7 +11,7 @@
 [![runs on macOS · Windows](https://img.shields.io/badge/runs_on-macOS_%C2%B7_Windows-b9a7e8?style=for-the-badge&labelColor=1a1f3f)](#-install)
 [![licence PolyForm NC](https://img.shields.io/badge/licence-PolyForm_NC-9fd9c2?style=for-the-badge&labelColor=1a1f3f)](LICENSE.md)
 
-[**Download**](https://github.com/xMartin14091x/CWYLS-ModLoader/releases) &nbsp;·&nbsp; [**Make mods**](docs/guide/) &nbsp;·&nbsp; [**API reference**](docs/api/) &nbsp;·&nbsp; [**Discord**](https://discord.gg/gcJrgKuK7S) &nbsp;·&nbsp; [**Report a problem**](https://github.com/xMartin14091x/CWYLS-ModLoader/issues)
+[**Download**](https://github.com/xMartin14091x/CWYLS-ModLoader/releases) &nbsp;·&nbsp; [**Make mods**](docs/guide/) &nbsp;·&nbsp; [**API reference**](docs/api/) &nbsp;·&nbsp; [**Discord**](https://discord.gg/z7vQ63cH6B) &nbsp;·&nbsp; [**Report a problem**](https://github.com/xMartin14091x/CWYLS-ModLoader/issues)
 
 </div>
 
@@ -176,7 +176,7 @@ Rules for mods made for or with the loader: **free of charge**, **no game files 
 
 ## ? Questions
 
-Ask in the **[Discord](https://discord.gg/gcJrgKuK7S)** (English and ไทย, a support forum, and a lo-fi lounge to hang out), or open an [issue](https://github.com/xMartin14091x/CWYLS-ModLoader/issues) for a bug.
+Ask in the **[Discord](https://discord.gg/z7vQ63cH6B)** (English and ไทย, a support forum, and a lo-fi lounge to hang out), or open an [issue](https://github.com/xMartin14091x/CWYLS-ModLoader/issues) for a bug.
 
 <details>
 <summary><b>Will it break my save?</b></summary>
