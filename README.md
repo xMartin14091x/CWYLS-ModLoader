@@ -117,6 +117,8 @@ Either way the files are moved into a dated folder inside the game folder, never
 
 A mod is a folder in `CWYLS Mods` with a `manifest.json`. Files are enough for most things; code is there when you need it.
 
+**Translating the game?** Start from [`templates/cwy-language/`](templates/cwy-language/) and the [translation guide](docs/guide/translate.md). The loader handles Thai tone marks and line breaks for you.
+
 <details>
 <summary><b>A content pack: no programming, just text files</b></summary>
 

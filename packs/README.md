@@ -145,4 +145,5 @@ loads) and `AssemblyLoad` (`LoadFrom`; `Bytes` is a developer switch). A mod's o
 | `cwy.sample.hello` | The sample code mod, built from `mods-src/cwy.sample.hello/` |
 
 A **language pack** is a content pack with a `language.json`: it adds a language to the game's
-language selector. Its format is in `docs/guide/manifest.md` ("`language.json`").
+language selector. Start from `templates/cwy-language/` and `docs/guide/translate.md`; the format is in
+`docs/guide/manifest.md` ("`language.json`").

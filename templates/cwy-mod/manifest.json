@@ -5,7 +5,7 @@
   "author": "yourname",
   "description": "One line: what the mod does.",
   "gameVersion": "1.18.0",
-  "loaderVersion": "0.9.0",
+  "loaderVersion": "0.9.1",
   "entryDll": "MyMod.dll",
   "dependsOn": []
 }

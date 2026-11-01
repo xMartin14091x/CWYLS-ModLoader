@@ -1,0 +1,10 @@
+{
+  "id": "yourname.lang.th",
+  "name": "Thai (your name)",
+  "version": "0.1.0",
+  "author": "yourname",
+  "description": "One line: which language, and who translated it.",
+  "gameVersion": "1.18.0",
+  "loaderVersion": "0.9.1",
+  "dependsOn": []
+}

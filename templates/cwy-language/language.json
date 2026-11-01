@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "code": "th",
+  "caption": "ไทย",
+  "englishName": "Thai",
+  "script": "Thai",
+  "fallback": ["en"],
+  "font": { "gameAssets": ["Base_TH", "Dynamic_TH"] },
+  "lineBreaks": "auto"
+}

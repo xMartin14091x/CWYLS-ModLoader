@@ -2,10 +2,11 @@
 
 # Namespace `CwyLs.ModLoader.Core.Subtitles`
 
-Assembly `CwyLs.ModLoader.Core` · 11 public type(s) · [API index](README.md)
+Assembly `CwyLs.ModLoader.Core` · 12 public type(s) · [API index](README.md)
 
 | Type | Kind | Summary |
 |---|---|---|
+| [`BuiltInMarkTables`](#builtinmarktables) | static class | The mark tables the loader carries itself, embedded in this assembly, so text in a script the game's own fonts draw comes out right with no pack installed. |
 | [`ISubtitleSource`](#isubtitlesource) | interface | A table of subtitle texts keyed by the game's localization id, in one or more languages. |
 | [`MarkPair`](#markpair) | struct | One row of a `MarkTable`: a mark that follows another mark, and how far it moves. |
 | [`MarkPlacement`](#markplacement) | static class | Turns a `MarkTable` into the pair-adjustment records one font asset needs - the pure half of installing a table, so the arithmetic and every refusal are unit-tested. |
@@ -17,6 +18,52 @@ Assembly `CwyLs.ModLoader.Core` · 11 public type(s) · [API index](README.md)
 | [`SubtitleLanguages`](#subtitlelanguages) | static class | Language codes as packs, configs and text tables write them, and how every spelling is normalised to one. |
 | [`SubtitleSources`](#subtitlesources) | static class | The process-wide list of text tables for languages the game has no column for. |
 | [`ThaiText`](#thaitext) | static class | Script-level helpers for text in the Thai script: detection by code point and syllable- boundary line breaks. |
+
+---
+
+<a id="builtinmarktables"></a>
+
+## `BuiltInMarkTables`
+
+static class · `CwyLs.ModLoader.Core.Subtitles.BuiltInMarkTables` · assembly `CwyLs.ModLoader.Core`
+
+The mark tables the loader carries itself, embedded in this assembly, so text in a script the game's own fonts draw comes out right with no pack installed. Today: Thai, for the game's Thai font assets `Base_TH` and `Dynamic_TH` (IBM Plex Sans Thai Looped Medium).
+
+TextMeshPro runs none of the font's mark positioning, so without a table a Thai tone mark that follows an upper vowel (ที่, ซื้อ) is drawn inside the vowel. The table holds the font's own offsets (GPOS `mkmk`, derived by `tools/thai-marks`): numbers only, no font data and no translation. It is the same table the language packs used to carry.
+
+A pack that declares the same font assets with its own `marks` table still wins: pack tables are installed first, and an installed pair is never replaced. The table applies only to font assets of its family ([`MarkPlacement.Plan`](#markplacement--plan)), so a game update that swaps the Thai font gets nothing instead of wrong offsets.
+
+Loading is lazy, once, and never throws: a missing or broken resource leaves [`BuiltInMarkTables.Thai`](#builtinmarktables--thai) null and [`BuiltInMarkTables.LoadError`](#builtinmarktables--loaderror) set.
+
+<a id="builtinmarktables--thaifontassets"></a>
+
+### `static readonly IReadOnlyList<string> ThaiFontAssets`
+
+The game's font assets that draw Thai, which the Thai table is installed into.
+
+<a id="builtinmarktables--thairesourcename"></a>
+
+### `const string ThaiResourceName = "CwyLs.ModLoader.Core.Subtitles.thai-marks.json"`
+
+Name of the embedded Thai table.
+
+<a id="builtinmarktables--loaderror"></a>
+
+### `static string LoadError { get; }`
+
+Why the Thai table could not be read, or null when it was.
+
+<a id="builtinmarktables--thai"></a>
+
+### `static MarkTable Thai { get; }`
+
+The parsed Thai table, or null when it could not be read (see [`BuiltInMarkTables.LoadError`](#builtinmarktables--loaderror)).
+
+<a id="builtinmarktables--reset"></a>
+
+### `static void Reset()`
+
+Test hook: forget the loaded table so the next query re-reads the resource.
 
 ---
 

@@ -23,4 +23,15 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!--
+    The built-in Thai mark table (BuiltInMarkTables): tone-mark offsets for the game's own Thai font,
+    IBM Plex Sans Thai Looped Medium, derived from the font's GPOS mkmk lookup by tools/thai-marks.
+    Numbers only; no font data and no translation.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="Subtitles/thai-marks.json">
+      <LogicalName>CwyLs.ModLoader.Core.Subtitles.thai-marks.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

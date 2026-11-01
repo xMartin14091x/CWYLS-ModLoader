@@ -25,6 +25,7 @@ still change it, always announced first (see [versioning](versioning.md)).
 | Page | Read it when |
 |---|---|
 | [getting-started.md](getting-started.md) | You want a first mod running: copy the template, build, install, read the console. Includes a line-by-line tour of the sample mod |
+| [translate.md](translate.md) | You want to translate the game into your language: copy the language-pack template, add your text, share it. What the loader does for Thai |
 | [manifest.md](manifest.md) | You write or debug a `manifest.json` or a `language.json`; every field, and every reason a pack or mod is skipped |
 | [lifecycle.md](lifecycle.md) | You need to know when your code runs, what `Entry` may do, how mods talk to each other, and what happens when something throws |
 | [helper.md](helper.md) | You use the helper: one short example per facet, and the threading rules |

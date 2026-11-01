@@ -9,7 +9,7 @@
 
 # CWY:LS Mod Loader API reference
 
-API version **0.9.0** (`CwyApi.VersionText`). Generated from the XML documentation and the metadata of `CwyLs.ModLoader.dll`, `CwyLs.ModLoader.Core.dll`. Do not edit these pages: change the `///` comments in `src/` and re-run `tools/apidoc/run.sh` (`tools/apidoc/README.md`). The author's guide is in [`docs/guide/`](../guide/README.md).
+API version **0.9.1** (`CwyApi.VersionText`). Generated from the XML documentation and the metadata of `CwyLs.ModLoader.dll`, `CwyLs.ModLoader.Core.dll`. Do not edit these pages: change the `///` comments in `src/` and re-run `tools/apidoc/run.sh` (`tools/apidoc/README.md`). The author's guide is in [`docs/guide/`](../guide/README.md).
 
 ## Start here
 
@@ -63,7 +63,7 @@ A code mod sees the game through one object: the helper its `CwyMod` receives. [
 | [`CwyLs.ModLoader.Core.Satone.Say`](CwyLs.ModLoader.Core.Satone.Say.md) | `CwyLs.ModLoader.Core` | 8 | 4 | 96 | 0 |
 | [`CwyLs.ModLoader.Core.Scenario`](CwyLs.ModLoader.Core.Scenario.md) | `CwyLs.ModLoader.Core` | 36 | 4 | 241 | 0 |
 | [`CwyLs.ModLoader.Core.Smoke`](CwyLs.ModLoader.Core.Smoke.md) | `CwyLs.ModLoader.Core` | 8 | 0 | 73 | 0 |
-| [`CwyLs.ModLoader.Core.Subtitles`](CwyLs.ModLoader.Core.Subtitles.md) | `CwyLs.ModLoader.Core` | 11 | 0 | 73 | 0 |
+| [`CwyLs.ModLoader.Core.Subtitles`](CwyLs.ModLoader.Core.Subtitles.md) | `CwyLs.ModLoader.Core` | 12 | 0 | 78 | 0 |
 | [`CwyLs.ModLoader.Core.Textures`](CwyLs.ModLoader.Core.Textures.md) | `CwyLs.ModLoader.Core` | 23 | 0 | 162 | 0 |
 | [`CwyLs.ModLoader.Core.Threading`](CwyLs.ModLoader.Core.Threading.md) | `CwyLs.ModLoader.Core` | 7 | 2 | 73 | 0 |
 | [`CwyLs.ModLoader.Core.Trace`](CwyLs.ModLoader.Core.Trace.md) | `CwyLs.ModLoader.Core` | 60 | 0 | 413 | 0 |

@@ -16,10 +16,10 @@ namespace CwyLs.ModLoader.Tests
     public class ModsVersioningTests
     {
         [Fact]
-        public void The_api_is_0_9_0_and_freezes_at_1_0_0()
+        public void The_api_is_0_9_1_and_freezes_at_1_0_0()
         {
-            Assert.Equal("0.9.0", CwyApi.VersionText);
-            Assert.Equal(SemVer.Parse("0.9.0"), CwyApi.Version);
+            Assert.Equal("0.9.1", CwyApi.VersionText);
+            Assert.Equal(SemVer.Parse("0.9.1"), CwyApi.Version);
             Assert.Equal(SemVer.Parse("1.0.0"), CwyApi.FreezeVersion);
             Assert.False(CwyApi.IsFrozen);
         }
@@ -29,7 +29,8 @@ namespace CwyLs.ModLoader.Tests
         [InlineData("0.1.0", true)]
         [InlineData("0.9.0", true)]
         [InlineData("0.9.0-beta.1", true)]
-        [InlineData("0.9.1", false)]
+        [InlineData("0.9.1", true)]
+        [InlineData("0.9.2", false)]
         [InlineData("1.0.0", false)]
         public void A_minimum_is_satisfied_by_this_api_version(string? minimum, bool satisfied) =>
             Assert.Equal(satisfied, CwyApi.Satisfies(minimum is null ? null : SemVer.Parse(minimum)));

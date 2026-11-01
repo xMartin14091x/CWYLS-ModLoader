@@ -57,7 +57,7 @@ The version at which the API freezes (SemVer 1.0.0).
 
 <a id="cwyapi--pluginversiontext"></a>
 
-### `const string PluginVersionText = "0.9.0"`
+### `const string PluginVersionText = "0.9.1"`
 
 The API version as a compile-time constant, for attribute arguments such as the framework's own `[BepInPlugin]`. A mod must not use it: a constant is copied into the mod when it is compiled, so it would keep reporting the version the mod was built against. Read [`CwyApi.Version`](#cwyapi--version) (or [`CwyApi.VersionText`](#cwyapi--versiontext)) at run time instead.
 

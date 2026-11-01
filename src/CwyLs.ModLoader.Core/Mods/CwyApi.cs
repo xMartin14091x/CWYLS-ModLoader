@@ -26,7 +26,7 @@ namespace CwyLs.ModLoader.Core.Mods
         /// the mod when it is compiled, so it would keep reporting the version the mod was built
         /// against. Read <see cref="Version"/> (or <see cref="VersionText"/>) at run time instead.
         /// </summary>
-        public const string PluginVersionText = "0.9.0";
+        public const string PluginVersionText = "0.9.1";
 
         /// <summary>
         /// The running API version as text. <c>static readonly</c>, not a constant, so a mod reads the

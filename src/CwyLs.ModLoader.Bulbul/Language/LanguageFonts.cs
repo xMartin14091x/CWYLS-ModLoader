@@ -85,7 +85,7 @@ namespace CwyLs.ModLoader.Bulbul.Language
         /// <param name="trigger">What asked, for the log.</param>
         internal static void Apply(string trigger)
         {
-            if (!LanguageFeature.Enabled || LanguageFeature.Registry.Count == 0)
+            if (!LanguageFeature.Enabled)
             {
                 return;
             }
@@ -102,6 +102,88 @@ namespace CwyLs.ModLoader.Bulbul.Language
                     CwyLsModLoader.Log.LogError(
                         LanguageFeature.LogPrefix + " font work for " + language.Code + " failed: " + ex.GetType().Name + ": " + ex.Message);
                 }
+            }
+
+            // After the packs, so a pack's own table for the same assets wins (an installed pair is never replaced).
+            try
+            {
+                ApplyBuiltIn(loaded, trigger);
+            }
+            catch (Exception ex)
+            {
+                CwyLsModLoader.Log.LogError(LanguageFeature.LogPrefix + " built-in Thai marks failed: " + ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        /// <summary>What the built-in Thai table did at the last room load, for the console and smoke checks.</summary>
+        internal static string BuiltInReport
+        {
+            get
+            {
+                lock (Gate)
+                {
+                    return _builtInReport;
+                }
+            }
+        }
+
+        private static string _builtInReport = "not applied yet";
+
+        /// <summary>
+        /// Installs the loader's own Thai mark table (<see cref="BuiltInMarkTables"/>) into the game's Thai font
+        /// assets, with or without a language pack, so Thai tone marks sit above their vowels anywhere the
+        /// game's Thai font draws: pack lines, subtitles, mod windows.
+        /// </summary>
+        private static void ApplyBuiltIn(TMP_FontAsset[] loaded, string trigger)
+        {
+            var table = BuiltInMarkTables.Thai;
+            if (table is null)
+            {
+                SetBuiltInReport("unavailable: " + BuiltInMarkTables.LoadError);
+                CwyLsModLoader.Log.LogWarning(LanguageFeature.LogPrefix + " built-in Thai marks unavailable: " + BuiltInMarkTables.LoadError);
+                return;
+            }
+
+            var notes = new List<string>();
+            var installedNow = 0;
+            foreach (var name in BuiltInMarkTables.ThaiFontAssets)
+            {
+                TMP_FontAsset? asset = null;
+                foreach (var candidate in loaded)
+                {
+                    if (candidate != null && string.Equals(candidate.name, name, StringComparison.Ordinal))
+                    {
+                        asset = candidate;
+                        break;
+                    }
+                }
+
+                if (asset == null)
+                {
+                    notes.Add(name + ": not loaded");
+                    continue;
+                }
+
+                installedNow += Install(asset, table, notes);
+            }
+
+            var report = string.Join("; ", notes);
+            SetBuiltInReport(report);
+            ConsoleEvents.Emit(
+                LanguageFeature.TraceSys,
+                "fonts",
+                ConsoleTags.Language,
+                "built-in Thai marks: " + report,
+                "added",
+                ("added", installedNow),
+                ("trigger", trigger));
+        }
+
+        private static void SetBuiltInReport(string report)
+        {
+            lock (Gate)
+            {
+                _builtInReport = report;
             }
         }
 
@@ -137,6 +219,7 @@ namespace CwyLs.ModLoader.Bulbul.Language
                 Fallbacks.Clear();
                 Records.Clear();
                 Reports.Clear();
+                _builtInReport = "removed";
             }
         }
 

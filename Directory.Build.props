@@ -37,7 +37,7 @@
     stays at major.minor.0.0 within a release line, so a mod built against 0.9.0 binds to 0.9.x.
   -->
   <PropertyGroup Condition="$(MSBuildProjectName.StartsWith('CwyLs.ModLoader'))">
-    <CwyLsVersion>0.9.0</CwyLsVersion>
+    <CwyLsVersion>0.9.1</CwyLsVersion>
     <CwyLsVersionSuffix>preview</CwyLsVersionSuffix>
     <Version>$(CwyLsVersion)</Version>
     <AssemblyVersion>$([System.Version]::Parse('$(CwyLsVersion)').ToString(2)).0.0</AssemblyVersion>

@@ -39,7 +39,7 @@ Human-readable plugin name.
 
 <a id="cwylsmodloader--pluginversion"></a>
 
-### `const string PluginVersion = "0.9.0"`
+### `const string PluginVersion = "0.9.1"`
 
 The framework version: the mod API version ([`CwyApi.PluginVersionText`](CwyLs.ModLoader.Core.Mods.md#cwyapi--pluginversiontext)), so the startup line, BepInEx and the manifests' `loaderVersion` check agree. Was 0.1.0 before the mod API.
 

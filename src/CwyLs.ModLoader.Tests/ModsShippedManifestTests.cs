@@ -1,3 +1,5 @@
+using CwyLs.ModLoader.Core.Subtitles;
+using CwyLs.ModLoader.Core.Language;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -56,6 +58,30 @@ namespace CwyLs.ModLoader.Tests
             Assert.True(manifest.IsCodeMod);
             Assert.Equal("MyMod.dll", manifest.EntryDll);
             Assert.Equal(CwyApi.Version, manifest.LoaderVersion);
+        }
+
+        /// <summary>
+        /// The language-pack template (docs/guide/translate.md) is a valid content pack declaring Thai on the
+        /// game's Thai fonts, with no mark table of its own (the loader carries it), and its text table parses.
+        /// </summary>
+        [Fact]
+        public void The_language_template_is_a_valid_thai_language_pack()
+        {
+            var dir = Path.Combine(RepoRoot(), "templates", "cwy-language");
+            var manifest = PackManifestParser.Parse(File.ReadAllText(Path.Combine(dir, "manifest.json")));
+            var languages = LanguageDeclarationParser.Parse(File.ReadAllText(Path.Combine(dir, "language.json")), manifest.Id);
+
+            Assert.False(manifest.IsCodeMod);
+            Assert.Equal(CwyApi.Version, manifest.LoaderVersion);
+            var thai = Assert.Single(languages);
+            Assert.Equal("th", thai.Code);
+            Assert.Equal("thai", thai.Script, ignoreCase: true);
+            Assert.Equal(new[] { "Base_TH", "Dynamic_TH" }, thai.FontAssets);
+            Assert.Null(thai.MarksPath);
+            Assert.Equal(BuiltInMarkTables.ThaiFontAssets, thai.FontAssets);
+
+            var text = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(Path.Combine(dir, "data", "subtitles", "th.json")))!.AsObject();
+            Assert.NotEmpty(text);
         }
 
         /// <summary>

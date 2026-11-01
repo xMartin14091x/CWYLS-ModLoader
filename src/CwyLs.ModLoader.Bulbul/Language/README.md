@@ -97,6 +97,15 @@ one fails (a game update), or the build throws, the pulldown grows as before and
 
 ## Fonts and the mark table
 
+**Built-in Thai table (0.9.1).** After the pack languages, `LanguageFonts.ApplyBuiltIn` installs the
+loader's own Thai table (`Core/Subtitles/BuiltInMarkTables.cs`, embedded `thai-marks.json`, 113 pairs
+from the font's GPOS `mkmk`) into `Base_TH` and `Dynamic_TH`, with or without a language pack, so Thai
+anywhere the game's Thai font draws it (pack lines, subtitles, mod windows) has its marks placed. Pack
+tables go first and an installed pair is never replaced, so a pack's own table wins. Console/trace:
+`built-in Thai marks: Base_TH: 113 record(s) … (113 installed); Dynamic_TH: …`. It applies only to
+assets of the table's family, so a game update that swaps the Thai font gets nothing rather than
+wrong offsets.
+
 At `RoomReady`, for each language: its named assets are found among the loaded font assets; the
 first one is made reachable from `FontSupplier.GetFontAsset(base)` and each story label's font
 (appended to a fallback table only where TMP's fallback search would not reach it — for Thai it
@@ -152,4 +161,6 @@ seen and clicked).
 - Dates and times format as `en-US` (`LanguageSupplier.GetCultureInfo` default branch).
 - The seven built-in captions and the version string are literals, not localized rows.
 - A pack cannot ship its own font file yet (`"font": {"file": …}` is refused with a message).
+- Thai: a lower vowel under ฐ or ญ can touch the letter; the font fixes it by GSUB glyph substitution,
+  which TextMeshPro does not run.
 - `Steam` language auto-detection for a pack language is not implemented.
