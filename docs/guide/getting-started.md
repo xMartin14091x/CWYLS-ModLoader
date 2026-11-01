@@ -6,7 +6,8 @@ By the end of this page you have a mod that loads, logs a line and reacts when t
 and you know how to read what the loader says about it. Then we walk through the sample mod,
 `cwy.sample.hello`, line by line.
 
-Content packs need no code: copy `packs/cwy.example/`, edit its `manifest.json`, add files as
+Content packs need no programming, but for now you edit JSON text files by hand (a point-and-click
+Pack Maker is planned for 1.0): copy `packs/cwy.example/`, edit its `manifest.json`, add files as
 `packs/cwy.example/README.md` describes, and install it the same way as in step 5 below.
 
 ## What you need

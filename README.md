@@ -38,7 +38,7 @@ game version.
 
 | | |
 |---|---|
-| **Content packs** | A folder with a `manifest.json`, no code at all: text and new languages, voice clips, sound effects, extra music for the player, texture swaps, scenery colour grading, new dialogue lines and short scenes. |
+| **Content packs** | A folder of JSON text files and media, no programming (for now you edit the files by hand; a point-and-click Pack Maker is planned for 1.0): text and new languages, voice clips, sound effects, extra music for the player, texture swaps, scenery colour grading, new dialogue lines and short scenes. |
 | **Code mods** | A C# entry point with a helper API: game events, Satone's lines and expressions, mod windows, console commands, and game actions behind a safety gate. |
 | **Version safety** | The 359 game methods and fields the loader relies on are checked at startup, and offline with `tools/seamcheck`. If an update moves one, only that feature switches off. |
 | **Save safety** | Mod content never goes into your save files, so they keep loading without mods. |
@@ -118,7 +118,7 @@ Either way the files are moved into a dated folder inside the game folder, never
 A mod is a folder in `CWYLS Mods` with a `manifest.json`. Files are enough for most things; code is there when you need it.
 
 <details>
-<summary><b>A content pack: no code</b></summary>
+<summary><b>A content pack: no programming, just text files</b></summary>
 
 <br>
 
@@ -246,7 +246,7 @@ Each release is a later hour of the same night, and adds one constellation to th
 | Release | | What's in it |
 |---|---|---|
 | **0.9 · Dusk** | now | The loader, content packs, the code-mod API (preview), the installers. |
-| **1.0 · Starlit** | next | A frozen, versioned mod API; game actions for music, room and timer; cutscene triggers and conditions; editing any game table; hot reload; a bridge for voice packs. |
+| **1.0 · Starlit** | next | A point-and-click Pack Maker for creators, no file editing; a frozen, versioned mod API; game actions for music, room and timer; cutscene triggers and conditions; editing any game table; hot reload; a bridge for voice packs. |
 | **after** | | Language packs, Thai subtitles first, built on top of the loader. |
 
 ## ⚖ Licence and credits
