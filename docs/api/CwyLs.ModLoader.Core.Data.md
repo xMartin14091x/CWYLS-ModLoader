@@ -601,6 +601,7 @@ Rules, all of which the unit tests pin down:
 - `DateTime` and `DateTimeOffset` become ISO-8601 with millisecond precision; a UTC `DateTime` gets `Z`, a local one its offset, an unspecified one neither.
 - Enums become their name; `Guid` and `TimeSpan` become strings.
 - Non-finite floats become `null`, because `NaN` is not JSON.
+- A non-generic `IDictionary` or any `IDictionary<string, T>` (including [`JsonObject`](CwyLs.ModLoader.Core.Json.md#jsonobject)) becomes a JSON object in enumeration order, so [`JsonReader`](CwyLs.ModLoader.Core.Json.md#jsonreader) output writes back as the same JSON.
 - Anything else is walked reflectively: public readable instance properties and public instance fields, keys camel-cased. Key order follows reflection order and is not part of the contract.
 
 Depth is capped at [`JsonWriter.MaxDepth`](#jsonwriter--maxdepth) and objects already on the current path are replaced by [`JsonWriter.CycleMarker`](#jsonwriter--cyclemarker), so a mod handing back a live, self-referencing game object cannot hang the writer.

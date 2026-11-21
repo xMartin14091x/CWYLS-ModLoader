@@ -1930,6 +1930,12 @@ True when it is one of the game's own long-story episodes (seen or not).
 
 True when it is a group a pack added ([`ScenarioSaveRule.IsPackScene`](#scenariosaverule--ispackscene)).
 
+<a id="sceneplayfacts--ispaiddlc"></a>
+
+### `bool IsPaidDlc { get; init; }`
+
+A game scene that Pack Maker's DLC gate marks as paid DLC content the player is not known to own (`MakerDlcGate.HidesGroup`): never started by hand unless the game's own history offers it.
+
 <a id="sceneplayfacts--roomidle"></a>
 
 ### `bool RoomIdle { get; init; }`

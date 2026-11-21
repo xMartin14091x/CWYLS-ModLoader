@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Reflection;
+using CwyLs.ModLoader.Core.Loaders;
 using UnityEngine;
 
 namespace CwyLs.ModLoader.Bulbul
@@ -184,6 +186,53 @@ namespace CwyLs.ModLoader.Bulbul
         /// <summary>Drops a request without reading it (timeout, shutdown).</summary>
         /// <param name="request">The request.</param>
         internal static void Abandon(Request request) => Dispose(request.Handle);
+
+        /// <summary>
+        /// Loads a 16-bit PCM WAV at once, on the calling (main) thread: the managed decoder
+        /// (<see cref="WavParser"/>, the one Pack Maker's live swaps use) and <c>AudioClip.Create</c>, so
+        /// the clip is ready when this returns. Used for the first line of a scene (DS-12); every other
+        /// file goes through <see cref="Begin"/>. There is no such path for Ogg Vorbis: only the engine
+        /// decodes it, and only through the asynchronous request above.
+        /// </summary>
+        /// <param name="absolutePath">The file.</param>
+        /// <param name="name">The clip's name (the voice name).</param>
+        /// <param name="error">Why there is no clip, or empty.</param>
+        /// <returns>The clip, or null when the file is unreadable or not a WAV the managed decoder reads (the caller then hands it to <see cref="Begin"/>).</returns>
+        internal static AudioClip? LoadWavNow(string absolutePath, string name, out string error)
+        {
+            try
+            {
+                var bytes = File.ReadAllBytes(absolutePath);
+                if (!WavParser.TryParse(bytes, out var wav, out var parseError) || wav is null)
+                {
+                    error = parseError ?? "the WAV could not be decoded";
+                    return null;
+                }
+
+                // lengthSamples is per channel: WavData.Frames, not Samples.Length.
+                var clip = AudioClip.Create(name, wav.Frames, wav.Channels, wav.SampleRate, false);
+                if (clip == null)
+                {
+                    error = "AudioClip.Create returned nothing";
+                    return null;
+                }
+
+                if (!clip.SetData(wav.Samples, 0))
+                {
+                    UnityEngine.Object.Destroy(clip);
+                    error = "AudioClip.SetData refused the samples";
+                    return null;
+                }
+
+                error = string.Empty;
+                return clip;
+            }
+            catch (Exception ex)
+            {
+                error = ex.GetType().Name + ": " + Message(ex);
+                return null;
+            }
+        }
 
         private static void Dispose(object request)
         {

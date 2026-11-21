@@ -1,0 +1,13 @@
+# Registered usage text; optional empty mods invocation is covered by console-inputs.
+api	api on|off|status|rotate
+clear	clear
+commands	commands
+dump	dump [path]
+help	help [command]
+keys	keys
+mods	mods list|status
+packs	packs list|rescan
+panels	panels [name]
+paths	paths
+stats	stats
+version	version

@@ -10,7 +10,9 @@ INSTALL
 macOS  (Apple Silicon or Intel)
   1. Quit the game.
   2. Double-click "install.command".
-     If macOS says it cannot be opened: right-click it, choose Open, then Open again.
+     If macOS says it cannot be opened: open System Settings > Privacy & Security, scroll
+     down and click "Open Anyway" next to install.command, then open it again.
+     (macOS 14 and older: right-click it, choose Open, then Open again.)
   3. Choose "Install or update" (arrow keys and Enter, or press 1).
   4. Do the one manual step it shows: in Steam, right-click the game > Properties... >
      Launch Options, and paste the line it copied for you.
@@ -25,6 +27,14 @@ Windows
 
 The installer puts BepInEx 5.4.23.6 (unmodified) and the mod loader into the game folder.
 It never touches your save files.
+
+
+PACK MAKER
+----------
+With the game running, press Ctrl+Shift+C to open the mod console, then type: maker
+Pack Maker opens in your browser to create subtitles, record dubs and export packs.
+English: https://github.com/xMartin14091x/CWYLS-ModLoader/blob/main/docs/guide/pack-maker.md
+Thai: https://github.com/xMartin14091x/CWYLS-ModLoader/blob/main/docs/guide/pack-maker.th.md
 
 
 MODS

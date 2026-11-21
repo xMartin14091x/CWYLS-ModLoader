@@ -675,7 +675,7 @@ Project rule: paid content is never modified, replaced, re-skinned or unlocked. 
 
 What the game marks as paid, as observed in game 1.17.3:
 
-- Steam DLC: `NestopiSystem.Steam.BulbulSteamDLC.DLC_1 = 3718890` - the original soundtrack, audio only; `NestopiSystem.Steam.SteamManager.IsInstalledDLC` has no caller.
+- Steam: the original soundtrack is its own app (4161250, audio only, never checked in game); `NestopiSystem.Steam.BulbulSteamDLC.DLC_1 = 3718890` is the Room & Cozy Activities Expansion (store page checked 2026-11-17).
 - Decorations and environments unlock through `UnlockItemService.ConditionsType` `None`/`Scenario`/`PointPurchase`: in-game points, not money (collaborations and exclusives are treated as free).
 - Mobile-only store items (`DecorationSkinListItemModelForMobile.IsPurchased`) have no PC materials.
 

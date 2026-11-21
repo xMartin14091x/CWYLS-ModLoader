@@ -16,7 +16,7 @@ namespace CwyLs.ModLoader.Bulbul
     {
         public const string PluginGuid = "cwyls.modloader.bulbul";
         public const string PluginName = "CWYLS Game Adapter";
-        public const string PluginVersion = "0.1.0";
+        public const string PluginVersion = CwyLsModLoader.PluginVersion; // every plugin reports the loader's version
 
         private void Awake()
         {
@@ -83,6 +83,36 @@ namespace CwyLs.ModLoader.Bulbul
 
             // Mod windows (helper.Ui.CreateWindow(spec)): backend, Escape routing, Hide UI, remembered places, 'windows' command.
             global::CwyLs.ModLoader.Bulbul.UI.ModWindows.Initialize(Config);
+
+            // Pack Maker Dub & Subtitle Studio, read side (DS-02): lines, packs and status for /v1/maker, and its live
+            // events (line.spoken, game.language, room.ready). Reads only; after MasterData, Voice and Language above.
+            global::CwyLs.ModLoader.Core.Api.Maker.MakerBackends.UseCatalog(global::CwyLs.ModLoader.Bulbul.Maker.MakerCatalog.Instance);
+            global::CwyLs.ModLoader.Core.Api.Maker.MakerBackends.UseWarmUp(global::CwyLs.ModLoader.Bulbul.Maker.MakerCatalog.Instance.WarmUp);
+            global::CwyLs.ModLoader.Bulbul.Maker.MakerEvents.Initialize();
+            // Pack Maker's write side (DS-03): live subtitles and dubs, Play, and the dub hold.
+            global::CwyLs.ModLoader.Core.Api.Maker.MakerBackends.UseEditor(global::CwyLs.ModLoader.Bulbul.Maker.MakerEditor.Initialize(Config));
+            // Studio v2 connection/activity status: persistent Unity callbacks feed a cached Core snapshot, so the
+            // HTTP worker can answer even while the main thread is unfocused or paused. It advertises no coarse
+            // feature until that feature's complete backend is installed.
+            global::CwyLs.ModLoader.Bulbul.Maker.MakerActivityHost.Ensure();
+            var studioEditor = global::CwyLs.ModLoader.Bulbul.Maker.MakerStudioEditor.Instance;
+            global::CwyLs.ModLoader.Core.Api.Maker.MakerBackends.UseStudio(
+                new global::CwyLs.ModLoader.Core.Api.Maker.MakerStudioBackends(
+                    status: global::CwyLs.ModLoader.Bulbul.Maker.MakerStudioStatusBackend.Instance,
+                    catalog: global::CwyLs.ModLoader.Bulbul.Maker.MakerStudioPacks.Catalog,
+                    workflow: studioEditor,
+                    subtitles: studioEditor,
+                    dubs: studioEditor, // M5d: takes, audio, favourite, publish and unpublish all work, so "dubs" is advertised
+                    projects: studioEditor,
+                    playback: studioEditor,
+                    newPacks: global::CwyLs.ModLoader.Bulbul.Maker.MakerStudioPacks.CreatorWhenUsable(),
+                    recovery: studioEditor,
+                    export: global::CwyLs.ModLoader.Bulbul.Maker.MakerStudioPacks.Exporter, // v2.3: pack info, icon, export
+                    voiceDefaults: studioEditor, // v2.4: the pack's voice origin and consent, inherited by new takes
+                    voiceLabels: studioEditor)); // D-148: one click labels dubs made outside Studio with that default
+            // Saves refresh the catalog at once (DS-02 also fingerprints the pack folders as a safety net).
+            global::CwyLs.ModLoader.Bulbul.Maker.MakerEditor.Changed += change =>
+                global::CwyLs.ModLoader.Bulbul.Maker.MakerCatalog.Invalidate("editor " + change.Kind);
         }
     }
 }

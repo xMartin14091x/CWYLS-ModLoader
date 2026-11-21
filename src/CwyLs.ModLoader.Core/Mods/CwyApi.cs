@@ -10,8 +10,12 @@ namespace CwyLs.ModLoader.Core.Mods
     /// <para>
     /// SemVer. Until <see cref="FreezeVersion"/> (CWY:LS Mod Loader 1.0) the
     /// API is 0.x: a minor version may change or remove members, and
-    /// every such change first ships a <see cref="CwyDeprecatedAttribute"/> notice. From 1.0 on a
-    /// breaking change needs a new major version; deprecated members stay until then.
+    /// every such change first ships a <see cref="CwyDeprecatedAttribute"/> notice. From 1.0 on, the
+    /// frozen surface listed in <c>docs/guide/api-stability.md</c> freezes—not every public type in
+    /// the framework assemblies: breaking changes to the frozen surface need a new major version, and
+    /// deprecated frozen members stay until then, while experimental surfaces listed there may still
+    /// change in a 1.x minor version with a release note and internal public types have no
+    /// compatibility promise.
     /// </para>
     /// <para>
     /// The BepInEx plugin version of CwyLs.ModLoader is this same string, so the startup line, the
@@ -26,7 +30,7 @@ namespace CwyLs.ModLoader.Core.Mods
         /// the mod when it is compiled, so it would keep reporting the version the mod was built
         /// against. Read <see cref="Version"/> (or <see cref="VersionText"/>) at run time instead.
         /// </summary>
-        public const string PluginVersionText = "0.9.1";
+        public const string PluginVersionText = "0.9.2";
 
         /// <summary>
         /// The running API version as text. <c>static readonly</c>, not a constant, so a mod reads the
@@ -34,18 +38,19 @@ namespace CwyLs.ModLoader.Core.Mods
         /// </summary>
         public static readonly string VersionText = PluginVersionText;
 
-        /// <summary>The version at which the API freezes (SemVer 1.0.0).</summary>
+        /// <summary>The version at which the frozen surface listed in <c>docs/guide/api-stability.md</c> freezes (SemVer 1.0.0).</summary>
         public const string FreezeVersionText = "1.0.0";
 
         /// <summary>The API version, parsed.</summary>
         public static SemVer Version { get; } = SemVer.Parse(VersionText);
 
-        /// <summary>The version at which the API freezes, parsed.</summary>
+        /// <summary>The version at which the frozen surface listed in <c>docs/guide/api-stability.md</c> freezes, parsed.</summary>
         public static SemVer FreezeVersion { get; } = SemVer.Parse(FreezeVersionText);
 
         /// <summary>
         /// True once the API has reached <see cref="FreezeVersion"/>: after that, only a major
-        /// version may break a mod.
+        /// version may break the frozen surface listed in <c>docs/guide/api-stability.md</c> (not
+        /// every public type is frozen; experimental and internal surfaces are listed there).
         /// </summary>
         public static bool IsFrozen => Version >= FreezeVersion;
 

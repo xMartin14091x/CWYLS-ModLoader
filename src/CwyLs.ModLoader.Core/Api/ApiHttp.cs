@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 
 namespace CwyLs.ModLoader.Core.Api
 {
@@ -76,6 +77,9 @@ namespace CwyLs.ModLoader.Core.Api
 
         /// <summary>The connection failed or timed out while reading.</summary>
         Failed = 2,
+
+        /// <summary>The request body did not arrive before its fixed deadline.</summary>
+        TimedOut = 3,
     }
 
     /// <summary>The outcome of reading a request body. Immutable.</summary>
@@ -112,6 +116,10 @@ namespace CwyLs.ModLoader.Core.Api
         /// <summary>A body that could not be read.</summary>
         /// <param name="problem">Why.</param>
         public static ApiBody Failed(string problem) => new ApiBody(ApiBodyStatus.Failed, NoBytes, problem ?? "read failed");
+
+        /// <summary>A body whose read deadline expired before it arrived in full.</summary>
+        /// <param name="problem">Why.</param>
+        public static ApiBody TimedOut(string problem) => new ApiBody(ApiBodyStatus.TimedOut, NoBytes, problem ?? "read timed out");
     }
 
     /// <summary>
@@ -174,7 +182,7 @@ namespace CwyLs.ModLoader.Core.Api
         public ApiBody ReadBody(int maxBytes) => _body ??= _bodyReader(maxBytes);
     }
 
-    /// <summary>One HTTP response: status, JSON body and extra headers. Immutable.</summary>
+    /// <summary>One HTTP response: status, JSON body (or, for Pack Maker's web files, raw bytes of another type) and extra headers. Immutable.</summary>
     public sealed class ApiResponse
     {
         private static readonly KeyValuePair<string, string>[] NoHeaders = new KeyValuePair<string, string>[0];
@@ -190,13 +198,44 @@ namespace CwyLs.ModLoader.Core.Api
             Body = body ?? "{}";
             Headers = headers ?? NoHeaders;
             ErrorCode = errorCode;
+            MediaType = ContentType;
+        }
+
+        private ApiResponse(int status, byte[] bytes, string mediaType, IReadOnlyList<KeyValuePair<string, string>>? headers)
+        {
+            Status = status;
+            Body = string.Empty;
+            Bytes = bytes;
+            MediaType = mediaType;
+            Headers = headers ?? NoHeaders;
         }
 
         /// <summary>The HTTP status.</summary>
         public int Status { get; }
 
-        /// <summary>The JSON body.</summary>
+        /// <summary>The JSON body (empty when <see cref="Bytes"/> carries the body).</summary>
         public string Body { get; }
+
+        /// <summary>A raw body (Pack Maker's web files), or null for the JSON <see cref="Body"/>.</summary>
+        public byte[]? Bytes { get; }
+
+        /// <summary>This response's <c>Content-Type</c>: <see cref="ContentType"/> for JSON.</summary>
+        public string MediaType { get; }
+
+        /// <summary>The bytes to send: <see cref="Bytes"/>, or <see cref="Body"/> as UTF-8.</summary>
+        public byte[] BodyBytes() => Bytes ?? Encoding.UTF8.GetBytes(Body);
+
+        /// <summary>A raw response of any type (Pack Maker's web files).</summary>
+        /// <param name="status">The HTTP status.</param>
+        /// <param name="bytes">The body.</param>
+        /// <param name="mediaType">The <c>Content-Type</c>.</param>
+        /// <param name="headers">Extra headers, or none.</param>
+        public static ApiResponse Raw(int status, byte[] bytes, string mediaType, params KeyValuePair<string, string>[] headers) =>
+            new ApiResponse(
+                status,
+                bytes ?? throw new ArgumentNullException(nameof(bytes)),
+                string.IsNullOrEmpty(mediaType) ? throw new ArgumentException("a raw response needs a media type", nameof(mediaType)) : mediaType,
+                headers);
 
         /// <summary>Extra headers.</summary>
         public IReadOnlyList<KeyValuePair<string, string>> Headers { get; }
@@ -244,12 +283,15 @@ namespace CwyLs.ModLoader.Core.Api
         public static string Reason(int status) => status switch
         {
             200 => "OK",
+            201 => "Created",
             202 => "Accepted",
+            302 => "Found",
             400 => "Bad Request",
             401 => "Unauthorized",
             403 => "Forbidden",
             404 => "Not Found",
             405 => "Method Not Allowed",
+            408 => "Request Timeout",
             409 => "Conflict",
             411 => "Length Required",
             413 => "Payload Too Large",

@@ -2,11 +2,13 @@
 
 # Namespace `CwyLs.ModLoader.Core.Voice`
 
-Assembly `CwyLs.ModLoader.Core` · 23 public type(s) · [API index](README.md)
+Assembly `CwyLs.ModLoader.Core` · 25 public type(s) · [API index](README.md)
 
 | Type | Kind | Summary |
 |---|---|---|
 | [`LanguageVoiceCounts`](#languagevoicecounts) | struct | How many clips of one language are in each state. |
+| [`LanguageVoiceFirstLine`](#languagevoicefirstline) | static class | DS-12: the first voiced line of a scene must not play the game's clip only because the background preload of the language set has not reached it yet. |
+| [`LanguageVoiceFirstLineAction`](#languagevoicefirstlineaction) | enum | What a scene start does about the clip of its first voiced line (`LanguageVoiceFirstLine`). |
 | [`LanguageVoiceLengths`](#languagevoicelengths) | sealed class | How a language set's clips compare in length with the game's own clips of the same name - the number that tells whether a translated take will change a scene's pacing. |
 | [`LanguageVoiceLookup`](#languagevoicelookup) | struct | The answer of `LanguageVoiceTable.Lookup`: the outcome and, when loaded, the clip. |
 | [`LanguageVoiceOutcome`](#languagevoiceoutcome) | enum | What a language set says about one voice name, for the language in force. |
@@ -102,6 +104,79 @@ Every clip in the set.
 ### `override string ToString()`
 
 *A standard .NET member (an override or an interface implementation); see the .NET documentation.*
+
+---
+
+<a id="languagevoicefirstline"></a>
+
+## `LanguageVoiceFirstLine`
+
+static class · `CwyLs.ModLoader.Core.Voice.LanguageVoiceFirstLine` · assembly `CwyLs.ModLoader.Core`
+
+DS-12: the first voiced line of a scene must not play the game's clip only because the background preload of the language set has not reached it yet. The `ScenarioReader.StartReady` prefetch asks this which line is first and what to do about its clip; the rest of the scene stays queued.
+
+Only *when* a clip loads changes, never *which* clip plays: the answer is about the clip the set of the language in force names for the line (the same table the lookup asks), and it is [`LanguageVoiceFirstLineAction.None`](#languagevoicefirstlineaction--none) whenever [`LanguageVoiceRules`](#languagevoicerules) lets something else answer the name first.
+
+Unity-free so the rules are unit-tested; the loading itself is checked in game.
+
+<a id="languagevoicefirstline--maxloadnowbytes"></a>
+
+### `const long MaxLoadNowBytes = 2097152`
+
+The largest WAV decoded at once on the main thread: 2 MiB, about 23 s of 16-bit mono at 44.1 kHz. A larger file goes through the engine like an Ogg, so one scene start never costs more than a few milliseconds of decoding.
+
+<a id="languagevoicefirstline--decide"></a>
+
+### `static LanguageVoiceFirstLineAction Decide(LanguageVoiceLookup lookup, LanguageVoiceState? state, bool outranked, long fileBytes)`
+
+Decides what to do about the clip of a scene's first voiced line.
+
+**Parameters**
+
+- `lookup`: What the set of the language in force says about the line ([`LanguageVoiceTable.Lookup`](#languagevoicetable--lookup)).
+- `state`: The clip's state ([`LanguageVoiceTable.StateOf`](#languagevoicetable--stateof)), or null when the set does not cover it.
+- `outranked`: See [`LanguageVoiceFirstLine.Outranked`](#languagevoicefirstline--outranked).
+- `fileBytes`: The size of a WAV file, or a negative number when it is not known (the file is then left to the engine, which reports why it cannot load it).
+
+<a id="languagevoicefirstline--firstvoiced"></a>
+
+### `static string FirstVoiced(IEnumerable<string> names)`
+
+The first voiced line of a scenario: the first non-blank voice name, in reading order.
+
+**Parameters**
+
+- `names`: The scenario's voice names, in reading order.
+
+**Returns:** The name, or null when no line is voiced.
+
+<a id="languagevoicefirstline--outranked"></a>
+
+### `static bool Outranked(VoiceEntry registered, bool makerSwap)`
+
+True when something answers the name before the language set, so its clip need not be hurried: a mod's runtime registration ([`LanguageVoiceRules.AsksLanguageSet`](#languagevoicerules--askslanguageset)), or a Pack Maker swap, removal or Play pin in force for the name. A global pack clip does not: the set outranks it once its clip is loaded.
+
+**Parameters**
+
+- `registered`: What the global registry holds for the name, or null.
+- `makerSwap`: True when Pack Maker has swapped, hidden or pinned the name for the language in force.
+
+---
+
+<a id="languagevoicefirstlineaction"></a>
+
+## `LanguageVoiceFirstLineAction`
+
+enum · `CwyLs.ModLoader.Core.Voice.LanguageVoiceFirstLineAction` · assembly `CwyLs.ModLoader.Core`
+
+What a scene start does about the clip of its first voiced line ([`LanguageVoiceFirstLine`](#languagevoicefirstline)).
+
+| Name | Value | Description |
+|---|---|---|
+| <a id="languagevoicefirstlineaction--none"></a>`None` | 0 | Nothing beyond the usual prefetch: the language has no set, the set does not cover the line, its clip is loaded or failed (a failed clip is never retried here), or something answers the name before the set does (a mod's runtime clip, a Pack Maker swap). |
+| <a id="languagevoicefirstlineaction--loadnow"></a>`LoadNow` | 1 | Decode the file now, on the main thread, so the clip is held before the line asks for it: a WAV no larger than [`LanguageVoiceFirstLine.MaxLoadNowBytes`](#languagevoicefirstline--maxloadnowbytes). The managed 16-bit PCM decoder is synchronous. |
+| <a id="languagevoicefirstlineaction--startnow"></a>`StartNow` | 2 | Start the engine's request for the file now, ahead of the queue: an Ogg Vorbis file (only the engine decodes Vorbis, and only asynchronously) or a WAV too large to decode in one frame. |
+| <a id="languagevoicefirstlineaction--finishfirst"></a>`FinishFirst` | 3 | The engine's request for the file is already in flight: finish it before any other. |
 
 ---
 
@@ -880,6 +955,19 @@ Takes up to `max` waiting clips of one language to load next and marks them [`La
 - `includeBackground`: False takes prioritised clips only.
 
 **Returns:** The steps to load, in order. Never null.
+
+<a id="languagevoicetable--takenow"></a>
+
+### `VoiceLoadStep TakeNow(string code, string name)`
+
+Takes one named waiting clip out of turn and marks it [`LanguageVoiceState.Loading`](#languagevoicestate--loading): the first line of a scene that is about to play, loaded at once ([`LanguageVoiceFirstLine`](#languagevoicefirstline)).
+
+**Parameters**
+
+- `code`: The language code.
+- `name`: The voice name.
+
+**Returns:** The step to load, or null when the clip is loading, loaded, failed or unknown.
 
 ---
 

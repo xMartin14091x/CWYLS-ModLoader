@@ -15,7 +15,7 @@ namespace CwyLs.ModLoader.Mods
     /// </summary>
     /// <remarks>
     /// Paid content is never replaced: story music that plays a track of the game's soundtrack
-    /// (sold as Steam DLC 3718890) is refused, as the console and <see cref="AudioRowInfo.Refusal"/> say.
+    /// (sold as Steam app 4161250) is refused, as the console and <see cref="AudioRowInfo.Refusal"/> say.
     /// Voice clips stay in the Satone facet.
     /// </remarks>
     public interface ICwyModAudio : ICwyModFacet

@@ -154,10 +154,10 @@ namespace CwyLs.ModLoader.Core.Audio
     /// </summary>
     /// <remarks>
     /// <para>
-    /// How the game marks paid audio (game 1.17.3): the only DLC is the original soundtrack,
-    /// <c>NestopiSystem.Steam.BulbulSteamDLC.DLC_1 = 3718890</c>. The game never asks for it in
-    /// play - <c>NestopiSystem.Steam.SteamManager.IsInstalledDLC</c> has no caller - so the soundtrack's
-    /// tracks are the game's own music list (<c>MusicMaster</c>, tag <c>Original</c> = 1 on 31 of 43
+    /// How the game marks paid audio: the original soundtrack is sold as its own Steam app,
+    /// 4161250 ("Chill with You Lo-Fi Story Soundtrack"); the game never checks it. (The game's
+    /// <c>NestopiSystem.Steam.BulbulSteamDLC.DLC_1 = 3718890</c> is the Room &amp; Cozy Activities
+    /// Expansion, Steam store page checked 2026-11-17.) So the soundtrack's tracks are the game's own music list (<c>MusicMaster</c>, tag <c>Original</c> = 1 on 31 of 43
     /// rows) and the story cue that plays one (<c>DirectionMusicMaster</c>'s only row,
     /// <c>main32_Music</c> -&gt; clip <c>Without You_main32_full</c>). No ambient, ambient-SE,
     /// system-SE or timer-SE row carries a purchase or DLC flag (their row types hold only an enum and
@@ -172,8 +172,8 @@ namespace CwyLs.ModLoader.Core.Audio
     /// </remarks>
     public static class AudioPaidContent
     {
-        /// <summary>Steam app id of the game's only DLC, the original soundtrack (<c>BulbulSteamDLC.DLC_1</c>).</summary>
-        public const uint SoundtrackDlcAppId = 3718890;
+        /// <summary>Steam app id of the original soundtrack, sold separately (store page checked 2026-11-17).</summary>
+        public const uint SoundtrackDlcAppId = 4161250;
 
         /// <summary>
         /// Why replacing this row's clip is refused, or null when it is allowed. Only story music can

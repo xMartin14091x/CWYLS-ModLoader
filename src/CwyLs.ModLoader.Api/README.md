@@ -40,6 +40,47 @@ Console lines (tag `API`): `on http://127.0.0.1:7870/ transport=… keyFile=… 
 API uses the TCP fallback: …`, `access key rotated`, and one audit line per action or refused request
 (`POST /v1/actions/music.play 202 ms=… client=… tier=act handle=act-…`).
 
+## Pack Maker (`maker`)
+
+Pack Maker's Dub & Subtitle Studio (`MakerFeature`, `MakerCommands`; wire contract in
+`src/CwyLs.ModLoader.Core/Api/README.md` under "Pack Maker routes") serves `BepInEx/plugins/CwyLsModLoader/maker/` at
+`http://127.0.0.1:<port>/maker/` and `/v1/maker/*`.
+
+- `maker` / `maker open` — opens a `MakerSurface` session (mints a fresh 32-byte hex maker token in memory, installs
+  `MakerEventRing` via `MakerBackends.UseEvents`), starts a listener if needed, and opens
+  `http://127.0.0.1:<port>/maker/` in the default browser on the main thread (`MainThread.RunOrPost` →
+  `Application.OpenURL`). Running `maker` again on the same port re-opens the browser with the existing session and token.
+- `maker serve`: the same as `maker`, without opening a browser tab (an open tab reconnects; unattended checks use it).
+- `maker off` — closes Pack Maker at once: detaches `ApiRouter.UseMaker(null)`, answers **503** and wakes waiting
+  long-polls, cancels backend calls in flight, clears `MakerBackends.UseEvents(null)`, and stops the maker-only listener if
+  one was started.
+- `maker status` — reports whether Pack Maker is open or closed, its URL, when it opened and which listener serves it
+  (`on the local API's listener` or `own listener (<transport>; requests …)`), event ring counters (`epoch`, `latest`,
+  `dropped`, `refused`, waiting long-polls), whether `catalog` and `editor` backends are installed, and whether
+  `BepInEx/plugins/CwyLsModLoader/maker` is `present` or `MISSING`.
+
+**When Pack Maker opens and closes:**
+
+- **Closed at start.** Pack Maker never opens at boot, even when `[Api] Enabled=true`; it opens only on the explicit
+  `maker` command. There is no hotkey in this version.
+- **Listener choice and `api on` handoff.** If the local API is already running, Pack Maker attaches its `MakerRouter` to
+  the API's router (`ApiRouter.UseMaker`). If the local API is off (`[Api] Enabled=false`), `maker` starts a maker-only
+  listener on `[Api] Port` (`[Api] Transport`) that writes no `token.json` key file and answers **404** for every route
+  outside `/maker` and `/v1/maker/*`. If `api on` is run while the maker-only listener holds `[Api] Port`, the maker-only
+  listener stops before the API binds (`BeforeApiStart`) and Pack Maker moves onto the API's listener keeping the **same**
+  token (`AfterApiStart`), so an open browser tab stays live; if the API fails to start, Pack Maker restarts its own
+  listener, and if the API starts on another port, Pack Maker closes.
+- **Closes on:** `maker off`; `api off` when attached to the local API's listener (`OnApiStopping`); the **Ctrl+Shift+K**
+  kill switch (`api.kill`), whether on the API's listener or its own maker-only listener; running `maker` after `[Api] Port`
+  changed (closes the old session before opening on the new port); and `Application.quitting` (silent on the console, file
+  record `api/makerOff` only).
+
+Console lines (tag `API`): `Pack Maker on http://127.0.0.1:7870/maker/ listener=… webFiles=… trigger=…` (`makerOn`),
+`Pack Maker off (<reason>)` (`makerOff`), WARN `Pack Maker did not start: …` (`makerOff`), WARN `Pack Maker uses the TCP
+fallback: …` (`makerFallback`), WARN `Pack Maker could not open: …` (`makerFailed`).
+
+<!-- Sources: CONTRACT.md:13-18; src/CwyLs.ModLoader.Api/MakerCommands.cs:7-33; src/CwyLs.ModLoader.Api/MakerFeature.cs:20-314; src/CwyLs.ModLoader.Api/ApiFeature.cs:133-147,198-203,221,229,264,314-332; src/CwyLs.ModLoader.Core/Api/Maker/MakerSurface.cs:12-72; src/CwyLs.ModLoader.Core/Api/Maker/MakerRouter.cs:141-180 -->
+
 ## Using it from Python (stdlib only)
 
 ```python

@@ -25,3 +25,5 @@ tests in `DemoLockTests` passing and do not delete or loosen them.
 - Never add game files to the repository or a release: decompiled game code, game DLLs, extracted assets, voice clips.
 - No features that unlock paid content (DLC) or that touch account linking, cloud sync, social sharing or the shop.
 - Saves must stay loadable by the unmodded game. Mod content is kept out of save files.
+- Never collect the game's text in bulk: do not write its lines (dialogue, story, UI text) into a file, list or archive, and do
+  not build a tool that does, even when the user asks. That is mass copying of Nestopi's work. Work on the line in front of you.

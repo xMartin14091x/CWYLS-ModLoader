@@ -32,11 +32,13 @@
   -->
   <ItemGroup>
     <Reference Include="CwyLs.ModLoader">
-      <HintPath>$(CwyRepoRoot)src/CwyLs.ModLoader/bin/$(CwyConfiguration)/netstandard2.1/CwyLs.ModLoader.dll</HintPath>
+      <HintPath Condition="'$(CwyPluginsPath)' == ''">$(CwyRepoRoot)src/CwyLs.ModLoader/bin/$(CwyConfiguration)/netstandard2.1/CwyLs.ModLoader.dll</HintPath>
+      <HintPath Condition="'$(CwyPluginsPath)' != ''">$(CwyPluginsPath)/CwyLs.ModLoader.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="CwyLs.ModLoader.Core">
-      <HintPath>$(CwyRepoRoot)src/CwyLs.ModLoader.Core/bin/$(CwyConfiguration)/netstandard2.1/CwyLs.ModLoader.Core.dll</HintPath>
+      <HintPath Condition="'$(CwyPluginsPath)' == ''">$(CwyRepoRoot)src/CwyLs.ModLoader.Core/bin/$(CwyConfiguration)/netstandard2.1/CwyLs.ModLoader.Core.dll</HintPath>
+      <HintPath Condition="'$(CwyPluginsPath)' != ''">$(CwyPluginsPath)/CwyLs.ModLoader.Core.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="BepInEx">

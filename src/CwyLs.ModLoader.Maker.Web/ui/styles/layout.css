@@ -1,0 +1,153 @@
+/* Sky, app grid, keyboard hints, ground, toasts and size rules. From mockup A. */
+/* ---------------- the sky ---------------- */
+.sky {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden;
+  /* the eleven bands of sky.svg, pixel-hard, the warm ones pushed down to the horizon */
+  background: linear-gradient(to bottom,
+    #0a0e25 0 13%, #0d112b 13% 24%, #0f1432 24% 34%, #111738 34% 43%, #141a3e 43% 52%, #1a1d44 52% 60%,
+    #21204b 60% 67%, #292351 67% 74%, #402b5a 74% 81%, #5d3564 81% 88%, #945874 88% 100%);
+}
+.stars { position: absolute; inset: 0; }
+.tw { animation: blink 5s steps(1, end) infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 60% { opacity: .35; } 80% { opacity: .7; } }
+.hills { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; display: block; }
+.shot .tw, .shot * { animation-play-state: paused !important; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ---------------- app grid ---------------- */
+.app { position: relative; z-index: 1; height: 100vh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.main {
+  display: grid; min-height: 0; padding: .55rem 1.15rem .25rem; column-gap: 1rem; row-gap: .6rem;
+  grid-template-columns: clamp(14.5rem, 18vw, 18rem) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "left card";
+}
+.main.has-banner { grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "left banner" "left card"; }
+.main.is-page {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "page";
+}
+.main.is-page.has-banner {
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "banner" "page";
+}
+.left { grid-area: left; }
+.banner { grid-area: banner; }
+.studio-card { grid-area: card; }
+.page-view { grid-area: page; display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; padding: .85rem 1rem; }
+.left[hidden], .studio-card[hidden], .page-view[hidden] { display: none !important; }
+
+.panel {
+  background: var(--glass); border: 1px solid var(--edge); border-radius: var(--r);
+  backdrop-filter: blur(14px) saturate(115%); -webkit-backdrop-filter: blur(14px) saturate(115%);
+  box-shadow: 0 1.2rem 2.6rem rgba(4, 5, 20, .35), inset 0 1px 0 rgba(255, 255, 255, .04);
+}
+.panel-soft {
+  background: rgba(13, 16, 44, .55); border: 1px solid var(--edge-soft); border-radius: var(--r);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+
+/* ---------------- keyboard hints (zone 5) ---------------- */
+.keys { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem .8rem; padding: .65rem .8rem; flex: none; }
+.keys > span { display: inline-flex; align-items: center; gap: .3rem; font: 400 .76rem/1.5 var(--f-read); color: var(--ink3); white-space: nowrap; min-width: 0; }
+.keys .k-wide { grid-column: 1 / -1; }
+.keys .k-alt { display: inline-flex; align-items: center; gap: .3rem; margin-left: .8rem; }
+.keys kbd { background: rgba(255, 255, 255, .04); }
+
+/* ---------------- ground: the hills and the little house ---------------- */
+.ground { position: relative; display: flex; align-items: center; padding: .2rem 1.4rem .25rem; min-height: 1.4rem; }
+.house { width: 1.9rem; height: 2.1rem; color: #2a1b45; margin-left: 1.2rem; margin-top: -1rem; flex: none; }
+.house svg { width: 100%; height: 100%; display: block; }
+.house .lit { animation: flick 7s ease-in-out infinite; filter: drop-shadow(0 0 .4rem rgba(246, 193, 119, .8)); }
+@keyframes flick { 0%, 100% { opacity: 1; } 46% { opacity: .88; } 50% { opacity: .72; } 54% { opacity: .92; } }
+
+/* ---------------- toasts ---------------- */
+.toasts { position: fixed; top: 4.6rem; left: 50%; transform: translateX(-50%); z-index: 70; display: grid; gap: .4rem; justify-items: center; pointer-events: none; }
+.toast { display: inline-flex; align-items: center; gap: .45rem; padding: .45rem .9rem; border-radius: 99px; background: rgba(16, 19, 52, .95); border: 1px solid rgba(147, 226, 181, .4); color: var(--ink); font: 400 .86rem/1.5 var(--f-read); box-shadow: 0 .8rem 2rem rgba(2, 3, 14, .5); animation: tin .25s ease-out; transition: opacity .4s, transform .4s; }
+.toast .ico { color: var(--mint); }
+.toast.warn { border-color: rgba(255, 196, 107, .5); } .toast.warn .ico { color: var(--amber); }
+.toast.out { opacity: 0; transform: translateY(-.4rem); }
+@keyframes tin { from { opacity: 0; transform: translateY(-.5rem); } }
+
+
+/* tighter heights on 900-px-tall screens */
+@media (max-height: 940px) {
+  .card { gap: .45rem; padding-top: .75rem; padding-bottom: .7rem; }
+  .refs { padding: .4rem .8rem .45rem; }
+  .editor textarea { font-size: 1.55rem; padding: .55rem 1.1rem; }
+  .editor { min-height: 8.4rem; }
+}
+
+/* compact widths (1180..1400 CSS px) */
+@media (max-width: 1400px) {
+  .main {
+    padding: .45rem .85rem .2rem; column-gap: .75rem;
+    grid-template-columns: 14.2rem minmax(0, 1fr);
+  }
+  .main.is-page { grid-template-columns: minmax(0, 1fr); }
+  .deck-grid { grid-template-columns: 11.8rem minmax(0, 1fr) clamp(17.5rem, 19.5vw, 20.5rem); gap: .7rem; }
+  .d-meta { padding-left: .7rem; }
+}
+
+/* compact heights (700..780 CSS px, e.g. 1180x700 and 1280x720 at 100% zoom) */
+@media (max-height: 780px) {
+  .top { padding-top: .32rem; padding-bottom: .28rem; min-height: 2.8rem; }
+  .main { padding-top: .35rem; padding-bottom: .15rem; row-gap: .35rem; }
+  .banner { padding: .28rem .75rem; gap: .55rem; }
+  .b-ico { width: 1.45rem; height: 1.45rem; padding: .24rem; }
+  .b-t b { font-size: .84rem; }
+  .b-t span { font-size: .76rem; }
+
+  .left { padding: .5rem .65rem .4rem; }
+  .scn-nav { padding-bottom: .35rem; margin-bottom: .25rem; }
+
+  .app .banner { padding: .3rem .75rem; gap: .55rem; }
+  .app .card { gap: .32rem; padding: .55rem .95rem .5rem; }
+  .app .card-body { gap: .28rem; flex: 0 1 auto; }
+  .app .refs { padding: .28rem .68rem .3rem; }
+  .app .editor { height: 7.2rem; min-height: 7.2rem; flex: 0 0 7.2rem; padding-bottom: 0; }
+  .app .deck-inline { min-height: 0; flex: 0 0 auto; }
+  .app .card-bottom { padding-top: .32rem; }
+  .editor textarea { font-size: 1.35rem; line-height: 1.5; padding: .45rem 1rem; height: 100%; }
+
+  .hb { padding: .32rem .62rem; gap: .4rem; }
+  .hb-ico { width: 1.5rem; height: 1.5rem; padding: .26rem; }
+  .hb-t b, .hb-mine b { font-size: .82rem; }
+  .mir-lang { padding: .18rem .4rem; font-size: .68rem; }
+  .said { padding: .22rem .48rem; gap: .04rem; }
+  .said-t { font-size: .76rem; }
+
+  .deck-body { padding: .35rem .75rem .4rem; }
+  .d-mic { grid-template-columns: 4.4rem minmax(0, 1fr); gap: .3rem .6rem; padding: .1rem; }
+  .recwrap { width: 4.4rem; height: 4.4rem; }
+  .recbtn { width: 3.5rem; height: 3.5rem; }
+  .recdot { width: 1.2rem; height: 1.2rem; }
+  .d-tape { gap: .32rem; }
+  .tape { min-height: 4.4rem; flex: 1; padding: .35rem .55rem; }
+  .reel { width: 2.5rem; height: 2.5rem; }
+  .count b { font-size: 1.75rem; width: 2.5rem; height: 2.5rem; }
+  .d-meta { gap: .22rem; }
+  .og { padding: .18rem .24rem; font-size: .68rem; }
+  .ck { font-size: .68rem; }
+  .retake { padding: .1rem .48rem; font-size: .68rem; }
+
+  .ground { padding: .06rem 1.2rem .08rem; min-height: .75rem; }
+  .house { width: 1.35rem; height: 1.5rem; margin-top: -.75rem; }
+}
+
+/* Below 1180x700 (down to 1024x640), the page may scroll instead of clipping or overlapping. */
+@media (max-width: 1179px), (max-height: 699px) {
+  body { overflow: auto; }
+  .app { height: 100vh; min-height: 700px; min-width: 1024px; }
+  .main { min-height: 0; }
+}
+
+@media (max-width: 1179px) {
+  .main {
+    padding: .4rem .65rem .2rem; column-gap: .6rem;
+    grid-template-columns: 13.5rem minmax(0, 1fr);
+  }
+  .main.is-page { grid-template-columns: minmax(0, 1fr); }
+  .deck-grid { grid-template-columns: 11rem minmax(0, 1fr) 16.5rem; gap: .55rem; }
+}

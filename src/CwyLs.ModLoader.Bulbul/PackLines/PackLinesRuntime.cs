@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using CwyLs.ModLoader.Bulbul.Events;
 using CwyLs.ModLoader.Bulbul.Language;
+using CwyLs.ModLoader.Bulbul.MasterData;
 using CwyLs.ModLoader.Core.Logging;
 using CwyLs.ModLoader.Core.PackLines;
 using HarmonyLib;
@@ -41,7 +42,6 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
         private static Root? _reaction;
         private static Root? _timers;
         private static SmallTalkBinding? _smallTalk;
-        private static PackLineHeldIds? _heldIds;
 
         /// <summary>The accepted lines. Swapped whole on a new pack state; never null.</summary>
         internal static PackLineRegistry Registry { get; private set; } = PackLineRegistry.Empty;
@@ -604,28 +604,17 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
         // ---- the save filter -------------------------------------------------------------------
 
-        /// <summary>Prefix of <c>SaveScenarioProgressData</c>: takes pack-line ids out of the list about to be written.</summary>
-        internal static void HoldBackPlayedIds()
+        /// <summary>
+        /// Joins master data's save filter (<c>MasterDataFeature.SaveHoldBack</c>), the only one that runs:
+        /// pack-line ids are held back with the pack-added groups, and each save's held ids are remembered
+        /// as heard. False while that filter is not installed.
+        /// </summary>
+        internal static bool JoinSaveFilter() => MasterDataFeature.SaveHoldBack.JoinPackLines(SessionGroupIds, OnSaveHeld);
+
+        private static void OnSaveHeld(IReadOnlyList<string> held)
         {
-            _heldIds = null;
-            if (SessionGroupIds.Count == 0)
-            {
-                return;
-            }
-
-            var ids = PlayedIds();
-            if (ids is null)
-            {
-                return;
-            }
-
-            var held = PackLineSaveFilter.Strip(ids, SessionGroupIds.Contains);
-            if (held.Count > 0)
-            {
-                _heldIds = held;
-                ConsoleEvents.File("packlines", "saveFilter", ("heldBack", held.Count));
-                Remember(held.Ids);
-            }
+            ConsoleEvents.File("packlines", "saveFilter", ("heldBack", held.Count));
+            Remember(held);
         }
 
         // ---- one deck across sessions (mod data, never the save) --------------------------------
@@ -786,7 +775,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
         private static void MarkRememberedAsSeen()
         {
-            var added = PackLineSeen.MarkSeen(PlayedIds(), Seen(), SessionGroupIds.Contains);
+            var added = PackLineSeen.MarkSeen(PlayedIds(), Seen(), MasterDataFeature.SaveHoldBack.IsHeld);
             if (added > 0)
             {
                 ConsoleEvents.File("packlines", "seen", ("marked", added));
@@ -819,22 +808,9 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
         }
 
-        /// <summary>Finalizer of <c>SaveScenarioProgressData</c>: puts them back, in place.</summary>
-        internal static void RestorePlayedIds()
-        {
-            var held = _heldIds;
-            _heldIds = null;
-            if (held is null)
-            {
-                return;
-            }
-
-            PackLineSaveFilter.Restore(PlayedIds(), held);
-        }
-
         /// <summary>
-        /// For the smoke check: how many pack-line ids the in-memory list holds now, and how many a
-        /// save would hold back (a dry run on a copy).
+        /// For the smoke check: how many pack ids (pack lines and plain groups a pack added) the
+        /// in-memory list holds now, and how many a save would hold back (a dry run on a copy).
         /// </summary>
         internal static (int InMemory, int WouldHoldBack, bool Readable) DryRunSaveFilter()
         {
@@ -845,11 +821,11 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
 
             var copy = new List<string>(ids);
-            var held = PackLineSaveFilter.Strip(copy, SessionGroupIds.Contains);
+            var held = PackLineSaveFilter.Strip(copy, MasterDataFeature.SaveHoldBack.IsHeld);
             var inMemory = 0;
             foreach (var id in ids)
             {
-                if (Registry.IsPackGroup(id))
+                if (Registry.IsPackGroup(id) || MasterDataFeature.AddedGroups.Contains(id))
                 {
                     inMemory++;
                 }

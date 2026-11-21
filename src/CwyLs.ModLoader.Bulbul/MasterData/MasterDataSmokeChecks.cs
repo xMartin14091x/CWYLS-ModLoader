@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CwyLs.ModLoader.Core.MasterData;
+using CwyLs.ModLoader.Core.PackLines;
 using CwyLs.ModLoader.Core.Smoke;
 using CwyLs.ModLoader.Bulbul.Events;
 using Game = global::Bulbul;
@@ -42,7 +43,15 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
             SmokeRegistry.Register(new SmokeCheck(WrapperId, Phase, WrapperReads));
             SmokeRegistry.Register(new SmokeCheck(TextTablesId, Phase, TextTables));
             SmokeRegistry.Register(new SmokeCheck(ScenarioId, Phase, ScenarioPlayable));
+            SmokeRegistry.Register(new SmokeCheck(PackSaveFilterSmoke.Id, Phase, SaveFilter));
         }
+
+        /// <summary>The save filter is in place and a dry run on a copy of the played list holds back every pack-added group.</summary>
+        private static SmokeCheckResult SaveFilter() => PackSaveFilterSmoke.Evaluate(
+            MasterDataFeature.Enabled,
+            MasterDataFeature.ConfigSection + "." + MasterDataFeature.ConfigKeyEnabled + "=false",
+            MasterDataFeature.SaveHoldBack,
+            MasterDataSaveFilter.PlayedIds());
 
         /// <summary>The packs' rows are in the game's own collections.</summary>
         private static SmokeCheckResult Injected()

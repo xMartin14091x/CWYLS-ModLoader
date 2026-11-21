@@ -8,12 +8,12 @@
 #   ./build.sh -c Debug        pick a configuration
 #
 # This script never launches the game and writes nothing into the game except
-# BepInEx/plugins/CwyLsModLoader and, with --deploy-packs, CWYLS Mods (plus the one-time move of an
-# install from before the rename: tools/mac/migrate-old-install.sh). Installing BepInEx itself is
-# tools/mac/install-bepinex-mac.sh.
+# BepInEx/plugins/CwyLsModLoader (DLLs, Pack Maker's maker/) and, with --deploy-packs, CWYLS Mods (plus
+# the one-time move of an install from before the rename: tools/mac/migrate-old-install.sh). Installing
+# BepInEx itself is tools/mac/install-bepinex-mac.sh.
 set -euo pipefail
 
-HERE="$(cd "$(dirname "$0")" && pwd)"
+HERE="$(cd "$(dirname "$0")" && pwd -P)"
 export DOTNET_ROOT="${DOTNET_ROOT:-/opt/homebrew/opt/dotnet/libexec}"
 export PATH="$DOTNET_ROOT:$PATH"
 
@@ -62,6 +62,12 @@ if [ "$RUN_TESTS" -eq 1 ]; then
   echo "==> test"
   dotnet test "$HERE/src/CwyLs.ModLoader.Tests/CwyLs.ModLoader.Tests.csproj" -c "$CONFIG" --no-build
 
+  # Preview clip ownership in the real MakerEditorPlay.cs, compiled against engine stubs (25 scenarios, including subtitle-only playback).
+  # It stays out of the xUnit assembly (its fake UnityEngine types), so it runs here; a failure stops the build.
+  echo
+  echo "==> preview adapter harness"
+  dotnet run --project "$HERE/src/CwyLs.ModLoader.Tests/PreviewAdapterHarness/AdapterHarness.csproj" -c "$CONFIG"
+
   # Parser parity: the unit tests regenerate the golden console corpus; the viewer must accept
   # every line of it. One fixture, two parsers, no drift.
   echo
@@ -75,8 +81,18 @@ if [ "$RUN_TESTS" -eq 1 ]; then
   echo
   echo "==> seamcheck"
   SC_PLATFORM=mac; [ -d "$HERE/_ref/win-1.18.0/Managed" ] && SC_PLATFORM=all
-  "$HERE/tools/seamcheck/seamcheck.sh" --platform "$SC_PLATFORM"
-  dotnet test "$HERE/tools/seamcheck/Seamcheck.Tests/Seamcheck.Tests.csproj" -c "$CONFIG"
+  if [ -n "${SEAMCHECK_ARTIFACTS:-}" ]; then
+    SC_ARTIFACTS="$SEAMCHECK_ARTIFACTS"
+  else
+    if command -v shasum >/dev/null 2>&1; then
+      HERE_HASH="$(printf '%s' "$HERE" | shasum -a 256 | cut -c1-12)"
+    else
+      HERE_HASH="$(printf '%s' "$HERE" | cksum | cut -d' ' -f1)"
+    fi
+    SC_ARTIFACTS="${TMPDIR:-/tmp}/cwy-seamcheck-$HERE_HASH"
+  fi
+  SEAMCHECK_ARTIFACTS="$SC_ARTIFACTS" "$HERE/tools/seamcheck/seamcheck.sh" --platform "$SC_PLATFORM"
+  dotnet test "$HERE/tools/seamcheck/Seamcheck.Tests/Seamcheck.Tests.csproj" -c "$CONFIG" --artifacts-path "$SC_ARTIFACTS"
 fi
 
 if [ "$DEPLOY" -eq 0 ]; then
@@ -119,6 +135,20 @@ for name in $PLUGINS; do
   cp "$src" "$DEST/$name.dll"
   echo "    $name.dll"
 done
+
+# Pack Maker's web app: the API plugin serves it at /maker/ from plugins/CwyLsModLoader/maker/. Only the app
+# ships: the excludes are the same as tools/release/make-release.sh (keep the two lists in sync), so a dev deploy
+# serves exactly what a release does. --delete (and --delete-excluded, for files an older deploy copied before they
+# were excluded) clears that one folder, which holds nothing but this copy.
+WEB_SRC="$HERE/src/CwyLs.ModLoader.Maker.Web"
+if [ -d "$WEB_SRC" ]; then
+  mkdir -p "$DEST/maker"
+  rsync -a --delete --delete-excluded --exclude 'tools/' --exclude 'tests/' --exclude '_*' --exclude '.*' \
+    --exclude 'package.json' --exclude 'generate_api.mjs' --exclude '*.md' "$WEB_SRC/" "$DEST/maker/"
+  echo "    maker/ ($(find "$DEST/maker" -type f | wc -l | tr -d ' ') files)"
+else
+  echo "    maker/ skipped: $WEB_SRC does not exist yet"
+fi
 
 # BepInEx will not load a quarantined assembly on macOS.
 xattr -dr com.apple.quarantine "$DEST" 2>/dev/null || true

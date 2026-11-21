@@ -50,7 +50,7 @@ A facet whose backend is missing (no game adapter) reports `IsAvailable = false`
 `MODS <id>: … not available` warning on first use instead of throwing.
 
 The further facets (`Harmony`, `Conditions`, `Actions`, `Scenes`, `EditData`, `Audio`, `UiSkin`,
-`Camera`, `VoiceStream`, `Mic`, `Api`) are described in `Facets/README.md`. Anything that registers
+`Grading`, `Camera`, `VoiceStream`, `Mic`, `Api`) are described in `Facets/README.md`. Anything that registers
 returns a `CwyRegistration` (`IDisposable`: dispose = unregister; a refused one comes back inactive
 with `Problem` set). Adapter backends register through `ModBackends.Use*` (typed slots) or
 `ModFacetBackends.Use<T>`; `ModBackends.Use*` is internal to the framework's assemblies

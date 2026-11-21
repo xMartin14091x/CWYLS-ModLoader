@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CwyLs.ModLoader.Core.Actions;
+using CwyLs.ModLoader.Core.Api.Maker;
 using CwyLs.ModLoader.Core.Json;
 using CwyLs.ModLoader.Core.Logging;
 
@@ -74,7 +75,7 @@ namespace CwyLs.ModLoader.Core.Api
 
     /// <summary>
     /// The local game API's request pipeline, shared by both transports. Order: stopping →
-    /// browser checks (any <c>Origin</c> or <c>Sec-Fetch-*</c> header: 403) → <c>Host</c> must be
+    /// browser checks (any <c>Origin</c>, <c>Sec-Fetch-Site</c> or <c>Sec-Fetch-Mode</c> header: 403) → <c>Host</c> must be
     /// exactly <c>127.0.0.1:&lt;port&gt;</c> (421) → access key in constant time (401) → route
     /// (404/405) → rate limit (429) → query and body (400/411/413/415) → handler. Exactly one
     /// audit record per request. Never throws; never touches Unity: reads come from the published
@@ -96,6 +97,7 @@ namespace CwyLs.ModLoader.Core.Api
         private readonly ApiIdempotencyCache _idempotency;
         private readonly string _authority;
         private ApiToken _key;
+        private MakerRouter? _maker;
         private int _waiters;
         private int _stopping;
 
@@ -164,6 +166,13 @@ namespace CwyLs.ModLoader.Core.Api
         /// <param name="key">The new key.</param>
         public void UseKey(ApiToken key) => Volatile.Write(ref _key, key ?? throw new ArgumentNullException(nameof(key)));
 
+        /// <summary>
+        /// Hands <c>/maker</c> and <c>/v1/maker/*</c> to Pack Maker's router (its own browser, Host and token
+        /// rules), or stops doing so (null). Every other route is unchanged.
+        /// </summary>
+        /// <param name="maker">The maker router, or null.</param>
+        public void UseMaker(MakerRouter? maker) => Volatile.Write(ref _maker, maker);
+
         /// <summary>Answers 503 from now on, wakes every long-poll and stops waiting for pending actions.</summary>
         public void BeginStop()
         {
@@ -215,6 +224,12 @@ namespace CwyLs.ModLoader.Core.Api
             if (IsStopping)
             {
                 return ApiResponse.Error(503, ApiErrorCodes.Unavailable, "the API is stopping");
+            }
+
+            var maker = Volatile.Read(ref _maker);
+            if (maker != null && MakerDefaults.Owns(r.Target))
+            {
+                return maker.Route(r, audit);
             }
 
             if (r.Headers.Has("Origin"))
@@ -602,6 +617,11 @@ namespace CwyLs.ModLoader.Core.Api
             if (body.Status == ApiBodyStatus.TooLarge)
             {
                 return ApiResponse.Error(413, ApiErrorCodes.TooLarge, "the body is larger than " + _o.MaxBodyBytes + " bytes");
+            }
+
+            if (body.Status == ApiBodyStatus.TimedOut)
+            {
+                return ApiResponse.Error(408, ApiErrorCodes.RequestTimeout, "the body could not be read: " + body.Problem);
             }
 
             if (body.Status == ApiBodyStatus.Failed)

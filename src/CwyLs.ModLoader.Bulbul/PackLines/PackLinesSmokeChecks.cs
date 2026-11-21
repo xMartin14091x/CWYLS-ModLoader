@@ -177,12 +177,12 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             if (heldBack < inMemory)
             {
                 return SmokeCheckResult.Fail(
-                    SaveFilterId, inMemory + " pack-line id(s) in memory but a save would hold back only " + heldBack);
+                    SaveFilterId, inMemory + " pack id(s) in memory but a save would hold back only " + heldBack);
             }
 
             return SmokeCheckResult.Pass(
                 SaveFilterId,
-                inMemory + " pack-line id(s) recorded this session; a save writes none of them (" + heldBack + " held back)");
+                inMemory + " pack id(s) (pack lines and pack-added groups) recorded this session; a save writes none of them (" + heldBack + " held back)");
         }
 
         /// <summary>

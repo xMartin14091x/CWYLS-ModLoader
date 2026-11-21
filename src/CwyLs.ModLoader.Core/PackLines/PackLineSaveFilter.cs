@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CwyLs.ModLoader.Core.MasterData;
 
 namespace CwyLs.ModLoader.Core.PackLines
 {
@@ -39,7 +40,8 @@ namespace CwyLs.ModLoader.Core.PackLines
     }
 
     /// <summary>
-    /// Keeps pack-line ids out of the game's save.
+    /// Keeps pack ids out of the game's save: pack-line ids, and every plain scene group a pack added
+    /// (<see cref="PackAddedGroups"/>), which the game's own small-talk lottery can draw and log.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -61,6 +63,29 @@ namespace CwyLs.ModLoader.Core.PackLines
     /// </remarks>
     public static class PackLineSaveFilter
     {
+        /// <summary>
+        /// The ids a save must not hold: a pack line's group, or a group a pack added to the game's
+        /// master data (exact provenance, recorded at injection). Nothing else - in particular not an id
+        /// the game's data merely does not know, which can be real progress from a newer game version.
+        /// </summary>
+        /// <param name="packLineIds">The pack lines' group ids seen this session. Required.</param>
+        /// <param name="addedGroups">The groups packs added this session. Required.</param>
+        /// <exception cref="ArgumentNullException">An argument is null.</exception>
+        public static Func<string, bool> HoldBackRule(ICollection<string> packLineIds, PackAddedGroups addedGroups)
+        {
+            if (packLineIds is null)
+            {
+                throw new ArgumentNullException(nameof(packLineIds));
+            }
+
+            if (addedGroups is null)
+            {
+                throw new ArgumentNullException(nameof(addedGroups));
+            }
+
+            return id => id != null && (packLineIds.Contains(id) || addedGroups.Contains(id));
+        }
+
         /// <summary>
         /// Takes every id <paramref name="isPackId"/> accepts out of <paramref name="ids"/>, remembering
         /// where each was. The other ids keep their order. Nothing is allocated when nothing matches.

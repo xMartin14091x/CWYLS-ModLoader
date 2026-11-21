@@ -8,7 +8,7 @@ data) exactly like a content pack. The API is described in `src/CwyLs.ModLoader/
 
 ## Start a mod
 
-1. Build the framework once in the checkout: `./build.sh --no-deploy`.
+1. Install the loader in the game, or build the framework once in a checkout: `./build.sh --no-deploy`.
 2. Copy this folder, e.g. to `mods-src/yourname.mymod/`.
 3. Pick an id: lowercase letters, digits, `.`, `_`, `-`, 3 to 64 characters, e.g. `yourname.mymod`.
    It never changes once people use the mod.
@@ -18,11 +18,13 @@ data) exactly like a content pack. The API is described in `src/CwyLs.ModLoader/
    folder. Copy it to `packs/<id>/` in the checkout (then `./deploy-packs.sh`) or straight to
    `<game root>/CWYLS Mods/<id>/`, and restart the game.
 
-Outside the checkout, point the build at it: `dotnet build -c Release -p:CwyRepoRoot=/path/to/checkout/`.
-The build also needs the installed game with BepInEx in it: its `Managed` folder and
-`<game root>/BepInEx/core`. Both are found in the default Steam library; for a game installed
-elsewhere add `-p:SteamGameRoot=/path/to/game/` (or set `-p:GameManagedPath=...` and
-`-p:BepInExCorePath=...` one by one).
+Outside a checkout, the template uses `<game root>/BepInEx/plugins/CwyLsModLoader/`. To use a
+built checkout instead, add `-p:CwyRepoRoot=/path/to/checkout/` (include the trailing slash).
+The build also needs the installed game with BepInEx: its `Managed` folder and
+`<game root>/BepInEx/core`. The default Steam library is used; for a game elsewhere pass
+`-p:SteamGameRoot=/path/to/game/`. Individual paths can be overridden with
+`-p:CwyPluginsPath=...`, `-p:GameManagedPath=...`, and `-p:BepInExCorePath=...`.
+`CwyPluginsPath`, when set, selects those loader DLLs even inside a checkout.
 
 ## What you get
 

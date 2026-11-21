@@ -362,15 +362,15 @@ static class · `CwyLs.ModLoader.Core.Audio.AudioPaidContent` · assembly `CwyLs
 
 The paid-content rule for audio (project rule: no paid content is ever modded).
 
-How the game marks paid audio (game 1.17.3): the only DLC is the original soundtrack, `NestopiSystem.Steam.BulbulSteamDLC.DLC_1 = 3718890`. The game never asks for it in play - `NestopiSystem.Steam.SteamManager.IsInstalledDLC` has no caller - so the soundtrack's tracks are the game's own music list (`MusicMaster`, tag `Original` = 1 on 31 of 43 rows) and the story cue that plays one (`DirectionMusicMaster`'s only row, `main32_Music` -&gt; clip `Without You_main32_full`). No ambient, ambient-SE, system-SE or timer-SE row carries a purchase or DLC flag (their row types hold only an enum and a clip, e.g. `AmbientSoundMasterData`); ambients of point-purchase environments are bought with in-game points and are treated as free.
+How the game marks paid audio: the original soundtrack is sold as its own Steam app, 4161250 ("Chill with You Lo-Fi Story Soundtrack"); the game never checks it. (The game's `NestopiSystem.Steam.BulbulSteamDLC.DLC_1 = 3718890` is the Room & Cozy Activities Expansion, Steam store page checked 2026-11-17.) So the soundtrack's tracks are the game's own music list (`MusicMaster`, tag `Original` = 1 on 31 of 43 rows) and the story cue that plays one (`DirectionMusicMaster`'s only row, `main32_Music` -&gt; clip `Without You_main32_full`). No ambient, ambient-SE, system-SE or timer-SE row carries a purchase or DLC flag (their row types hold only an enum and a clip, e.g. `AmbientSoundMasterData`); ambients of point-purchase environments are bought with in-game points and are treated as free.
 
 So: pack audio never replaces a game music track (it only adds pack tracks), refuses a story-music row that plays a soundtrack track, and refuses a pack track that re-lists any game track. There is no override switch.
 
 <a id="audiopaidcontent--soundtrackdlcappid"></a>
 
-### `const uint SoundtrackDlcAppId = 3718890`
+### `const uint SoundtrackDlcAppId = 4161250`
 
-Steam app id of the game's only DLC, the original soundtrack (`BulbulSteamDLC.DLC_1`).
+Steam app id of the original soundtrack, sold separately (store page checked 2026-11-17).
 
 <a id="audiopaidcontent--checkmusictrack"></a>
 

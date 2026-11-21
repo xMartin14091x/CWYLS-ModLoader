@@ -1,0 +1,13 @@
+# Frozen top-level key TAB accepted sample value; experimental alias stays separate.
+author	"Author"
+contentPackFor	"cwy.other"
+dependsOn	["cwy.other"]
+description	"Description"
+entryDll	"mod.dll"
+gameVersion	"1.18.0"
+id	"cwy.freeze"
+loaderVersion	"1.0.0"
+maxGameVersion	"9.0.0"
+minGameVersion	"1.0.0"
+name	"Freeze"
+version	"1.2.3"

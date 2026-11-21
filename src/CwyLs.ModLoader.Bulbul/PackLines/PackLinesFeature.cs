@@ -159,10 +159,24 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 return;
             }
 
+            // Pack-line ids are kept out of the save by master data's filter, the only one that runs.
+            if (!MasterDataFeature.SaveHoldBack.Installed)
+            {
+                TurnOff("the master-data save filter is off (" + MasterDataFeature.SaveHoldBack.Problem + ")");
+                return;
+            }
+
             _harmony = new Harmony(PackLinesPatches.HarmonyId);
             if (!PackLinesPatches.Apply(_harmony, out problem))
             {
                 TurnOff(problem);
+                return;
+            }
+
+            if (!PackLinesRuntime.JoinSaveFilter())
+            {
+                _harmony.UnpatchSelf();
+                TurnOff("could not join the master-data save filter (" + MasterDataFeature.SaveHoldBack.Problem + ")");
                 return;
             }
 

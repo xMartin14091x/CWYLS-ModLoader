@@ -26,7 +26,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
     ///   <item><term><c>PomodoroVoiceSelector.TakeNext{WorkStart,BreakStart,Finish}Voice</c></term><description>Prefix: the gate (with the weighted roll), and an armed <c>lines test</c> timer line. Finalizer: as for the clicks.</description></item>
     ///   <item><term>the eight two-list <c>*VoiceSelector.TakeNextVoice</c></term><description>Prefix: answer for a pack episode before the game indexes its per-episode table with it (e.g. <c>NormalWorkStartVoiceSelector</c>).</description></item>
     ///   <item><term><c>SmallTalkSelector.Setup</c>, <c>LotterySmallTalk</c></term><description>Postfix: take pack lines out of the lottery cache; prefix: put the unweighted ones back exactly while their language is shown, then roll the weighted ones (a win replaces the lottery); postfix: "played last" bookkeeping.</description></item>
-    ///   <item><term><c>SaveDataManager.SaveScenarioProgressData</c></term><description>Prefix + finalizer: pack-line ids never reach the save file.</description></item>
+    ///   <item><term><c>SaveDataManager.SaveScenarioProgressData</c></term><description>Not patched here: master data's save filter (<c>MasterDataSaveFilter</c>) is the only one; pack lines join it, and stay off without it.</description></item>
     ///   <item><term><c>GameStartTalkSelector.GetGameStartTalk(ScenarioType)</c> (1.18.0)</term><description>Postfix: a startup-greeting pack line may replace the episode the game drew (<see cref="PackLinesGameStart"/>).</description></item>
     ///   <item><term><c>GameStartTalkSelector.UseGameStartTalk(ScenarioType)</c> (1.18.0)</term><description>Prefix: skipped once after a pack pick, so the save's greeting deck does not lose a game line the player never heard.</description></item>
     /// </list>
@@ -91,8 +91,6 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             Plan(plan, missing, typeof(global::SmallTalkSelector), "Setup", Type.EmptyTypes, postfix: nameof(SmallTalkSetupPostfix));
             Plan(plan, missing, typeof(global::SmallTalkSelector), "LotterySmallTalk",
                 new[] { typeof(global::SmallTalkSelector.PlayTiming) }, prefix: nameof(LotteryPrefix), postfix: nameof(LotteryPostfix));
-            Plan(plan, missing, typeof(Game.SaveDataManager), "SaveScenarioProgressData", Type.EmptyTypes,
-                prefix: nameof(SaveProgressPrefix), finalizer: nameof(SaveProgressFinalizer));
             Plan(plan, missing, typeof(global::GameStartTalkSelector), "GetGameStartTalk",
                 new[] { typeof(Master.ScenarioType) }, postfix: nameof(GameStartPickPostfix));
             Plan(plan, missing, typeof(global::GameStartTalkSelector), "UseGameStartTalk",
@@ -339,32 +337,6 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             catch (Exception ex)
             {
                 PackLinesRuntime.ReportOnce("small-talk lottery end", ex);
-            }
-        }
-
-        /// <summary>Prefix of <c>SaveDataManager.SaveScenarioProgressData</c>.</summary>
-        internal static void SaveProgressPrefix()
-        {
-            try
-            {
-                PackLinesRuntime.HoldBackPlayedIds();
-            }
-            catch (Exception ex)
-            {
-                PackLinesRuntime.ReportOnce("save filter", ex);
-            }
-        }
-
-        /// <summary>Finalizer of <c>SaveDataManager.SaveScenarioProgressData</c>: runs after the write, thrown or not.</summary>
-        internal static void SaveProgressFinalizer()
-        {
-            try
-            {
-                PackLinesRuntime.RestorePlayedIds();
-            }
-            catch (Exception ex)
-            {
-                PackLinesRuntime.ReportOnce("save filter restore", ex);
             }
         }
 

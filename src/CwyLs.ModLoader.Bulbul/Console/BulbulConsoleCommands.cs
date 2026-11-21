@@ -206,16 +206,6 @@ namespace CwyLs.ModLoader.Bulbul.Console
         private static string VoiceCommand(IReadOnlyList<string> args)
         {
             var what = args.Count > 0 ? args[0] : "list";
-            if (string.Equals(what, "scan", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(what, "export", StringComparison.OrdinalIgnoreCase))
-            {
-                var rest = new List<string>();
-                for (var i = 1; i < args.Count; i++) { rest.Add(args[i]); }
-                return string.Equals(what, "scan", StringComparison.OrdinalIgnoreCase)
-                    ? global::CwyLs.ModLoader.Bulbul.Textures.SceneryFeature.Scan(rest)
-                    : global::CwyLs.ModLoader.Bulbul.Textures.SceneryFeature.Export(rest);
-            }
-
 
             if (string.Equals(what, "list", StringComparison.OrdinalIgnoreCase))
             {
@@ -284,6 +274,17 @@ namespace CwyLs.ModLoader.Bulbul.Console
                 return Tex.LastReloadSummary.Length > 0
                     ? Tex.LastReloadSummary
                     : "reloaded " + reloaded + " file(s)";
+            }
+
+            // scan / export: the texture names in the loaded scene (SceneryFeature); listed in this command's usage.
+            if (string.Equals(what, "scan", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(what, "export", StringComparison.OrdinalIgnoreCase))
+            {
+                var rest = new List<string>();
+                for (var i = 1; i < args.Count; i++) { rest.Add(args[i]); }
+                return string.Equals(what, "scan", StringComparison.OrdinalIgnoreCase)
+                    ? global::CwyLs.ModLoader.Bulbul.Textures.SceneryFeature.Scan(rest)
+                    : global::CwyLs.ModLoader.Bulbul.Textures.SceneryFeature.Export(rest);
             }
 
             if (!string.Equals(what, "list", StringComparison.OrdinalIgnoreCase))

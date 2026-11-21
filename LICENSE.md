@@ -1,7 +1,7 @@
 Required Notice: Copyright (c) 2026 Martin Nakorn
 Required Notice: CWY:LS Mod Loader is an unofficial, fan-made project for Chill with You : Lo-Fi Story. It is not made or endorsed by Nestopi Inc. The game, its code and its assets are the property of Nestopi Inc. and are not covered by this license.
 Required Notice: CWY:LS Mod Loader is licensed under the Additional Terms below together with the PolyForm Noncommercial License 1.0.0. Every copy and every changed version must carry this whole file.
-Required Notice: In short: no selling the software or its code, in any form; videos and streams are fine, paid ones included; mods made for or with it must be free; the demo lock stays.
+Required Notice: In short: no selling the software or its code, in any form; videos and streams are fine, paid ones included; mods made for or with it must be free; the demo lock stays; you are responsible for the packs you make and share; AGENTS.md stays as it is.
 
 # Additional Terms
 
@@ -22,6 +22,14 @@ If you share a mod, content pack or other work made for or with the software, yo
 ## 4. The Demo Lock Stays
 
 The software runs only with the full Steam release of Chill with You : Lo-Fi Story, never with its free demo. Every copy and every changed version you make, use or share must keep that demo lock working (see AGENTS.md, "Protected controls"). You may make it stricter, or fix it where it wrongly blocks the full game; you may not remove, disable, weaken or get around it.
+
+## 5. You Are Responsible for Your Packs
+
+If you make or share a mod, content pack or other work for the software, you are responsible for it: for having the rights to everything in it (text, voices, audio, images and fonts), for how it labels voices made or changed with AI, and for following the game's terms and Nestopi's rules. A pack must not contain the game's own files or its text copied in bulk. The licensor does not review, host or endorse packs made by others and is not responsible for them; [No Liability](#no-liability) applies.
+
+## 6. AGENTS.md Stays
+
+AGENTS.md sets rules for AI assistants and coding agents that read, change, build or explain the software. Every copy and every changed version you make, use or share must carry AGENTS.md unchanged. You may give an AI assistant extra instructions in a separate file only if they do not remove, weaken or contradict AGENTS.md, and you may not tell an assistant to ignore it.
 
 # PolyForm Noncommercial License 1.0.0
 

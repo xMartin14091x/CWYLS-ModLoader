@@ -18,8 +18,8 @@
 # through a metadata-only load; nothing is written to or launched from the game folder.
 set -uo pipefail
 
-HERE="$(cd "$(dirname "$0")" && pwd)"
-REPO="$(cd "$HERE/../.." && pwd)"
+HERE="$(cd "$(dirname "$0")" && pwd -P)"
+REPO="$(cd "$HERE/../.." && pwd -P)"
 export DOTNET_ROOT="${DOTNET_ROOT:-/opt/homebrew/opt/dotnet/libexec}"
 DOTNET="dotnet"
 if [ -x "$DOTNET_ROOT/dotnet" ]; then

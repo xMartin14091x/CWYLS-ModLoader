@@ -2,7 +2,7 @@
 
 # Namespace `CwyLs.ModLoader.Core.MasterData`
 
-Assembly `CwyLs.ModLoader.Core` · 19 public type(s) · [API index](README.md)
+Assembly `CwyLs.ModLoader.Core` · 20 public type(s) · [API index](README.md)
 
 | Type | Kind | Summary |
 |---|---|---|
@@ -22,6 +22,7 @@ Assembly `CwyLs.ModLoader.Core` · 19 public type(s) · [API index](README.md)
 | [`MasterDataRejection`](#masterdatarejection) | sealed class | One thing a pack asked for that was refused, and why. |
 | [`MasterDataSet`](#masterdataset) | sealed class | Everything the installed packs want to add to or change in the game's master data, merged and ready to inject: rows in first-seen order, the subtitle lookup, and the report that explains how they got there. |
 | [`NovelRow`](#novelrow) | sealed class | One row of `data/novel.json`: a single command in a scenario group - a line of dialogue, a motion change, a wait, the end of the group. |
+| [`PackAddedGroups`](#packaddedgroups) | sealed class | The scene groups packs added to the game's master data this session: the ids the game's save must never hold. |
 | [`ScenarioGroupRow`](#scenariogrouprow) | sealed class | One row of `data/scenario_groups.json`: a named sequence of novel rows and the rules for when the game may play it. |
 | [`SubtitleEntry`](#subtitleentry) | sealed class | One line of one subtitle table: a localization id and its text in one language. |
 | [`SubtitleTables`](#subtitletables) | sealed class | The text tables a pack ships in `data/subtitles/<lang>.json` - one per language the game has no column for - and the `ISubtitleLookup` over them. |
@@ -1207,6 +1208,57 @@ Who speaks; a member of [`MasterDataEnums.Talker`](#masterdataenums--talker).
 ### `override string ToString()`
 
 `id` in `group`.
+
+---
+
+<a id="packaddedgroups"></a>
+
+## `PackAddedGroups`
+
+sealed class · `CwyLs.ModLoader.Core.MasterData.PackAddedGroups` · assembly `CwyLs.ModLoader.Core`
+
+The scene groups packs added to the game's master data this session: the ids the game's save must never hold. Recorded at every injection, from the rows actually injected.
+
+Why: a plain pack group (a `data/scenario_groups.json` row without `Languages`) is injected like a game group, so the game's own small-talk lottery can draw it, and `SmallTalkSelector.OnEndTalk` then logs its id in `ScenarioProgressData.PlayedScenarioGroupIDs` and saves. The pack-lines save filter (`PackLineSaveFilter`) uses this set, together with the pack-line ids, to keep such ids out of the file.
+
+Exact provenance, never "the game does not know this id": only an id a pack row injected is ever recorded. A save synced through Steam Cloud from a newer game version can hold real game ids this build has never seen; they are not in this set, so the filter leaves them alone.
+
+The set only grows within a session (a pack removed by a rescan may still have its id in the game's in-memory played list), with one exception: an id the game's own data turns out to have is the game's, and is dropped.
+
+<a id="packaddedgroups--count"></a>
+
+### `int Count { get; }`
+
+How many ids are recorded.
+
+<a id="packaddedgroups--ids"></a>
+
+### `IReadOnlyList<string> Ids { get; }`
+
+The recorded ids, ordinally sorted (a copy).
+
+<a id="packaddedgroups--contains"></a>
+
+### `bool Contains(string id)`
+
+True when a pack added this group in this session.
+
+**Parameters**
+
+- `id`: A scene-group id; null is never one.
+
+<a id="packaddedgroups--record"></a>
+
+### `int Record(IEnumerable<ScenarioGroupRow> injected, MasterDataBaseline baseline)`
+
+Records one injection: every injected group whose id the game's own data does not have was added by a pack. An injected group the game has is an override of the game's group and is never recorded (and is dropped if an earlier injection recorded it). Without the game's ids (an empty baseline) nothing is recorded, because an override could not be told from an addition - a missed id is a leak, a wrong one would cost the player real progress.
+
+**Parameters**
+
+- `injected`: The scene-group rows just injected (`MasterDataSet.ScenarioGroups`).
+- `baseline`: The game's own ids the injection was built on.
+
+**Returns:** How many ids are newly recorded.
 
 ---
 

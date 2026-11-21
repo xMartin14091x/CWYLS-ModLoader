@@ -1,0 +1,383 @@
+# Router envelope paths and JSON kinds for deterministic synthetic fixtures.
+# Dynamic action result.data and inputSchema.properties are intentionally open.
+GET /v1/actions empty object
+GET /v1/actions empty.actions array
+GET /v1/actions empty.actions[] object
+GET /v1/actions empty.actions[].api object
+GET /v1/actions empty.actions[].api.allowed boolean
+GET /v1/actions empty.actions[].api.needsConfirmation boolean
+GET /v1/actions empty.actions[].api.reason string
+GET /v1/actions empty.actions[].description string
+GET /v1/actions empty.actions[].destructive boolean
+GET /v1/actions empty.actions[].family string
+GET /v1/actions empty.actions[].inputSchema object
+GET /v1/actions empty.actions[].inputSchema.additionalProperties boolean
+GET /v1/actions empty.actions[].inputSchema.properties open
+GET /v1/actions empty.actions[].inputSchema.required array
+GET /v1/actions empty.actions[].inputSchema.type string
+GET /v1/actions empty.actions[].name string
+GET /v1/actions empty.actions[].owner string
+GET /v1/actions empty.actions[].parameters array
+GET /v1/actions empty.actions[].parameters[] object
+GET /v1/actions empty.actions[].parameters[].description string
+GET /v1/actions empty.actions[].parameters[].enum array
+GET /v1/actions empty.actions[].parameters[].enum[] string
+GET /v1/actions empty.actions[].parameters[].name string
+GET /v1/actions empty.actions[].parameters[].required boolean
+GET /v1/actions empty.actions[].parameters[].type string
+GET /v1/actions empty.actions[].tier string
+GET /v1/actions empty.allowActions boolean
+GET /v1/actions empty.confirmationGate boolean
+GET /v1/actions empty.count number
+GET /v1/actions empty.runner boolean
+GET /v1/actions/{handle} done object
+GET /v1/actions/{handle} done.action string
+GET /v1/actions/{handle} done.client string
+GET /v1/actions/{handle} done.completedAt string
+GET /v1/actions/{handle} done.createdAt string
+GET /v1/actions/{handle} done.handle string
+GET /v1/actions/{handle} done.replayed boolean
+GET /v1/actions/{handle} done.result object
+GET /v1/actions/{handle} done.result.data open
+GET /v1/actions/{handle} done.result.message string
+GET /v1/actions/{handle} done.result.ok boolean
+GET /v1/actions/{handle} done.result.path string
+GET /v1/actions/{handle} done.result.status string
+GET /v1/actions/{handle} done.state string
+GET /v1/actions/{handle} done.tier string
+GET /v1/actions/{handle} pending object
+GET /v1/actions/{handle} pending.action string
+GET /v1/actions/{handle} pending.client string
+GET /v1/actions/{handle} pending.completedAt null
+GET /v1/actions/{handle} pending.createdAt string
+GET /v1/actions/{handle} pending.handle string
+GET /v1/actions/{handle} pending.replayed boolean
+GET /v1/actions/{handle} pending.result null
+GET /v1/actions/{handle} pending.state string
+GET /v1/actions/{handle} pending.tier string
+GET /v1/events empty object
+GET /v1/events empty.dropped number
+GET /v1/events empty.epoch string
+GET /v1/events empty.events array
+GET /v1/events empty.latest number
+GET /v1/events empty.next number
+GET /v1/events empty.oldest number
+GET /v1/events empty.reset boolean
+GET /v1/events empty.timedOut boolean
+GET /v1/events populated object
+GET /v1/events populated.dropped number
+GET /v1/events populated.epoch string
+GET /v1/events populated.events array
+GET /v1/events populated.events[] object
+GET /v1/events populated.events[].data object
+GET /v1/events populated.events[].data.action string
+GET /v1/events populated.events[].data.active boolean
+GET /v1/events populated.events[].data.durationSec number
+GET /v1/events populated.events[].data.groupId string
+GET /v1/events populated.events[].data.handle string
+GET /v1/events populated.events[].data.index number
+GET /v1/events populated.events[].data.isStory boolean
+GET /v1/events populated.events[].data.kind string
+GET /v1/events populated.events[].data.language string
+GET /v1/events populated.events[].data.loaded boolean
+GET /v1/events populated.events[].data.localizationId string
+GET /v1/events populated.events[].data.name string
+GET /v1/events populated.events[].data.next string
+GET /v1/events populated.events[].data.pomodoroType string
+GET /v1/events populated.events[].data.prev string
+GET /v1/events populated.events[].data.readMode string
+GET /v1/events populated.events[].data.reason string
+GET /v1/events populated.events[].data.scenarioGroupId string
+GET /v1/events populated.events[].data.scenarioType string
+GET /v1/events populated.events[].data.scene string
+GET /v1/events populated.events[].data.section string
+GET /v1/events populated.events[].data.shuffle boolean
+GET /v1/events populated.events[].data.source string
+GET /v1/events populated.events[].data.status string
+GET /v1/events populated.events[].data.text string
+GET /v1/events populated.events[].data.textJa string
+GET /v1/events populated.events[].data.tier string
+GET /v1/events populated.events[].data.title string
+GET /v1/events populated.events[].data.voice string
+GET /v1/events populated.events[].data.window string
+GET /v1/events populated.events[].seq number
+GET /v1/events populated.events[].time string
+GET /v1/events populated.events[].type string
+GET /v1/events populated.latest number
+GET /v1/events populated.next number
+GET /v1/events populated.oldest number
+GET /v1/events populated.reset boolean
+GET /v1/events populated.timedOut boolean
+GET /v1/info empty object
+GET /v1/info empty.api object
+GET /v1/info empty.api.basePath string
+GET /v1/info empty.api.endpoint string
+GET /v1/info empty.api.stateSchema number
+GET /v1/info empty.api.version number
+GET /v1/info empty.capabilities object
+GET /v1/info empty.capabilities.actions object
+GET /v1/info empty.capabilities.actions.allowActions boolean
+GET /v1/info empty.capabilities.actions.confirmationGate boolean
+GET /v1/info empty.capabilities.actions.registered number
+GET /v1/info empty.capabilities.actions.runner boolean
+GET /v1/info empty.capabilities.events boolean
+GET /v1/info empty.capabilities.micUtterances boolean
+GET /v1/info empty.capabilities.state boolean
+GET /v1/info empty.capabilities.voiceStreams boolean
+GET /v1/info empty.events object
+GET /v1/info empty.events.capacity number
+GET /v1/info empty.events.droppedTotal number
+GET /v1/info empty.events.epoch string
+GET /v1/info empty.events.latest number
+GET /v1/info empty.events.oldest number
+GET /v1/info empty.events.types array
+GET /v1/info empty.events.types[] string
+GET /v1/info empty.game object
+GET /v1/info empty.game.version string
+GET /v1/info empty.limits object
+GET /v1/info empty.limits.actionTimeoutMs number
+GET /v1/info empty.limits.maxActionsInFlight number
+GET /v1/info empty.limits.maxBodyBytes number
+GET /v1/info empty.limits.maxConcurrentWaits number
+GET /v1/info empty.limits.maxEventsPerRead number
+GET /v1/info empty.limits.maxWaitSec number
+GET /v1/info empty.limits.ratePerSec object
+GET /v1/info empty.limits.ratePerSec.actions number
+GET /v1/info empty.limits.ratePerSec.events number
+GET /v1/info empty.limits.ratePerSec.read number
+GET /v1/info empty.loader object
+GET /v1/info empty.loader.modApi string
+GET /v1/info empty.loader.version string
+GET /v1/info empty.server object
+GET /v1/info empty.server.fallbackReason null
+GET /v1/info empty.server.keyId string
+GET /v1/info empty.server.startedAt string
+GET /v1/info empty.server.transport string
+GET /v1/info empty.server.uptimeSec number
+GET /v1/state empty object
+GET /v1/state empty.ageMs null
+GET /v1/state empty.capturedAt null
+GET /v1/state empty.frame number
+GET /v1/state empty.ready boolean
+GET /v1/state empty.schema number
+GET /v1/state empty.version number
+GET /v1/state populated object
+GET /v1/state populated.achievements object
+GET /v1/state populated.achievements.available boolean
+GET /v1/state populated.achievements.unlockedCount number
+GET /v1/state populated.ageMs number
+GET /v1/state populated.calendar object
+GET /v1/state populated.calendar.days array
+GET /v1/state populated.calendar.days[] object
+GET /v1/state populated.calendar.days[].completedTodoCount number
+GET /v1/state populated.calendar.days[].date string
+GET /v1/state populated.calendar.days[].diaryLength number
+GET /v1/state populated.calendar.days[].workSeconds number
+GET /v1/state populated.calendar.recentWorkSeconds number
+GET /v1/state populated.capturedAt string
+GET /v1/state populated.dataAt string
+GET /v1/state populated.dataAvailable boolean
+GET /v1/state populated.environment object
+GET /v1/state populated.environment.ambientSounds array
+GET /v1/state populated.environment.ambientSounds[] object
+GET /v1/state populated.environment.ambientSounds[].mute boolean
+GET /v1/state populated.environment.ambientSounds[].type string
+GET /v1/state populated.environment.ambientSounds[].volume number
+GET /v1/state populated.environment.windowViews array
+GET /v1/state populated.environment.windowViews[] string
+GET /v1/state populated.extraSections array
+GET /v1/state populated.extraSections[] string
+GET /v1/state populated.frame number
+GET /v1/state populated.gameVersion string
+GET /v1/state populated.habits object
+GET /v1/state populated.habits.count number
+GET /v1/state populated.habits.items array
+GET /v1/state populated.habits.items[] object
+GET /v1/state populated.habits.items[].createdDate string
+GET /v1/state populated.habits.items[].id string
+GET /v1/state populated.habits.items[].recentCompletedCount number
+GET /v1/state populated.habits.items[].recentDays array
+GET /v1/state populated.habits.items[].recentDays[] object
+GET /v1/state populated.habits.items[].recentDays[].completed boolean
+GET /v1/state populated.habits.items[].recentDays[].date string
+GET /v1/state populated.habits.items[].scheduledDays array
+GET /v1/state populated.habits.items[].scheduledDays[] string
+GET /v1/state populated.habits.items[].titleLength number
+GET /v1/state populated.live object
+GET /v1/state populated.live.clock string
+GET /v1/state populated.live.language string
+GET /v1/state populated.live.music object
+GET /v1/state populated.live.music.index number
+GET /v1/state populated.live.music.shuffle boolean
+GET /v1/state populated.live.music.title string
+GET /v1/state populated.live.pomodoro object
+GET /v1/state populated.live.pomodoro.elapsedSec number
+GET /v1/state populated.live.pomodoro.lastEvent string
+GET /v1/state populated.live.pomodoro.paused boolean
+GET /v1/state populated.live.pomodoro.remainingSec number
+GET /v1/state populated.live.pomodoro.tickAt string
+GET /v1/state populated.live.pomodoro.type string
+GET /v1/state populated.live.roomReady boolean
+GET /v1/state populated.live.satone object
+GET /v1/state populated.live.satone.lineAt string
+GET /v1/state populated.live.satone.localizationId string
+GET /v1/state populated.live.satone.since string
+GET /v1/state populated.live.satone.speaking boolean
+GET /v1/state populated.live.satone.state string
+GET /v1/state populated.live.satone.voice string
+GET /v1/state populated.live.scenario object
+GET /v1/state populated.live.scenario.groupId string
+GET /v1/state populated.live.scenario.running boolean
+GET /v1/state populated.live.scenario.scenarioType string
+GET /v1/state populated.live.scene string
+GET /v1/state populated.live.windows array
+GET /v1/state populated.live.windows[] string
+GET /v1/state populated.music object
+GET /v1/state populated.music.currentTag string
+GET /v1/state populated.music.excludedCount number
+GET /v1/state populated.music.favoriteCount number
+GET /v1/state populated.music.localTrackCount number
+GET /v1/state populated.music.nowPlaying string
+GET /v1/state populated.music.playOnStart boolean
+GET /v1/state populated.music.shuffle boolean
+GET /v1/state populated.notes object
+GET /v1/state populated.notes.pageCount number
+GET /v1/state populated.notes.pages array
+GET /v1/state populated.notes.pages[] object
+GET /v1/state populated.notes.pages[].id string
+GET /v1/state populated.notes.pages[].order number
+GET /v1/state populated.notes.pages[].textLength number
+GET /v1/state populated.notes.pages[].titleLength number
+GET /v1/state populated.player object
+GET /v1/state populated.player.currentWorkSeconds number
+GET /v1/state populated.player.exp number
+GET /v1/state populated.player.lastLoginAt string
+GET /v1/state populated.player.level number
+GET /v1/state populated.player.nextLevelExp number
+GET /v1/state populated.player.pomodoroTotalWorkSeconds number
+GET /v1/state populated.player.totalLoginCount number
+GET /v1/state populated.pomodoro object
+GET /v1/state populated.pomodoro.breakMinutes number
+GET /v1/state populated.pomodoro.loopCount number
+GET /v1/state populated.pomodoro.mode string
+GET /v1/state populated.pomodoro.presetCount number
+GET /v1/state populated.pomodoro.workMinutes number
+GET /v1/state populated.ready boolean
+GET /v1/state populated.schema number
+GET /v1/state populated.settings object
+GET /v1/state populated.settings.activeFramerate number
+GET /v1/state populated.settings.alwaysOnTop boolean
+GET /v1/state populated.settings.language string
+GET /v1/state populated.settings.pomodoroSe boolean
+GET /v1/state populated.settings.selfTalk boolean
+GET /v1/state populated.settings.timeFormat string
+GET /v1/state populated.settings.volumes array
+GET /v1/state populated.settings.volumes[] object
+GET /v1/state populated.settings.volumes[].mute boolean
+GET /v1/state populated.settings.volumes[].name string
+GET /v1/state populated.settings.volumes[].value number
+GET /v1/state populated.settings.windowMode string
+GET /v1/state populated.story object
+GET /v1/state populated.story.finishedMainEpisode number
+GET /v1/state populated.story.nextEpisode number
+GET /v1/state populated.story.nextEpisodeUnlockLevel number
+GET /v1/state populated.story.playedScenarioGroupCount number
+GET /v1/state populated.story.useAuto boolean
+GET /v1/state populated.todos object
+GET /v1/state populated.todos.completedCount number
+GET /v1/state populated.todos.itemCount number
+GET /v1/state populated.todos.listCount number
+GET /v1/state populated.todos.lists array
+GET /v1/state populated.todos.lists[] object
+GET /v1/state populated.todos.lists[].completedCount number
+GET /v1/state populated.todos.lists[].id string
+GET /v1/state populated.todos.lists[].itemCount number
+GET /v1/state populated.todos.lists[].items array
+GET /v1/state populated.todos.lists[].items[] object
+GET /v1/state populated.todos.lists[].items[].completedAt string
+GET /v1/state populated.todos.lists[].items[].expiresAt string
+GET /v1/state populated.todos.lists[].items[].id string
+GET /v1/state populated.todos.lists[].items[].state string
+GET /v1/state populated.todos.lists[].items[].textLength number
+GET /v1/state populated.todos.lists[].openCount number
+GET /v1/state populated.todos.lists[].titleLength number
+GET /v1/state populated.todos.openCount number
+GET /v1/state populated.version number
+POST /v1/actions/{name} pending object
+POST /v1/actions/{name} pending.action string
+POST /v1/actions/{name} pending.client string
+POST /v1/actions/{name} pending.completedAt null
+POST /v1/actions/{name} pending.createdAt string
+POST /v1/actions/{name} pending.handle string
+POST /v1/actions/{name} pending.replayed boolean
+POST /v1/actions/{name} pending.result null
+POST /v1/actions/{name} pending.state string
+POST /v1/actions/{name} pending.tier string
+POST /v1/actions/{name} replay object
+POST /v1/actions/{name} replay.action string
+POST /v1/actions/{name} replay.client string
+POST /v1/actions/{name} replay.completedAt string
+POST /v1/actions/{name} replay.createdAt string
+POST /v1/actions/{name} replay.handle string
+POST /v1/actions/{name} replay.replayed boolean
+POST /v1/actions/{name} replay.result object
+POST /v1/actions/{name} replay.result.data open
+POST /v1/actions/{name} replay.result.message string
+POST /v1/actions/{name} replay.result.ok boolean
+POST /v1/actions/{name} replay.result.path string
+POST /v1/actions/{name} replay.result.status string
+POST /v1/actions/{name} replay.state string
+POST /v1/actions/{name} replay.tier string
+error object
+error.error object
+error.error.code string
+error.error.message string
+event action.completed object
+event action.completed.action string
+event action.completed.handle string
+event action.completed.status string
+event action.completed.tier string
+event data.changed object
+event data.changed.reason string
+event data.changed.section string
+event game.other object
+event game.other.name string
+event line.ended object
+event line.ended.durationSec number
+event line.ended.voice string
+event line.spoken object
+event line.spoken.durationSec number
+event line.spoken.isStory boolean
+event line.spoken.language string
+event line.spoken.localizationId string
+event line.spoken.scenarioGroupId string
+event line.spoken.scenarioType string
+event line.spoken.source string
+event line.spoken.text string
+event line.spoken.textJa string
+event line.spoken.voice string
+event music.changed object
+event music.changed.index number
+event music.changed.shuffle boolean
+event music.changed.title string
+event pomodoro.changed object
+event pomodoro.changed.kind string
+event pomodoro.changed.pomodoroType string
+event room.ready object
+event satone.state object
+event satone.state.next string
+event satone.state.prev string
+event save object
+event save.section string
+event scenario.ended object
+event scenario.ended.groupId string
+event scenario.started object
+event scenario.started.groupId string
+event scenario.started.readMode string
+event scenario.started.scenarioType string
+event scene.changed object
+event scene.changed.loaded boolean
+event scene.changed.scene string
+event window.changed object
+event window.changed.active boolean
+event window.changed.window string

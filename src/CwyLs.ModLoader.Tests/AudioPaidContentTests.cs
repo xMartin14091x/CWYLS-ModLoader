@@ -7,7 +7,7 @@ namespace CwyLs.ModLoader.Tests
 {
     /// <summary>
     /// D-AUDIO paid-content refusal (project rule: no paid content is ever modded). The game's only DLC is
-    /// the original soundtrack (Steam app 3718890): story music that plays a soundtrack track is never
+    /// the original soundtrack (Steam app 4161250): story music that plays a soundtrack track is never
     /// replaced, and a pack track never re-lists a game track.
     /// </summary>
     public class AudioPaidContentTests
@@ -15,10 +15,10 @@ namespace CwyLs.ModLoader.Tests
         private static readonly SoundtrackCatalog Soundtrack = AudioReplacementPlanTests.Soundtrack;
 
         [Fact]
-        public void The_soundtrack_dlc_is_the_games_dlc_1()
+        public void The_soundtrack_is_its_own_steam_app()
         {
-            // NestopiSystem.Steam/BulbulSteamDLC - DLC_1 = 3718890u.
-            Assert.Equal(3718890u, AudioPaidContent.SoundtrackDlcAppId);
+            // Store pages checked 2026-11-17: 4161250 = the soundtrack; BulbulSteamDLC.DLC_1 = 3718890 = the Room & Cozy Activities Expansion.
+            Assert.Equal(4161250u, AudioPaidContent.SoundtrackDlcAppId);
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace CwyLs.ModLoader.Tests
             Assert.NotNull(reason);
             Assert.Contains("main32_Music", reason);
             Assert.Contains("'Without You'", reason);
-            Assert.Contains("3718890", reason);
+            Assert.Contains("4161250", reason);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace CwyLs.ModLoader.Tests
 
             Assert.NotNull(reason);
             Assert.Contains("soundtrack", reason);
-            Assert.Contains("3718890", reason);
+            Assert.Contains("4161250", reason);
         }
 
         [Fact]

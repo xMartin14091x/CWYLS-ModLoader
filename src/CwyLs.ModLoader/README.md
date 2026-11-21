@@ -57,7 +57,7 @@ file answers *what our code did about it*.
 | `UNITY` | a Unity error, exception or failed assertion | `14:02:11.019  UNITY  Exception "NullReferenceException: …"  count=1` |
 | `DATA` | player data changed, snapshotted, or the bus became ready | `14:02:11.019  DATA  snapshot written  todos=12 notes=3 habits=2 bytes=48213` |
 | `VOICE` | a clip is registered, overridden, refused or played | `14:02:11.019  VOICE  + Voice_CWY_Test  via=wav source=cwy.example` |
-| `TEXTURE` | an apply pass, a reload or a restore | `14:02:11.019  TEXTURE  1 rule applied  failed=0 trigger=RoomScene+2s mode=Shared files=1` |
+| `TEXTURE` | an apply pass, a reload or a restore | `14:02:11.019  TEXTURE  1 rule applied  failed=0 trigger=sceneLoaded+2s mode=Shared files=1` |
 | `PACKS` | the pack scan result (the summary's own `PACKS:` prefix is dropped on the console), then one warning-level line per loaded pack made for another game version (`my.pack: made for game 1.17.2, running 1.17.3 (newer patch version); loaded anyway`) | `14:02:11.019  PACKS  1 loaded (cwy.example@0.1.0); 0 skipped  loaded=1 skipped=0` |
 | `MASTERDATA` | pack rows merged into the game's loader | `14:02:11.019  MASTERDATA  localization +1/~0, novel +2/~0, groups +1/~0  trigger=startup packs=1 rows=1357 rejected=-` |
 | `KEYS` | the hotkey table, and each press | `14:02:11.019  KEYS  smoke.run = Ctrl+Shift+S \| F9, console.toggle = Ctrl+Shift+C \| F10  count=2` |

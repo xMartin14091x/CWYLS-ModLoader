@@ -194,6 +194,25 @@ Because the injection changes `LocalizationList.Count`, `SatoneSpeech.RefreshInd
 its voice-name index on its next pass, so an injected row's `Voice` is visible to the event bus and
 a spoken line reports our text.
 
+## Save filter (pack ids never reach the save)
+
+A plain pack small talk (a `scenario_groups.json` row without `Languages`) is injected like a game
+group, so the game's own lottery can draw it, and `SmallTalkSelector.OnEndTalk` logs its id in
+`ScenarioProgressData.PlayedScenarioGroupIDs` and saves. Master data owns the one filter on
+`SaveDataManager.SaveScenarioProgressData` (`MasterDataSaveFilter`, targets `MasterDataPatchTargets`),
+installed in `Initialize` whatever the pack-lines feature does:
+
+- Prefix: takes out every group a pack added this session (`PackAddedGroups`, recorded at every
+  injection: an injected id the game's own data does not have) and, once pack lines join, every
+  pack-line id. Finalizer: puts them back in place, so the session's "seen" state is unchanged.
+  An id this build merely does not know (a newer game version's, synced through Steam Cloud) stays.
+- Exactly one filter per save: pack lines have no save patch of their own; they join this one with
+  their ids and a callback (`seen.json`) that runs once per save (`PackSaveHoldBack`).
+- Hook missing (a target moved, or the patch failed): one ERROR line
+  (`MASTERDATA the save filter is OFF (...)`), every merge keeps the small-talk groups packs would add
+  out of the injection (WARN `kept N pack small-talk group(s) out of the game`), and pack lines stay off.
+  Never a silent leak.
+
 ## Smoke checks
 
 | Id | What it proves |
@@ -202,6 +221,7 @@ a spoken line reports our text.
 | `p2.masterdata.wrapper_reads` | `LocalizationList[id]` holds the pack's `En` **and** `Ja` exactly, and the game's own `LocalizationMasterWrapper.Get(data, English)` returns a non-empty string (reported, whatever it is). The wrapper's value is not asserted because `Get` is a legitimate extension point - the language feature postfixes it to serve a pack language's rows, which must not fail a master-data check. |
 | `p2.masterdata.text_tables` | Every `data/subtitles/<code>.json` a loaded pack ships was read and has rows (a sample row per language is reported). Not yet observed when no pack ships one. |
 | `p2.masterdata.scenario_playable` | The injected group is in `ScenarioGroupMasterList`, its novel rows are in `NovelMasterList`, every line it speaks resolves to a localization row, and its scenario type takes `StartReady`'s short path. **The scenario is not started** - `StartReady` would take over the story UI and Satone's animation, which a smoke pass must not do. |
+| `p2.masterdata.save_filter` | The one save filter for pack ids is installed (fails with the reason when it is not: pack small talk is then not injected and pack lines stay off), and a dry run on a **copy** of `PlayedScenarioGroupIDs` writes no pack-added group. Reports the pack-added group count, whether pack lines joined, and how many ids a save would hold back. Not yet observed before the save loads; skipped with master data off. |
 
 The rows come from `packs/cwy.example/data/`; see its README for why the example group uses
 `MotionScenario` and episode 900.

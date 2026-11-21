@@ -13,6 +13,16 @@ licence. The CWY:LS Mod Loader source itself contains none of their code: it onl
 | MonoMod (`MonoMod.RuntimeDetour.dll`, `MonoMod.Utils.dll`) | as bundled with BepInEx 5.4.23.6 | MIT | <https://github.com/MonoMod/MonoMod> |
 | Mono.Cecil (`Mono.Cecil*.dll`) | as bundled with BepInEx 5.4.23.6 | MIT | <https://github.com/jbevain/cecil> |
 
+The Pack Maker page also bundles these fonts under the SIL Open Font License 1.1. Their complete
+copyright and licence notices are in the source paths below and in `files/CwyLsModLoader/maker/fonts/`
+in each player zip (installed under `maker/fonts/`).
+
+| Font | Copyright | Licence | Source and notice |
+|---|---|---|---|
+| Outfit | Copyright 2021 The Outfit Project Authors | OFL 1.1 | <https://github.com/Outfitio/Outfit-Fonts>; `src/CwyLs.ModLoader.Maker.Web/fonts/OFL-Outfit.txt` |
+| Noto Sans Thai | Copyright 2022 The Noto Project Authors | OFL 1.1 | <https://github.com/notofonts/thai>; `src/CwyLs.ModLoader.Maker.Web/fonts/OFL-NotoSansThai.txt` |
+| Kanit Bold | Copyright 2020 The Kanit Project Authors | OFL 1.1 | <https://github.com/cadsondemak/kanit>; `src/CwyLs.ModLoader.Maker.Web/fonts/OFL-Kanit.txt` |
+
 UnityDoorstop is distributed under the GNU Lesser General Public License 2.1. We ship its binaries
 unmodified; the complete corresponding source is at the link above, and you may replace those files
 with your own build of it.

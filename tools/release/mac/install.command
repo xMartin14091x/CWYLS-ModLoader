@@ -4,7 +4,8 @@
 #   Unattended (testing, automation):
 #     bash install.command --game "<game folder>" --install | --uninstall | --uninstall-all | --trace on|full|off | --status
 #
-# Nothing is ever deleted: uninstalling moves files into a dated folder inside the game folder.
+# Nothing is ever deleted: uninstalling moves files into a dated folder inside the game folder. An update
+# replaces the loader's own files (its DLLs and the Pack Maker page, maker/) with the new release's.
 # The animated screens need a terminal window of at least 60 x 23 (macOS Terminal and iTerm2 are asked
 # for 100 x 32). A smaller window, a pipe or TERM=dumb get a plain numbered menu with the same actions.
 # Written for macOS's /bin/bash 3.2.
@@ -70,7 +71,25 @@ installed_version() {
   [ -f "$f" ] && head -1 "$f" | tr -d '[:space:]'
 }
 bepinex_installed() { [ -f "$GAME_ROOT/BepInEx/core/BepInEx.dll" ] && [ -f "$GAME_ROOT/run_bepinex.sh" ]; }
+# The BepInEx core actually in the game folder. Another mod's archive can replace ours with an older one: on
+# 2026-11-07 a Windows-only mod shipped 5.4.23.5, which has no Apple Silicon detour fix, so no Harmony patch applies.
+# The version is the informational one ("5.4.23.6+<commit>"); one digit before the first dot, because the byte
+# in front of it is the attribute's length and can read as a digit.
+bepinex_core_version() { LC_ALL=C /usr/bin/grep -a -o -E '[0-9]\.[0-9]+\.[0-9]+\.[0-9]+\+' "$GAME_ROOT/BepInEx/core/BepInEx.dll" 2>/dev/null | head -1 | tr -d '+'; }
+bepinex_has_apple_fix() { LC_ALL=C /usr/bin/grep -a -q AppleSiliconDetourFix "$GAME_ROOT/BepInEx/core/BepInEx.Preloader.dll" 2>/dev/null; }
+version_lt() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -t. -k1,1n -k2,2n -k3,3n -k4,4n | head -1)" = "$1" ]; }
+# Empty when the installed BepInEx is fine; otherwise one sentence saying what is wrong and what to do.
+bepinex_problem() {
+  bepinex_installed || return 0
+  local v; v="$(bepinex_core_version)"
+  if [ "$(uname -m)" = "arm64" ] && ! bepinex_has_apple_fix; then
+    echo "BepInEx ${v:-?} has no Apple Silicon fix, so no mod can load (another mod replaced it). Choose Install or update."
+  elif [ -n "$v" ] && version_lt "$v" "$BEPINEX_VERSION"; then
+    echo "BepInEx $v is older than $BEPINEX_VERSION (another mod replaced it). Choose Install or update."
+  fi
+}
 loader_installed() { [ -d "$GAME_ROOT/BepInEx/plugins/$PLUGIN_DIR_NAME" ]; }
+maker_installed() { [ -f "$GAME_ROOT/BepInEx/plugins/$PLUGIN_DIR_NAME/maker/index.html" ]; }
 trace_level() {
   local cfg="$GAME_ROOT/BepInEx/config/$TRACE_CFG_NAME" level=""
   [ -f "$cfg" ] && level="$(sed -n 's/^[[:space:]]*Level[[:space:]]*=[[:space:]]*\([A-Za-z]*\).*/\1/p' "$cfg" | head -1)"
@@ -150,12 +169,133 @@ do_bepinex() {
   find "$tmp" -type f -delete 2>/dev/null; find "$tmp" -depth -type d -empty -delete 2>/dev/null
   return 0
 }
+# This list is the shipped page runtime, including both UI versions and font notices.
+maker_payload_complete() {
+  local src="$FILES/$PLUGIN_DIR_NAME/maker" file
+  while IFS= read -r file; do
+    [ -f "$src/$file" ] || { ERR="Pack Maker is incomplete (missing maker/$file). Download the release zip again."; return 1; }
+  done <<'MAKER_REQUIRED'
+config.js
+fonts/Kanit-Bold.ttf
+fonts/NotoSansThai.ttf
+fonts/OFL-Kanit.txt
+fonts/OFL-NotoSansThai.txt
+fonts/OFL-Outfit.txt
+fonts/Outfit.ttf
+index.html
+modules/app.js
+modules/audio.js
+modules/bus.js
+modules/data.js
+modules/i18n.js
+modules/icons.js
+modules/loader/contract.js
+modules/loader/events.js
+modules/loader/http.js
+modules/loader/index.js
+modules/loader/mock.js
+modules/loader/routes.js
+modules/loader/studio-api.js
+modules/loader/studio-mock.js
+modules/store.js
+modules/studio-model.js
+modules/studio.js
+styles.css
+ui/actions.js
+ui/api.js
+ui/api/dev-phase-c.js
+ui/api/model.js
+ui/art/pack-maker-icon.svg
+ui/art/pack-maker-mark.svg
+ui/audio/capture-worklet.js
+ui/audio/capture.js
+ui/audio/import.js
+ui/audio/levels.js
+ui/audio/peaks.js
+ui/audio/player.js
+ui/audio/wav.js
+ui/boot.js
+ui/choose.js
+ui/clientlog.js
+ui/dub.js
+ui/i18n/en.js
+ui/i18n/i18n.js
+ui/i18n/th.js
+ui/logic/draft.js
+ui/logic/export-copy.js
+ui/logic/glossary.js
+ui/logic/pack-naming.js
+ui/logic/progress.js
+ui/logic/qa.js
+ui/logic/reading.js
+ui/logic/source.js
+ui/logic/takes.js
+ui/logic/thai.js
+ui/main.js
+ui/motion.js
+ui/selectors.js
+ui/store.js
+ui/styles/card.css
+ui/styles/deck.css
+ui/styles/hero.css
+ui/styles/index.css
+ui/styles/layout.css
+ui/styles/motion.css
+ui/styles/overlays.css
+ui/styles/scenes.css
+ui/styles/tokens.css
+ui/styles/topbar.css
+ui/util.js
+ui/zones/art.js
+ui/zones/dropdown.js
+ui/zones/dub-deck.js
+ui/zones/hero.js
+ui/zones/icons.js
+ui/zones/line-card.js
+ui/zones/packs-modal.js
+ui/zones/scenes.js
+ui/zones/topbar.js
+ui/zones/tour.js
+MAKER_REQUIRED
+  return 0
+}
 do_loader() {
+  maker_payload_complete || return 1
   local dest="$GAME_ROOT/BepInEx/plugins/$PLUGIN_DIR_NAME"
   ls "$FILES/$PLUGIN_DIR_NAME/"*.dll >/dev/null 2>&1 || { ERR="The mod loader is missing from this download (files/$PLUGIN_DIR_NAME). Download the release zip again."; return 1; }
   mkdir -p "$dest" && cp -p "$FILES/$PLUGIN_DIR_NAME/"*.dll "$dest/" || { ERR="Could not copy the mod loader into BepInEx/plugins."; return 1; }
+  # The release zips carry one fixed file date (reproducible builds), and BepInEx caches each plugin's details by the
+  # DLL's date: stamp the new DLLs now, or an update keeps the previous version's cached details.
+  touch "$dest/"*.dll 2>/dev/null
+  do_maker || return 1
   printf '%s\n' "$VERSION" > "$dest/VERSION.txt"
   xattr -dr com.apple.quarantine "$dest" 2>/dev/null
+  return 0
+}
+drop_staged() {  # deletes one folder do_maker made for its swap (.maker-new.* or .maker-old.*), and nothing else
+  [ -n "$1" ] || return 0
+  case "$(basename "$1")" in .maker-new.?*|.maker-old.?*) ;; *) return 0 ;; esac
+  [ -e "$1" ] || [ -L "$1" ] || return 0
+  find "$1" ! -type d -delete 2>/dev/null; find "$1" -depth -type d -empty -delete 2>/dev/null
+  return 0
+}
+do_maker() {  # stage the complete Pack Maker page, then swap it into place
+  local dir="$GAME_ROOT/BepInEx/plugins/$PLUGIN_DIR_NAME" src="$FILES/$PLUGIN_DIR_NAME/maker" new old="" d
+  maker_payload_complete || return 1
+  for d in "$dir"/.maker-new.* "$dir"/.maker-old.*; do drop_staged "$d"; done   # left by an install that was cut off
+  # Copied next to the old page first, then swapped in: a failed copy leaves the old page as it was, and files a
+  # release no longer ships do not linger.
+  new="$(mktemp -d "$dir/.maker-new.XXXXXX" 2>/dev/null)" && chmod 755 "$new" && cp -Rp "$src/." "$new/" 2>/dev/null ||
+    { drop_staged "$new"; ERR="Could not copy the Pack Maker page into BepInEx/plugins."; return 1; }
+  if [ -e "$dir/maker" ] || [ -L "$dir/maker" ]; then
+    old="$dir/.maker-old.${new##*/.maker-new.}"
+    mv "$dir/maker" "$old" 2>/dev/null || { drop_staged "$new"; ERR="Could not replace the Pack Maker page in BepInEx/plugins."; return 1; }
+  fi
+  if ! mv "$new" "$dir/maker" 2>/dev/null; then
+    [ -n "$old" ] && mv "$old" "$dir/maker" 2>/dev/null
+    drop_staged "$new"; ERR="Could not replace the Pack Maker page in BepInEx/plugins."; return 1
+  fi
+  [ -n "$old" ] && drop_staged "$old"
   return 0
 }
 do_mods_folder() {
@@ -201,7 +341,7 @@ Level = $level/" "$cfg"
   return 0
 }
 full_install() {  # the whole install, in order; used by the plain and unattended modes
-  do_migrate && do_bepinex && do_loader && do_mods_folder
+  maker_payload_complete && do_migrate && do_bepinex && do_loader && do_mods_folder
 }
 
 # ================================================================ unattended mode (flags) and the plain menu
@@ -224,7 +364,11 @@ plain_status() {
   say "  Game:        $GAME_ROOT"
   local iv; iv="$(installed_version)"
   say "  Mod loader:  ${iv:-not installed}"
-  if bepinex_installed; then say "  BepInEx:     installed"; else say "  BepInEx:     not installed"; fi
+  if bepinex_installed; then
+    local bp; bp="$(bepinex_problem)"
+    if [ -n "$bp" ]; then say "  BepInEx:     WARNING: $bp"; else say "  BepInEx:     installed ($(bepinex_core_version))"; fi
+  else say "  BepInEx:     not installed"; fi
+  if maker_installed; then say "  Pack Maker:  installed"; else say "  Pack Maker:  not installed"; fi
   say "  Trace:       $(trace_level)"
   say "  Mods:        $(mods_count) in \"$MODS_DIR_NAME\""
 }
@@ -739,6 +883,7 @@ ensure_closed() {
 refresh_state() {
   IV="$(installed_version)"
   BEP=0; bepinex_installed && BEP=1
+  BEPWARN="$(bepinex_problem)"
   LOAD=0; loader_installed && LOAD=1
   TRACE="$(trace_level)"; MODS="$(mods_count)"
   STEAM_OK=0; steam_ready && STEAM_OK=1
@@ -752,7 +897,9 @@ draw_setup() {
   setup_row $(( SP + 1 )) "Game";     printf '%s✓%s  %s%sChill With You: Lo-Fi Story%s' "${CC[121]}" "$R" "$BOLD" "${CC[253]}" "$R"
   setup_row $(( SP + 2 )) "Location"; printf '%s%s%s' "${CC[250]}" "$SHORT_PATH" "$R"
   setup_row $(( SP + 3 )) "Mod loader"
-  if [ $LOAD -eq 1 ] && [ "$IV" = "$VERSION" ]; then
+  if [ $LOAD -eq 1 ] && [ "$IV" = "$VERSION" ] && [ -n "$BEPWARN" ]; then
+    printf '%s!%s  %s%s%s' "${CC[222]}" "$R" "${CC[253]}" "$(trunc "$BEPWARN" $vw)" "$R"
+  elif [ $LOAD -eq 1 ] && [ "$IV" = "$VERSION" ]; then
     printf '%s✓%s  %s%s%s' "${CC[121]}" "$R" "${CC[253]}" "$(trunc "$VERSION_UI installed, with BepInEx $BEPINEX_VERSION" $vw)" "$R"
   elif [ $LOAD -eq 1 ]; then
     printf '%s↑%s  %s%s%s  %s' "${CC[117]}" "$R" "${CC[253]}" "$(trunc "v${IV%%-*} → $VERSION_UI" $(( vw - 8 )))" "$R" "$(pill 117 NEW)"
@@ -770,6 +917,7 @@ MENU=("Install or update" "Diagnostic trace" "Open the mods folder" "Uninstall t
 menu_meta() {
   META=("" "" "" "" "" "")
   if [ $LOAD -eq 1 ] && [ "$IV" != "$VERSION" ]; then META[0]="@117:UPDATE"
+  elif [ -n "$BEPWARN" ]; then META[0]="@222:REPAIR"
   elif [ $LOAD -eq 1 ]; then META[0]="reinstall"; else META[0]="BepInEx + loader"; fi
   case $TRACE in off) META[1]="@244:OFF" ;; on) META[1]="@121:ON" ;; full) META[1]="@222:FULL" ;; esac
   if [ "$MODS" -eq 1 ]; then META[2]="1 mod"; elif [ "$MODS" -gt 1 ]; then META[2]="$MODS mods"; else META[2]="empty"; fi
@@ -804,6 +952,7 @@ draw_main() {
 
 # ---- 1. install or update
 act_install() {
+  maker_payload_complete || { error_screen "THE INSTALL STOPPED"; return 0; }
   ensure_closed || { NOTICE="Nothing changed."; return 0; }
   local title="INSTALLING"; [ $LOAD -eq 1 ] && title="UPDATING"
   local steps=("Game is closed|checked|do_nothing")

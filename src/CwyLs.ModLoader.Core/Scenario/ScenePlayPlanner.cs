@@ -84,6 +84,12 @@ namespace CwyLs.ModLoader.Core.Scenario
 
         /// <summary>The save-log guard is installed (a long pack scene must never reach the save).</summary>
         public bool SaveGuardActive { get; init; }
+
+        /// <summary>
+        /// A game scene that Pack Maker's DLC gate marks as paid DLC content the player is not known to own
+        /// (<c>MakerDlcGate.HidesGroup</c>): never started by hand unless the game's own history offers it.
+        /// </summary>
+        public bool IsPaidDlc { get; init; }
     }
 
     /// <summary>The decision of <see cref="ScenePlayPlanner.Plan"/>. Immutable.</summary>
@@ -142,6 +148,13 @@ namespace CwyLs.ModLoader.Core.Scenario
             if (!facts.Found)
             {
                 return Refuse("no scene \"" + id + "\": not a pack scene (scene list shows them), a game click line or a game story episode (main_01 ... later_03, special_*)");
+            }
+
+            // Paid DLC the player is not known to own is never unlocked here (AGENTS.md): no preview, no click talk. A
+            // replay the game's own history offers stays allowed (the game itself played it to this player).
+            if (facts.IsPaidDlc && !facts.IsPackScene && !facts.IsGameReplayable)
+            {
+                return Refuse(id + " is paid DLC content that the loader cannot confirm you own, so scene play does not start it (the game's own history replays it once the game has played it to you)");
             }
 
             var unseenPreview = facts.IsGameStory && facts.AllowUnseenGameStories;

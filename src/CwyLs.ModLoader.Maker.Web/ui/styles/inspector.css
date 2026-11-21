@@ -1,0 +1,52 @@
+/* The existing Studio controls, stacked in working order beside the subtitle editor. */
+.main { grid-template-columns: clamp(14.5rem, 18vw, 18rem) minmax(0, 1fr) 23rem; grid-template-areas: "left card inspector"; }
+.main.has-banner { grid-template-areas: "left banner banner" "left card inspector"; }
+.main.is-page { grid-template-columns: minmax(0, 1fr); }
+.studio-inspector { grid-area: inspector; display: flex; flex-direction: column; gap: .6rem; padding: .8rem; min-width: 0; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+.studio-inspector[hidden] { display: none !important; }
+.studio-inspector .deck-grid { grid-template-columns: minmax(0, 1fr); gap: .55rem; }
+.studio-inspector .d-mic { grid-template-columns: 4.3rem minmax(0, 1fr); }
+.studio-inspector .dev .c-dd-list { top: calc(100% + .35rem); bottom: auto; min-width: 0; width: 100%; max-height: min(16rem, 40vh); }
+.studio-inspector .d-tape { gap: .4rem; }
+.studio-inspector .tape { height: 4.8rem; min-height: 4.8rem; }
+.studio-inspector .tape-top { flex-wrap: wrap; gap: .4rem; }
+.studio-inspector .sticker { max-width: 100%; }
+.studio-inspector .takes { flex-wrap: wrap; margin-left: 0; flex: 1 1 100%; gap: .3rem; }
+.studio-inspector .tape-ctl { flex-wrap: wrap; gap: .5rem; }
+.studio-inspector .fit { flex: 1 1 100%; order: 1; }
+.studio-inspector .fit-t { white-space: normal; overflow: visible; }
+.studio-inspector .even-help { margin-left: auto; display: inline-flex; align-items: center; gap: .15rem; }
+.studio-inspector .tgl { font-size: .74rem; }
+.studio-inspector .d-meta { border-left: 0; border-top: 1px dashed rgba(239, 167, 134, .22); padding: .45rem 0 0; gap: .4rem; }
+.studio-inspector .og { white-space: normal; overflow: visible; }
+.studio-inspector .card-bottom { flex-direction: column; align-items: stretch; gap: .55rem; }
+.studio-inspector .cfoot { gap: .45rem; }
+.studio-inspector .seg { flex: 1 1 100%; }
+.studio-inspector .seg-b { flex: 1; justify-content: center; padding-inline: .4rem; }
+.studio-inspector .save { white-space: normal; flex: 1; }
+.studio-inspector .hero-inline { margin: 0; display: flex; flex-direction: column; align-items: stretch; gap: .55rem; }
+.studio-inspector .hero-b { display: flex; flex-direction: column; align-items: stretch; }
+.studio-inspector .hb kbd { margin-left: auto; }
+.studio-inspector .hb-t b { white-space: normal; }
+.studio-inspector .said { padding: .35rem .6rem; gap: .1rem; }
+.studio-inspector .said-t { white-space: normal; overflow-wrap: anywhere; }
+.studio-inspector .said-m { flex-wrap: wrap; }
+.studio-inspector .hist-menu { left: 0; min-width: 0; width: 100%; max-height: min(22rem, 45vh); }
+.studio-inspector .hist-w { position: static; }
+.studio-inspector .cfoot { position: relative; }
+.studio-inspector .consent-menu { width: 100%; min-width: 0; }
+.studio-card { overflow-y: auto; }
+.studio-card .card-body { flex: 1 1 auto; }
+.card-body .editor { flex: 1 0 12rem; height: auto; }
+.studio-card .ctx { flex-wrap: wrap; gap: .4rem .6rem; }
+.studio-card .ed-head { flex-wrap: wrap; gap: .2rem; }
+@media (max-width: 1400px) {
+  .main { grid-template-columns: 14.2rem minmax(0, 1fr) 21.5rem; }
+  .main.is-page { grid-template-columns: minmax(0, 1fr); }
+  .studio-inspector { padding: .65rem; }
+}
+/* Retain layout.css's scrolling fallback below 1180x700 (minimum canvas 1024x700). */
+@media (max-width: 1179px) {
+  .main { grid-template-columns: 13.5rem minmax(0, 1fr) 21.5rem; }
+  .main.is-page { grid-template-columns: minmax(0, 1fr); }
+}

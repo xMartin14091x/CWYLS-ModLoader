@@ -68,8 +68,8 @@ not a postfix: `SaveDataHook` owns the one postfix per save method.
 
 ## Paid content
 
-The game's only DLC is the original soundtrack (`BulbulSteamDLC.DLC_1 = 3718890`, never queried in play —
-`SteamManager.IsInstalledDLC` has no caller). Its tracks are the music list's `AudioTag.Original` rows (31 of
+The original soundtrack is sold as its own Steam app (4161250) and the game never checks it
+(`BulbulSteamDLC.DLC_1 = 3718890` is the Room & Cozy Activities Expansion; store page checked 2026-11-17). Its tracks are the music list's `AudioTag.Original` rows (31 of
 43). So: game music rows are never replaceable (packs only add tracks); a story-music row whose clip or
 title starts with a game track's title is refused (`main32_Music` → *Without You*); a pack track whose title
 or file name equals a game track's title or clip name is refused. No ambient/SE/timer row has a purchase or

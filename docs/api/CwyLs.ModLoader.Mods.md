@@ -341,7 +341,7 @@ Extends: [`ICwyModFacet`](#icwymodfacet)
 
 Audio: the game's replaceable sound rows - ambient loops, ambient one-shots, system and timer sounds, story music - and the pack music tracks. Packs replace rows with files in `audio/ambient/`, `audio/ambient_se/`, `audio/se/system/`, `audio/se/timer/`, `audio/direction_music/` and add tracks with `audio/music/` (+ `_tracks.json`); a code mod is a pack too, so its own folders work the same way. This facet adds runtime replacements and the A/B switch. Main thread. Only the framework implements this interface.
 
-Paid content is never replaced: story music that plays a track of the game's soundtrack (sold as Steam DLC 3718890) is refused, as the console and [`AudioRowInfo.Refusal`](CwyLs.ModLoader.Core.Audio.md#audiorowinfo--refusal) say. Voice clips stay in the Satone facet.
+Paid content is never replaced: story music that plays a track of the game's soundtrack (sold as Steam app 4161250) is refused, as the console and [`AudioRowInfo.Refusal`](CwyLs.ModLoader.Core.Audio.md#audiorowinfo--refusal) say. Voice clips stay in the Satone facet.
 
 <a id="icwymodaudio--musictracks"></a>
 
@@ -656,7 +656,7 @@ Every key that has a file, in lower case, sorted.
 
 ### `object ReadJson(string key)`
 
-The file parsed as strict JSON: `JsonObject`, lists, strings, `long`/`double`, booleans or null; null when the file does not exist.
+The file parsed as strict JSON. Objects come back as `JsonObject` (document order), arrays as `List<object?>`, strings as `string`, numbers as `long` (an integer that fits) or `double`, `true`/`false` as `bool`. Returns null both when the file does not exist and when it holds JSON `null`; call [`ICwyModData.Exists`](#icwymoddata--exists) to tell them apart.
 
 **Parameters**
 
@@ -685,7 +685,7 @@ The file's text (UTF-8), or null when it does not exist.
 
 ### `void WriteJson(string key, object value)`
 
-Writes `value` as JSON (public properties and fields, depth 12), atomically.
+Writes `value` as JSON (public properties and fields, depth 12), atomically. Dictionaries, including a `JsonObject` from [`ICwyModData.ReadJson`](#icwymoddata--readjson), are written as JSON objects, so a value read with [`ICwyModData.ReadJson`](#icwymoddata--readjson) writes back as the same JSON.
 
 **Parameters**
 

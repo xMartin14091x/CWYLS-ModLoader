@@ -1,0 +1,162 @@
+# 23 frozen types; 136 explicit declarations plus the protected implicit CwyMod constructor.
+# CLR nullable attributes are recorded; version literal values are runtime data. Ordinal ordering.
+constructor protected instance CwyLs.ModLoader.Mods.CwyMod::.ctor()
+constructor public instance CwyLs.ModLoader.Core.Mods.CwyDeprecatedAttribute::.ctor(System.String since,CwyLs.ModLoader.Core.Mods.DeprecationStage stage)
+constructor public instance CwyLs.ModLoader.Core.Packs.PackDependency::.ctor(System.String id,CwyLs.ModLoader.Core.Packs.SemVer minVersion = null/default [NullableAttribute=2],System.Boolean optional = false)
+constructor public instance CwyLs.ModLoader.Core.Threading.MainThreadRejectedException::.ctor(CwyLs.ModLoader.Core.Threading.MainThreadRejectReason reason,System.String owner,System.String label) [NullableContextAttribute=2]
+enum-value public static const CwyLs.ModLoader.Core.Mods.DeprecationStage::Info: CwyLs.ModLoader.Core.Mods.DeprecationStage = 1
+enum-value public static const CwyLs.ModLoader.Core.Mods.DeprecationStage::Notice: CwyLs.ModLoader.Core.Mods.DeprecationStage = 0
+enum-value public static const CwyLs.ModLoader.Core.Mods.DeprecationStage::PendingRemoval: CwyLs.ModLoader.Core.Mods.DeprecationStage = 2
+enum-value public static const CwyLs.ModLoader.Core.Mods.ModState::Failed: CwyLs.ModLoader.Core.Mods.ModState = 3
+enum-value public static const CwyLs.ModLoader.Core.Mods.ModState::Loaded: CwyLs.ModLoader.Core.Mods.ModState = 1
+enum-value public static const CwyLs.ModLoader.Core.Mods.ModState::Pending: CwyLs.ModLoader.Core.Mods.ModState = 0
+enum-value public static const CwyLs.ModLoader.Core.Mods.ModState::ShutDown: CwyLs.ModLoader.Core.Mods.ModState = 4
+enum-value public static const CwyLs.ModLoader.Core.Mods.ModState::Skipped: CwyLs.ModLoader.Core.Mods.ModState = 2
+enum-value public static const CwyLs.ModLoader.Core.Threading.MainThreadRejectReason::OwnerNotRunning: CwyLs.ModLoader.Core.Threading.MainThreadRejectReason = 1
+enum-value public static const CwyLs.ModLoader.Core.Threading.MainThreadRejectReason::QueueFull: CwyLs.ModLoader.Core.Threading.MainThreadRejectReason = 0
+enum-value public static const CwyLs.ModLoader.Core.Threading.MainThreadRejectReason::ShuttingDown: CwyLs.ModLoader.Core.Threading.MainThreadRejectReason = 2
+field public static const CwyLs.ModLoader.Core.Mods.CwyApi::FreezeVersionText: System.String
+field public static const CwyLs.ModLoader.Core.Mods.CwyApi::PluginVersionText: System.String
+field public static readonly CwyLs.ModLoader.Core.Mods.CwyApi::VersionText: System.String
+method public instance CwyLs.ModLoader.Core.Packs.PackDependency::AsRequired(): CwyLs.ModLoader.Core.Packs.PackDependency
+method public instance CwyLs.ModLoader.Core.Packs.PackDependency::IsSatisfiedBy(CwyLs.ModLoader.Core.Packs.SemVer version): System.Boolean [NullableContextAttribute=2]
+method public instance CwyLs.ModLoader.Core.Threading.DelayedWork::Cancel(): System.Boolean
+method public instance abstract virtual newslot CwyLs.ModLoader.Core.Events.ICwyEvent::Describe(): System.String
+method public instance abstract virtual newslot CwyLs.ModLoader.Core.Events.ICwyEvent::Fields(): System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object> [NullableAttribute=[1,1,2]]
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.CwyMod::Entry(CwyLs.ModLoader.Mods.ICwyModHelper helper): System.Void
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModConsole::Register(System.String name,System.String description,System.String usage,System.Func<System.Collections.Generic.IReadOnlyList<System.String>,System.String> handler [NullableAttribute=[1,1,1,2]]): CwyLs.ModLoader.Mods.CwyRegistration
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModData::Delete(System.String key): System.Boolean
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModData::Exists(System.String key): System.Boolean
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModData::Keys(): System.Collections.Generic.IReadOnlyList<System.String>
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModData::ReadJson(System.String key): System.Object [NullableAttribute=2]
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModData::ReadText(System.String key): System.String [NullableAttribute=2]
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModData::WriteJson(System.String key,System.Object value [NullableAttribute=2]): System.Void
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModData::WriteText(System.String key,System.String text [NullableAttribute=2]): System.Void
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModEvents::EveryFrame(System.Action handler): System.IDisposable
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModEvents::OnModsReady(System.Action handler): System.IDisposable
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModEvents::Subscribe<T>(System.Action<T> handler): System.IDisposable where T: CwyLs.ModLoader.Core.Events.ICwyEvent [NullableAttribute=0]
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModInput::Register(System.String id,System.String description,System.String primaryChord,System.String alternateChord [NullableAttribute=2],System.Action onPressed): CwyLs.ModLoader.Mods.CwyRegistration
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModLog::Error(System.String message,System.Exception error = null/default [NullableAttribute=2]): System.Void
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModLog::Info(System.String message): System.Void
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModLog::Trace(System.String message): System.Void
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModLog::Warn(System.String message): System.Void
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModMainThread::Invoke(System.String label,System.Action work,System.TimeSpan timeout): System.Void
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModMainThread::Invoke<T>(System.String label,System.Func<T> work,System.TimeSpan timeout): T [NullableAttribute=2]
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModMainThread::InvokeAsync(System.String label,System.Action work,System.Nullable<System.TimeSpan> timeout = null/default,System.Threading.CancellationToken cancellationToken = null/default): System.Threading.Tasks.Task
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModMainThread::InvokeAsync<T>(System.String label,System.Func<T> work,System.Nullable<System.TimeSpan> timeout = null/default,System.Threading.CancellationToken cancellationToken = null/default): System.Threading.Tasks.Task<T> [NullableAttribute=2]
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModMainThread::Post(System.String label,System.Action work): System.Boolean
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModMainThread::PostAfter(System.Double seconds,System.String label,System.Action work): CwyLs.ModLoader.Core.Threading.DelayedWork
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModMainThread::RunOrPost(System.String label,System.Action work): System.Boolean
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModRegistry::Get(System.String id): CwyLs.ModLoader.Mods.ICwyModInfo [NullableAttribute=2]
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModRegistry::GetAll(): System.Collections.Generic.IReadOnlyList<CwyLs.ModLoader.Mods.ICwyModInfo>
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModRegistry::GetApi<T>(System.String modId): T [NullableAttribute=2] where T: class
+method public instance abstract virtual newslot CwyLs.ModLoader.Mods.ICwyModRegistry::IsLoaded(System.String id): System.Boolean
+method public instance virtual CwyLs.ModLoader.Core.Packs.PackDependency::ToString(): System.String
+method public instance virtual CwyLs.ModLoader.Core.Packs.SemVer::Equals(System.Object obj): System.Boolean
+method public instance virtual CwyLs.ModLoader.Core.Packs.SemVer::GetHashCode(): System.Int32
+method public instance virtual CwyLs.ModLoader.Core.Packs.SemVer::ToString(): System.String [NullableContextAttribute=1]
+method public instance virtual CwyLs.ModLoader.Mods.CwyRegistration::ToString(): System.String
+method public instance virtual final newslot CwyLs.ModLoader.Core.Packs.SemVer::CompareTo(CwyLs.ModLoader.Core.Packs.SemVer other): System.Int32
+method public instance virtual final newslot CwyLs.ModLoader.Core.Packs.SemVer::Equals(CwyLs.ModLoader.Core.Packs.SemVer other): System.Boolean
+method public instance virtual final newslot CwyLs.ModLoader.Core.Threading.DelayedWork::Dispose(): System.Void
+method public instance virtual final newslot CwyLs.ModLoader.Mods.CwyRegistration::Dispose(): System.Void
+method public instance virtual newslot CwyLs.ModLoader.Mods.CwyMod::GetApi(): System.Object [NullableContextAttribute=2]
+method public instance virtual newslot CwyLs.ModLoader.Mods.CwyMod::OnShutdown(): System.Void
+method public static CwyLs.ModLoader.Core.Mods.CwyApi::Satisfies(CwyLs.ModLoader.Core.Packs.SemVer minimum): System.Boolean [NullableContextAttribute=2]
+method public static CwyLs.ModLoader.Core.Packs.SemVer::Compare(CwyLs.ModLoader.Core.Packs.SemVer left,CwyLs.ModLoader.Core.Packs.SemVer right): System.Int32
+method public static CwyLs.ModLoader.Core.Packs.SemVer::Parse(System.String text): CwyLs.ModLoader.Core.Packs.SemVer [NullableContextAttribute=1]
+method public static CwyLs.ModLoader.Core.Packs.SemVer::TryParse(System.String text,out CwyLs.ModLoader.Core.Packs.SemVer version): System.Boolean
+method public static CwyLs.ModLoader.Core.Packs.SemVer::TryParse(System.String text,out CwyLs.ModLoader.Core.Packs.SemVer version,out System.String error): System.Boolean
+method public static CwyLs.ModLoader.Core.Packs.SemVer::op_Equality(CwyLs.ModLoader.Core.Packs.SemVer left,CwyLs.ModLoader.Core.Packs.SemVer right): System.Boolean
+method public static CwyLs.ModLoader.Core.Packs.SemVer::op_GreaterThan(CwyLs.ModLoader.Core.Packs.SemVer left,CwyLs.ModLoader.Core.Packs.SemVer right): System.Boolean
+method public static CwyLs.ModLoader.Core.Packs.SemVer::op_GreaterThanOrEqual(CwyLs.ModLoader.Core.Packs.SemVer left,CwyLs.ModLoader.Core.Packs.SemVer right): System.Boolean
+method public static CwyLs.ModLoader.Core.Packs.SemVer::op_Inequality(CwyLs.ModLoader.Core.Packs.SemVer left,CwyLs.ModLoader.Core.Packs.SemVer right): System.Boolean
+method public static CwyLs.ModLoader.Core.Packs.SemVer::op_LessThan(CwyLs.ModLoader.Core.Packs.SemVer left,CwyLs.ModLoader.Core.Packs.SemVer right): System.Boolean
+method public static CwyLs.ModLoader.Core.Packs.SemVer::op_LessThanOrEqual(CwyLs.ModLoader.Core.Packs.SemVer left,CwyLs.ModLoader.Core.Packs.SemVer right): System.Boolean
+method public static CwyLs.ModLoader.Core.Threading.MainThreadRejectedException::Describe(CwyLs.ModLoader.Core.Threading.MainThreadRejectReason reason,System.String owner,System.String label): System.String
+property CwyLs.ModLoader.Core.Mods.CwyApi::FreezeVersion(): CwyLs.ModLoader.Core.Packs.SemVer { public static get; }
+property CwyLs.ModLoader.Core.Mods.CwyApi::IsFrozen(): System.Boolean { public static get; }
+property CwyLs.ModLoader.Core.Mods.CwyApi::Version(): CwyLs.ModLoader.Core.Packs.SemVer { public static get; }
+property CwyLs.ModLoader.Core.Mods.CwyDeprecatedAttribute::Replacement(): System.String { public instance get [NullableContextAttribute=2]; public instance set [NullableContextAttribute=2]; } [NullableAttribute=2]
+property CwyLs.ModLoader.Core.Mods.CwyDeprecatedAttribute::Since(): System.String { public instance get; }
+property CwyLs.ModLoader.Core.Mods.CwyDeprecatedAttribute::Stage(): CwyLs.ModLoader.Core.Mods.DeprecationStage { public instance get; }
+property CwyLs.ModLoader.Core.Packs.PackDependency::Id(): System.String { public instance get; }
+property CwyLs.ModLoader.Core.Packs.PackDependency::IsOptional(): System.Boolean { public instance get; }
+property CwyLs.ModLoader.Core.Packs.PackDependency::MinVersion(): CwyLs.ModLoader.Core.Packs.SemVer { public instance get [NullableContextAttribute=2]; } [NullableAttribute=2]
+property CwyLs.ModLoader.Core.Packs.SemVer::Build(): System.String { public instance get; }
+property CwyLs.ModLoader.Core.Packs.SemVer::IsPrerelease(): System.Boolean { public instance get; }
+property CwyLs.ModLoader.Core.Packs.SemVer::Major(): System.Int32 { public instance get; }
+property CwyLs.ModLoader.Core.Packs.SemVer::Minor(): System.Int32 { public instance get; }
+property CwyLs.ModLoader.Core.Packs.SemVer::Patch(): System.Int32 { public instance get; }
+property CwyLs.ModLoader.Core.Packs.SemVer::Prerelease(): System.String { public instance get; }
+property CwyLs.ModLoader.Core.Threading.DelayedWork::IsAccepted(): System.Boolean { public instance get; }
+property CwyLs.ModLoader.Core.Threading.DelayedWork::IsPending(): System.Boolean { public instance get; }
+property CwyLs.ModLoader.Core.Threading.DelayedWork::RejectReason(): System.Nullable<CwyLs.ModLoader.Core.Threading.MainThreadRejectReason> { public instance get; }
+property CwyLs.ModLoader.Core.Threading.MainThreadRejectedException::Label(): System.String { public instance get; }
+property CwyLs.ModLoader.Core.Threading.MainThreadRejectedException::Owner(): System.String { public instance get; }
+property CwyLs.ModLoader.Core.Threading.MainThreadRejectedException::Reason(): CwyLs.ModLoader.Core.Threading.MainThreadRejectReason { public instance get; }
+property CwyLs.ModLoader.Mods.CwyMod::Helper(): CwyLs.ModLoader.Mods.ICwyModHelper { public instance get; }
+property CwyLs.ModLoader.Mods.CwyMod::Log(): CwyLs.ModLoader.Mods.ICwyModLog { public instance get; }
+property CwyLs.ModLoader.Mods.CwyMod::Manifest(): CwyLs.ModLoader.Mods.ICwyModManifest { public instance get; }
+property CwyLs.ModLoader.Mods.CwyRegistration::IsActive(): System.Boolean { public instance get; }
+property CwyLs.ModLoader.Mods.CwyRegistration::Name(): System.String { public instance get; }
+property CwyLs.ModLoader.Mods.CwyRegistration::Problem(): System.String { public instance get; }
+property CwyLs.ModLoader.Mods.CwyRegistration::WasRefused(): System.Boolean { public instance get; }
+property CwyLs.ModLoader.Mods.ICwyModData::DirectoryPath(): System.String { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModEvents::IsAvailable(): System.Boolean { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModFacet::IsAvailable(): System.Boolean { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModFacet::Status(): System.String { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::Config(): BepInEx.Configuration.ConfigFile { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::Console(): CwyLs.ModLoader.Mods.ICwyModConsole { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::ContentPacks(): System.Collections.Generic.IReadOnlyList<CwyLs.ModLoader.Mods.ICwyModInfo> { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::Data(): CwyLs.ModLoader.Mods.ICwyModData { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::DirectoryPath(): System.String { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::Events(): CwyLs.ModLoader.Mods.ICwyModEvents { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::Input(): CwyLs.ModLoader.Mods.ICwyModInput { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::Log(): CwyLs.ModLoader.Mods.ICwyModLog { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::MainThread(): CwyLs.ModLoader.Mods.ICwyModMainThread { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::Manifest(): CwyLs.ModLoader.Mods.ICwyModManifest { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::ModId(): System.String { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModHelper::ModRegistry(): CwyLs.ModLoader.Mods.ICwyModRegistry { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModInfo::Detail(): System.String { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModInfo::DirectoryPath(): System.String { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModInfo::Id(): System.String { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModInfo::IsCodeMod(): System.Boolean { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModInfo::Manifest(): CwyLs.ModLoader.Mods.ICwyModManifest { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModInfo::State(): CwyLs.ModLoader.Core.Mods.ModState { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModMainThread::IsMainThread(): System.Boolean { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModMainThread::Now(): System.Double { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModManifest::Author(): System.String { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModManifest::ContentPackFor(): CwyLs.ModLoader.Core.Packs.PackDependency { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModManifest::DependsOn(): System.Collections.Generic.IReadOnlyList<CwyLs.ModLoader.Core.Packs.PackDependency> { public instance abstract virtual newslot get [NullableContextAttribute=1]; } [NullableAttribute=1]
+property CwyLs.ModLoader.Mods.ICwyModManifest::Description(): System.String { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModManifest::EntryDll(): System.String { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModManifest::Extensions(): System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object> { public instance abstract virtual newslot get [NullableAttribute=[1,1,2]]; } [NullableAttribute=[1,1,2]]
+property CwyLs.ModLoader.Mods.ICwyModManifest::GameVersion(): System.String { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModManifest::Id(): System.String { public instance abstract virtual newslot get [NullableContextAttribute=1]; } [NullableAttribute=1]
+property CwyLs.ModLoader.Mods.ICwyModManifest::LoaderVersion(): CwyLs.ModLoader.Core.Packs.SemVer { public instance abstract virtual newslot get; }
+property CwyLs.ModLoader.Mods.ICwyModManifest::Name(): System.String { public instance abstract virtual newslot get [NullableContextAttribute=1]; } [NullableAttribute=1]
+property CwyLs.ModLoader.Mods.ICwyModManifest::Version(): CwyLs.ModLoader.Core.Packs.SemVer { public instance abstract virtual newslot get [NullableContextAttribute=1]; } [NullableAttribute=1]
+type class CwyLs.ModLoader.Core.Mods.CwyApi abstract sealed base=System.Object interfaces=[] [NullableAttribute=0] [NullableContextAttribute=1]
+type class CwyLs.ModLoader.Core.Mods.CwyDeprecatedAttribute sealed base=System.Attribute interfaces=[] [NullableAttribute=0] [NullableContextAttribute=1]
+type class CwyLs.ModLoader.Core.Packs.PackDependency sealed base=System.Object interfaces=[] [NullableAttribute=0] [NullableContextAttribute=1]
+type class CwyLs.ModLoader.Core.Packs.SemVer sealed base=System.Object interfaces=[System.IComparable<CwyLs.ModLoader.Core.Packs.SemVer>,System.IEquatable<CwyLs.ModLoader.Core.Packs.SemVer>] [NullableAttribute=0] [NullableContextAttribute=2]
+type class CwyLs.ModLoader.Core.Threading.DelayedWork sealed base=System.Object interfaces=[System.IDisposable]
+type class CwyLs.ModLoader.Core.Threading.MainThreadRejectedException sealed base=System.InvalidOperationException interfaces=[System.Runtime.Serialization.ISerializable] [NullableAttribute=0] [NullableContextAttribute=1]
+type class CwyLs.ModLoader.Mods.CwyMod abstract base=System.Object interfaces=[] [NullableAttribute=0] [NullableContextAttribute=1]
+type class CwyLs.ModLoader.Mods.CwyRegistration sealed base=System.Object interfaces=[System.IDisposable] [NullableAttribute=0] [NullableContextAttribute=1]
+type enum CwyLs.ModLoader.Core.Mods.DeprecationStage sealed base=System.Enum underlying=System.Int32 interfaces=[System.IComparable,System.IConvertible,System.IFormattable,System.ISpanFormattable]
+type enum CwyLs.ModLoader.Core.Mods.ModState sealed base=System.Enum underlying=System.Int32 interfaces=[System.IComparable,System.IConvertible,System.IFormattable,System.ISpanFormattable]
+type enum CwyLs.ModLoader.Core.Threading.MainThreadRejectReason sealed base=System.Enum underlying=System.Int32 interfaces=[System.IComparable,System.IConvertible,System.IFormattable,System.ISpanFormattable]
+type interface CwyLs.ModLoader.Core.Events.ICwyEvent abstract interfaces=[] [NullableContextAttribute=1]
+type interface CwyLs.ModLoader.Mods.ICwyModConsole abstract interfaces=[] [NullableContextAttribute=1]
+type interface CwyLs.ModLoader.Mods.ICwyModData abstract interfaces=[] [NullableContextAttribute=1]
+type interface CwyLs.ModLoader.Mods.ICwyModEvents abstract interfaces=[] [NullableContextAttribute=1]
+type interface CwyLs.ModLoader.Mods.ICwyModFacet abstract interfaces=[] [NullableContextAttribute=1]
+type interface CwyLs.ModLoader.Mods.ICwyModHelper abstract interfaces=[] [NullableContextAttribute=1]
+type interface CwyLs.ModLoader.Mods.ICwyModInfo abstract interfaces=[] [NullableContextAttribute=1]
+type interface CwyLs.ModLoader.Mods.ICwyModInput abstract interfaces=[] [NullableContextAttribute=1]
+type interface CwyLs.ModLoader.Mods.ICwyModLog abstract interfaces=[] [NullableContextAttribute=1]
+type interface CwyLs.ModLoader.Mods.ICwyModMainThread abstract interfaces=[] [NullableContextAttribute=1]
+type interface CwyLs.ModLoader.Mods.ICwyModManifest abstract interfaces=[] [NullableContextAttribute=2]
+type interface CwyLs.ModLoader.Mods.ICwyModRegistry abstract interfaces=[] [NullableContextAttribute=1]

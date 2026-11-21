@@ -3,7 +3,7 @@
   <img src="../../.github/assets/banner/docs-manifest-light.svg" width="100%" alt="CWY:LS Mod Loader: Manifests">
 </picture>
 
-<sub>[Guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; **Manifest** &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [Translate](translate.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
+<sub>[Guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; **Manifest** &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [API stability](api-stability.md) &nbsp;·&nbsp; [Translate](translate.md) &nbsp;·&nbsp; [Textures](textures.md) &nbsp;·&nbsp; [Porting](porting.md) &nbsp;·&nbsp; [Dub & Subtitle Studio](pack-maker.md) &nbsp;·&nbsp; [คู่มือภาษาไทย](pack-maker.th.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
 
 # `manifest.json`
 
@@ -12,6 +12,8 @@ an unknown member, a wrong type or a bad version skips the pack with a message t
 problem, because a pack that half-loads over a typo is worse than one that says why it did not
 load. This page shows three example manifests, then every field, the `language.json` of a language
 pack, and every reason a pack or mod is skipped and what to do about it.
+
+See [API stability](api-stability.md#manifest-and-pack-formats) for which manifest fields, `language.json` members and pack formats freeze at 1.0 versus stay experimental or internal.
 
 <!-- Parser: src/CwyLs.ModLoader.Core/Packs/PackManifestParser.cs (strict: :10-16, unknown members :137-164). -->
 

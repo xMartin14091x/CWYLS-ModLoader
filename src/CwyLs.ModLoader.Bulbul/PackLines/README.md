@@ -811,10 +811,21 @@ Where "a pick of its pool" is, pool by pool:
 - The only save list a pack line can reach is `ScenarioProgressData.PlayedScenarioGroupIDs`: a small
   talk adds its group id when it ends (`SmallTalkSelector`). Every write of that list goes
   through `SaveDataManager.SaveScenarioProgressData`, which serialises
-  synchronously (`SaveDataIO.Save` → `ES3.Save`). A prefix takes every pack-line
-  id (of any line registered this session) out of the list and a finalizer puts them back in place,
-  so the file never holds them and the session keeps its "seen" state (`PackLineSaveFilter`,
+  synchronously (`SaveDataIO.Save` → `ES3.Save`). Master data's save filter (`MasterDataSaveFilter`,
+  `Core/PackLines/PackSaveHoldBack.cs`; see the MasterData README) is the only patch on it: a prefix takes
+  every pack id out of the list and a finalizer puts them back in place, so the file never holds them and
+  the session keeps its "seen" state. Pack lines have no save patch of their own: they join that filter
+  with their ids (of any line registered this session) and a callback that writes `seen.json` once per
+  save, and they stay off when it is not installed (`PackLineSaveFilter`, `PackSaveHoldBackTests`,
   `PackLinesSaveAndSmallTalkTests`).
+- The same filter holds back a plain pack small talk (a `data/scenario_groups.json` row without
+  `Languages`): it is injected like a game group, so the game's own lottery can draw it and log its id.
+  Which ids count is exact provenance, recorded at every injection (`Core/MasterData/PackAddedGroups.cs`,
+  `MasterDataFeature.AddedGroups`): a group a pack row added, never an override of a game group and never
+  an id this build merely does not know - a save synced from a newer game version can hold real ids this
+  build has never seen, and they stay. Heard plain pack small talks go to `seen.json` like pack lines
+  (`PackLinesSaveGapTests`) while pack lines are on. With pack lines off (`[PackLines] Enabled=false`, a
+  missing pack-lines seam) the filter still holds them out of the save, but nothing remembers them.
 - Click, self-talk, timer and answer-choice lines are never logged: `FacilityClickHeroine` and
   `HeroineAI` play them without `FacilityStory.SaveScenarioPlayedLog`, and the
   game's selectors holding the pools are not saved (the only saved `RandomList`s are

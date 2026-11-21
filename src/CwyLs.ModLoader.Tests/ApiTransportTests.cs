@@ -16,7 +16,7 @@ namespace CwyLs.ModLoader.Tests
     /// port-taken rule and the release of the port on stop. In the TraceBus collection: a started action writes a
     /// trace record.
     /// </summary>
-    [Collection("TraceBus")]
+    [Collection(SocketTestCollection.Name)]
     public class ApiTransportTests
     {
         [Theory]
@@ -24,12 +24,11 @@ namespace CwyLs.ModLoader.Tests
         [InlineData(ApiTransportMode.Auto, "httplistener")]
         public void Both_transports_serve_the_router_with_all_checks(ApiTransportMode mode, string expected)
         {
-            var port = ApiTestKit.FreePort();
-            var rig = new RouterRig(port);
-            var started = ApiServer.Start(port, mode, rig.Router.Handle, _ => { });
+            var started = SocketTestServer.Start(mode, port => new RouterRig(port), (rig, request) => rig.Router.Handle(request));
+            var port = started.Port; var rig = started.Rig;
             try
             {
-                Assert.True(started.IsRunning, started.Detail);
+                Assert.True(started.Transport.IsRunning);
                 Assert.Equal(expected, started.Transport!.Name);
 
                 var auth = Auth(rig);
@@ -55,14 +54,14 @@ namespace CwyLs.ModLoader.Tests
         [Fact]
         public void The_tcp_transport_reads_bodies_and_refuses_bad_heads()
         {
-            var port = ApiTestKit.FreePort();
-            var rig = new RouterRig(port, allowActions: true);
+            var started = SocketTestServer.Start(ApiTransportMode.Tcp, port => new RouterRig(port, allowActions: true),
+                (rig, request) => rig.Router.Handle(request));
+            var port = started.Port; var rig = started.Rig;
             rig.Services.UseRunner(new FakeRunner());
             rig.Register(new ActionDescriptor("music.play", ActionTier.Act, "Plays.", new[] { new ActionParameter("title", ActionValueKind.String, true, "Title.") }));
-            var started = ApiServer.Start(port, ApiTransportMode.Tcp, rig.Router.Handle, _ => { });
             try
             {
-                Assert.True(started.IsRunning, started.Detail);
+                Assert.True(started.Transport.IsRunning);
                 var auth = Auth(rig);
                 var post = ApiLoopbackClient.Send(
                     port, "POST", "/v1/actions/music.play", new[] { auth, H("Content-Type", "application/json") }, "{\"args\":{\"title\":\"雨の音\"}}");
@@ -109,18 +108,41 @@ namespace CwyLs.ModLoader.Tests
         [Theory]
         [InlineData(ApiTransportMode.Tcp)]
         [InlineData(ApiTransportMode.HttpListener)]
-        public void Stop_frees_the_port_at_once(ApiTransportMode mode)
+        public void Stop_is_idempotent_and_marks_our_listener_stopped(ApiTransportMode mode)
         {
-            var port = ApiTestKit.FreePort();
-            var started = ApiServer.Start(port, mode, new RouterRig(port).Router.Handle, _ => { });
-            Assert.True(started.IsRunning, started.Detail);
+            var started = SocketTestServer.Start(mode, port => new RouterRig(port), (rig, request) => rig.Router.Handle(request));
+            Assert.True(started.Transport.IsRunning);
 
             started.Transport!.Stop();
             started.Transport.Stop();
 
-            Assert.Equal(ApiPortState.Free, ApiPortProbe.Check(port, _ => { }, out var detail));
-            Assert.Equal(0, ApiLoopbackClient.Send(port, "GET", "/v1/info", timeoutMs: 500).Status);
-            Assert.Equal(string.Empty, detail);
+            Assert.False(started.Transport.IsRunning);
+            started.Transport.Dispose();
+
+            Assert.Equal(0, ApiLoopbackClient.Send(started.Port, "GET", "/v1/info").Status);
+            SocketTestServer.Until(() => ApiPortProbe.Check(started.Port, _ => { }, out _) == ApiPortState.Free,
+                "stopped transport did not release port " + started.Port);
+        }
+
+        /// <summary>
+        /// Windows refuses a connection to a free loopback port only after about two seconds (measured 2026-11-01:
+        /// 2045 ms on Windows 11, 0 ms on macOS), so a probe that times out there says nothing; elsewhere it means a
+        /// listener with a full backlog. Before this, the API could never start on Windows ("port is taken").
+        /// </summary>
+        [Fact]
+        public void A_probe_timeout_means_taken_everywhere_but_windows()
+        {
+            Assert.True(ApiPortProbe.SilenceMeansTaken(windows: false));
+            Assert.False(ApiPortProbe.SilenceMeansTaken(windows: true));
+        }
+
+        [Fact]
+        public void A_port_we_still_own_is_taken_and_tcp_reports_its_assigned_port()
+        {
+            using var transport = new TcpApiTransport(0, _ => ApiResponse.Json(200, "{}"), _ => { });
+            transport.Start();
+            Assert.InRange(transport.Port, 1024, 65535);
+            Assert.Equal(ApiPortState.Taken, ApiPortProbe.Check(transport.Port, _ => { }, out _));
         }
 
         [Fact]

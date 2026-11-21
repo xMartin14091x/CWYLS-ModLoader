@@ -111,7 +111,7 @@ scenery (`mt_env_*`), the far room (`mt_combined_room_far`), the sky (`Skybox`),
   no material of the 1.17.3 PC build matches - the only DLC is the soundtrack).
 
 The pass's console line counts both kinds and names the property rules separately:
-`TEXTURE  5 rules applied  failed=0 trigger=RoomScene+2s mode=Shared files=1 props=4`.
+`TEXTURE  5 rules applied  failed=0 trigger=sceneLoaded+2s mode=Shared files=1 props=4`.
 
 ### Re-apply triggers (besides the scene and costume ones)
 
@@ -207,9 +207,9 @@ pieces at runtime, which is exactly why the lookup includes inactive objects.
 | `m_Headphone_cat` | `…/Character_Head/m_Headphone_cat` | `mt_Headphone_cat` | no | cat-ear headphones |
 
 `Top1`, `Paka1`, `Bottom1` and `Socks` all share `mt_Outfit`, and `Face` shares `mt_Face` with the
-~40 expression meshes under `Character/group9/` (`Eye_*`, `Mouth_*`, `Eyeblow_*`). Because we write
-instance materials, a rule on `Top1` repaints **only** `Top1`; give each renderer its own rule (or
-its own file) if you want them all.
+~40 expression meshes under `Character/group9/` (`Eye_*`, `Mouth_*`, `Eyeblow_*`). With the default
+`WriteMode = Shared` a rule writes the material asset, so a rule on `Top1` repaints every object that
+uses `mt_Outfit`. To change `Top1` alone, set `WriteMode = Instance` (see the costume section below).
 
 ### Ambiguous names
 
@@ -432,7 +432,7 @@ All of that is on the **debug/trace** channel; the pass gets one console line, a
 reload and each restore:
 
 ```
-14:02:11.019  TEXTURE  1 rule applied  failed=0 trigger=RoomScene+2s mode=Shared files=1
+14:02:11.019  TEXTURE  1 rule applied  failed=0 trigger=sceneLoaded+2s mode=Shared files=1
 14:02:11.019  TEXTURE  reloaded 1 changed  applied=1 failed=0 ms=58 trigger=key
 14:02:11.019  TEXTURE  restored 3 of 3 slot(s)
 ```

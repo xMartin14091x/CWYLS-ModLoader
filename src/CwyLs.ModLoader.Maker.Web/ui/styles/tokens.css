@@ -1,0 +1,56 @@
+/* Pack Maker · Dub & Subtitle Studio v2: design tokens, base elements and fonts.
+   Taken from mockup A "Dusk" (research/2026-11-08/studio-v2/mockup-a/styles.css). Fonts are bundled in ../../fonts/. */
+
+/* Reading text, the subtitle editor and the mirror: Outfit (Latin) + Noto Sans Thai (OFL, variable). */
+@font-face { font-family: 'Outfit'; src: url('../../fonts/Outfit.ttf') format('truetype'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Dusk Read'; src: url('../../fonts/NotoSansThai.ttf') format('truetype'); font-weight: 100 900; font-display: swap; }
+/* Labels, buttons, headings and numbers: Kanit Bold (OFL, extracted from the project's embedded copy). */
+@font-face { font-family: 'Kanit'; src: url('../../fonts/Kanit-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
+
+:root {
+  color-scheme: dark;
+  --ink: #efedf9;
+  --ink2: #c6c4e6;
+  --ink3: #9a98c6;
+  --ink4: #7472a3;
+  --gold: #ffd787;
+  --cream: #f6e6bd;
+  --peach: #efa786;
+  --peach-ink: #2c1530;
+  --coral: #ff8d7c;
+  --mint: #93e2b5;
+  --amber: #ffc46b;
+  --lav: #b6b8f7;
+  --edge: rgba(110, 114, 168, .46);
+  --edge-soft: rgba(110, 114, 168, .24);
+  --glass: rgba(13, 16, 44, .64);
+  --f-ui: Kanit, 'Dusk Read', 'Hiragino Sans', sans-serif;
+  --f-read: 'Outfit', 'Dusk Read', 'Hiragino Sans', sans-serif;
+  --f-game: 'Dusk Read', 'Hiragino Sans', sans-serif;
+  --f-ja: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Dusk Read', sans-serif;
+  --f-mono: ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  --r: 1.15rem;
+}
+
+html { font-size: clamp(12.5px, calc(0.45vw + 0.65vh + 2.2px), 16.5px); height: 100%; background: #0a0e25; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; height: 100%; overflow: hidden; color: var(--ink);
+  font: 400 1rem/1.5 var(--f-read); background: #0a0e25;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+button:disabled { cursor: default; }
+kbd {
+  font: 400 .68rem/1 var(--f-mono); color: var(--ink2); padding: .22rem .34rem .18rem; border-radius: .32rem;
+  border: 1px solid rgba(182, 184, 247, .28); border-bottom-width: 2px; background: rgba(10, 12, 34, .5);
+}
+.ico { display: inline-flex; width: 1.15rem; height: 1.15rem; flex: none; }
+.ico svg, .hb-ico svg, .b-ico svg, .tk-s svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ico-s { width: 1rem; height: 1rem; }
+.ico-xs { width: .85rem; height: .85rem; }
+.mono { font-family: var(--f-mono); }
+.mk { font: 700 .72rem/1.5 var(--f-ui); letter-spacing: .04em; color: var(--ink3); text-transform: uppercase; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+

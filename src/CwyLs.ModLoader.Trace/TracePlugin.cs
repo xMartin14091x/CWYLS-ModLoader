@@ -34,7 +34,7 @@ namespace CwyLs.ModLoader.Trace
         public const string PluginName = "CWYLS Trace";
 
         /// <summary>BepInEx plugin version.</summary>
-        public const string PluginVersion = "0.1.0";
+        public const string PluginVersion = CwyLsModLoader.PluginVersion; // every plugin reports the loader's version
 
         private bool _started;
 

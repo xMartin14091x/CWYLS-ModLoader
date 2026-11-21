@@ -116,6 +116,20 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
         /// </summary>
         public static PackLineScreenResult LineScreen { get; private set; } = PackLineScreenResult.Empty;
 
+        /// <summary>
+        /// The scene groups packs added to the game's master data this session, recorded at every
+        /// injection from the rows injected (never inferred from ids the game does not know). The
+        /// pack-lines save filter keeps them out of the save. Never null; main thread only.
+        /// </summary>
+        internal static PackAddedGroups AddedGroups { get; } = new PackAddedGroups();
+
+        /// <summary>
+        /// The one save filter for pack ids (pack-added groups, and pack lines once they join), on
+        /// <c>SaveDataManager.SaveScenarioProgressData</c> (<see cref="MasterDataSaveFilter"/>). While it is
+        /// not installed, pack small talk is kept out of the injection. Never null; main thread only.
+        /// </summary>
+        internal static PackSaveHoldBack SaveHoldBack { get; } = new PackSaveHoldBack(AddedGroups);
+
         /// <summary>The last injection's summary line, or empty before one has happened.</summary>
         public static string LastSummary { get; private set; } = string.Empty;
 
@@ -172,6 +186,14 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
             if (MasterDataPatches.Apply(_harmony))
             {
                 CwyLsModLoader.Log.LogDebug("MASTERDATA " + MasterDataPatches.Detail);
+            }
+
+            // The save filter, before the first merge: while it is not in place, pack small talk stays
+            // out of the injection (Merge), so no pack id can reach the save in any configuration.
+            PatchTargetRegistry.Register(BulbulPlugin.PluginName + " (master data)", MasterDataPatchTargets.All);
+            if (MasterDataSaveFilter.Apply(_harmony))
+            {
+                CwyLsModLoader.Log.LogDebug("MASTERDATA " + MasterDataSaveFilter.Detail);
             }
 
             PackManager.PacksResolved += OnPacksResolved;
@@ -270,6 +292,10 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
                 Merge(reason);
 
                 var counts = MasterDataInjector.Inject(loader!, Merged, LogEachRow);
+
+                // Exact provenance for the save filter: the groups this injection added, against the
+                // same baseline the injector just built on.
+                AddedGroups.Record(Merged.ScenarioGroups, MasterDataInjector.Baseline());
 
                 IsInjected = true;
                 LastTrigger = reason;
@@ -396,8 +422,15 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
                 // exactly what they did before.
                 var screened = PackLineScreen.Screen(MasterDataMerge.Merge(_inputs, baseline), baseline, PackLinesAdmitted);
                 LineScreen = screened;
-                Merged = screened.Set;
+                Merged = SaveHoldBack.PlanInjection(screened.Set, baseline, out var heldOut);
                 Subtitles = Merged.Subtitles;
+
+                if (heldOut > 0)
+                {
+                    CwyLsModLoader.Log.LogWarning(
+                        "MASTERDATA (" + trigger + ") kept " + heldOut + " pack small-talk group(s) out of the game: "
+                        + "the save filter is off (" + SaveHoldBack.Problem + ")");
+                }
 
                 if (screened.HeldBack > 0)
                 {

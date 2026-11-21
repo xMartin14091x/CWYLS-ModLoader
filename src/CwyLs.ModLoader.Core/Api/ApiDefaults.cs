@@ -65,6 +65,9 @@ namespace CwyLs.ModLoader.Core.Api
         /// <summary>Requests served at the same time; more are answered 503 at once.</summary>
         public const int MaxConcurrentRequests = 16;
 
+        /// <summary>Minimum thread-pool worker threads raised when the server starts (slot count plus margin).</summary>
+        public const int MinWorkerThreads = MaxConcurrentRequests * 2;
+
         /// <summary>Long-polls (<c>wait</c> &gt; 0) waiting at the same time; more are answered 429.</summary>
         public const int MaxConcurrentWaits = 4;
 
@@ -111,6 +114,17 @@ namespace CwyLs.ModLoader.Core.Api
         /// <summary>True when <paramref name="port"/> is in <see cref="MinPort"/>..<see cref="MaxPort"/>.</summary>
         /// <param name="port">A candidate port.</param>
         public static bool IsValidPort(int port) => port >= MinPort && port <= MaxPort;
+
+        /// <summary>Raises the thread-pool minimum worker count so a cold burst on Mono does not stall behind ramp-up.</summary>
+        /// <param name="minWorkers">Desired floor (at least <see cref="MinWorkerThreads"/>).</param>
+        public static void EnsureMinWorkerThreads(int minWorkers = MinWorkerThreads)
+        {
+            System.Threading.ThreadPool.GetMinThreads(out var workers, out var completionPorts);
+            if (workers < minWorkers)
+            {
+                System.Threading.ThreadPool.SetMinThreads(minWorkers, completionPorts);
+            }
+        }
     }
 
     /// <summary>Which listener the API uses (<c>[Api] Transport</c>).</summary>

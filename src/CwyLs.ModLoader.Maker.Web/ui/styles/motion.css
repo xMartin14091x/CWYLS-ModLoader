@@ -1,0 +1,340 @@
+/* Scene current (F) motion system: sky/stars/hills parallax pan, page stream & popups.
+   Performance rule: animate transform and opacity ONLY; no blur/SVG filters on moving layers. */
+
+:root {
+  --motion-page-ms: 700ms;
+  --motion-small-ms: 250ms;
+}
+
+:root[data-motion-mode="off"] {
+  --motion-page-ms: 0ms;
+  --motion-small-ms: 0ms;
+}
+
+/* ---------------- Scene F sky, stars & hills parallax ---------------- */
+#top {
+  transform: none !important;
+}
+
+.sky-drift {
+  position: absolute;
+  inset: 0 -24%;
+  pointer-events: none;
+  background:
+    radial-gradient(52% 38% at 38% 88%, rgba(255, 198, 138, .14), transparent 72%),
+    radial-gradient(46% 32% at 72% 76%, rgba(182, 184, 247, .09), transparent 70%);
+  transform: translate3d(0, 0, 0);
+}
+
+#stars,
+#hills {
+  overflow: visible;
+}
+
+.sky.is-panning .sky-drift,
+.sky.is-panning #stars,
+.sky.is-panning .hill-far,
+.sky.is-panning .hill-near,
+.ground.is-panning .house {
+  will-change: transform;
+}
+
+/* ---------------- Page stream stage & outgoing clone layer ---------------- */
+#main {
+  position: relative;
+}
+
+.motion-ribbons {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.motion-ribbons svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.motion-out-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+  color-scheme: dark;
+}
+
+#main.is-streaming > .left,
+#main.is-streaming > .studio-card,
+#main.is-streaming > .studio-inspector,
+#main.is-streaming > .page-view,
+#main.is-streaming > .banner {
+  position: relative;
+  z-index: 4;
+}
+
+#main.is-streaming .pg-wrap,
+#main.is-streaming .pg-body {
+  overflow: visible;
+}
+
+/* Preserve Settings card layout & typography when cloned inside .motion-out-layer without .m-settings grid parent */
+.out-item > .st-voice,
+.out-item > .st-workflow {
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+  padding: .8rem .95rem;
+  margin: 0;
+  border: 1px solid var(--edge-soft);
+}
+
+.out-item .st-voice-h {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .6rem;
+}
+
+.out-item .st-voice-h b,
+.out-item .st-wf-h b {
+  font: 700 .92rem/1.45 var(--f-ui);
+  color: var(--cream);
+}
+
+.out-item .st-voice-h p {
+  margin: .15rem 0 0;
+  font: 400 .78rem/1.5 var(--f-read);
+  color: var(--ink3);
+}
+
+/* Suspend expensive per-frame backdrop Gaussian blur while layers move across the sky */
+#main.is-streaming .panel,
+#main.is-streaming .panel-soft {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(14, 18, 48, .82);
+}
+
+.motion-stream-active {
+  will-change: transform, opacity;
+}
+
+/* ---------------- Popups & dropdown panels: [data-motion="pop"] ---------------- */
+[data-motion="pop"][hidden] {
+  display: none !important;
+}
+
+[data-motion="pop"] {
+  transform-origin: top center;
+  --pop-x-in: 16px;
+  --pop-x-over: -2px;
+}
+
+.keys-menu[data-motion="pop"] {
+  transform-origin: top right;
+  --pop-x-in: 0px;
+  --pop-x-over: -1.5px;
+}
+
+@keyframes cwyls-pop-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--pop-x-in, 16px), -7px, 0) scale(0.962);
+  }
+  74% {
+    opacity: 1;
+    transform: translate3d(var(--pop-x-over, -2px), 1.2px, 0) scale(1.007);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes cwyls-pop-out {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  38% {
+    opacity: 0.82;
+    transform: translate3d(-8px, 2.5px, 0) scale(0.986);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-20px, 6px, 0) scale(0.958);
+  }
+}
+
+@keyframes cwyls-pop-fade-in {
+  from { opacity: 0; transform: none; }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes cwyls-pop-fade-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: none; }
+}
+
+/* Full water-current pop (default when mode is unset or "full") */
+:root:not(.shot):not([data-motion-mode="reduced"]):not([data-motion-mode="off"]) [data-motion="pop"].is-opening {
+  will-change: transform, opacity;
+  animation: cwyls-pop-in var(--motion-small-ms, 250ms) cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+[data-motion="pop"].is-open {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+:root:not(.shot):not([data-motion-mode="reduced"]):not([data-motion-mode="off"]) [data-motion="pop"].is-closing {
+  will-change: transform, opacity;
+  pointer-events: none;
+  animation: cwyls-pop-out var(--motion-small-ms, 250ms) cubic-bezier(0.32, 0.04, 0.62, 0.96) both !important;
+}
+
+/* Reduced motion: simple calm fade, zero spatial translation */
+:root:not(.shot)[data-motion-mode="reduced"] [data-motion="pop"].is-opening {
+  will-change: opacity;
+  animation: cwyls-pop-fade-in var(--motion-small-ms, 180ms) ease-out both !important;
+}
+
+:root[data-motion-mode="reduced"] [data-motion="pop"].is-open {
+  opacity: 1;
+  transform: none;
+}
+
+:root:not(.shot)[data-motion-mode="reduced"] [data-motion="pop"].is-closing {
+  will-change: opacity;
+  pointer-events: none;
+  animation: cwyls-pop-fade-out var(--motion-small-ms, 180ms) ease-out both !important;
+}
+
+/* Motion Off or deterministic screenshot mode */
+:root[data-motion-mode="off"] [data-motion="pop"].is-opening,
+:root[data-motion-mode="off"] [data-motion="pop"].is-open,
+:root[data-motion-mode="off"] [data-motion="pop"].is-closing,
+.shot [data-motion="pop"].is-opening,
+.shot [data-motion="pop"].is-open,
+.shot [data-motion="pop"].is-closing {
+  animation: none !important;
+  transition: none !important;
+  transform: none;
+}
+
+:root[data-motion-mode="off"] [data-motion="pop"].is-closing {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------------- Settings page: Motion controls ---------------- */
+.st-motion {
+  display: flex;
+  flex-direction: column;
+  gap: .46rem;
+  padding: .55rem .68rem;
+  border-radius: .7rem;
+  background: rgba(8, 10, 30, .42);
+  border: 1px solid var(--edge-soft);
+}
+
+.st-motion-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .35rem .6rem;
+}
+
+.st-motion-title {
+  display: flex;
+  flex-direction: column;
+  gap: .06rem;
+  min-width: 0;
+}
+
+.st-motion-title b {
+  font: 700 .84rem/1.48 var(--f-ui);
+  color: var(--ink);
+}
+
+.st-motion-title span {
+  font: 400 .74rem/1.5 var(--f-read);
+  color: var(--ink3);
+}
+
+.st-motion-seg {
+  display: inline-flex;
+  align-items: center;
+  padding: .14rem;
+  border-radius: .6rem;
+  background: rgba(13, 16, 44, .72);
+  border: 1px solid var(--edge-soft);
+  gap: .14rem;
+  flex: none;
+}
+
+.st-motion-b {
+  padding: .22rem .58rem;
+  border-radius: .46rem;
+  font: 700 .76rem/1.48 var(--f-ui);
+  color: var(--ink3);
+}
+
+.st-motion-b:hover {
+  color: var(--ink);
+}
+
+.st-motion-b.on {
+  background: rgba(255, 215, 135, .14);
+  color: var(--gold);
+  box-shadow: inset 0 0 0 1px rgba(255, 215, 135, .42);
+}
+
+.st-motion-sliders {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .45rem .75rem;
+  padding-top: .15rem;
+}
+
+.st-motion.is-off .st-motion-sliders {
+  opacity: .5;
+}
+
+.st-motion-sl {
+  display: flex;
+  flex-direction: column;
+  gap: .16rem;
+  min-width: 0;
+}
+
+.st-motion-sl-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .4rem;
+}
+
+.st-motion-sl-top span {
+  font: 700 .76rem/1.48 var(--f-ui);
+  color: var(--ink2);
+}
+
+.st-motion-val {
+  font: 600 .72rem/1.45 var(--f-mono);
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.st-motion-sl input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--peach);
+  cursor: pointer;
+}

@@ -40,7 +40,7 @@ Assembly `CwyLs.ModLoader.Core` · 54 public type(s) · [API index](README.md)
 | [`ApiRawJson`](#apirawjson) | sealed class | A JSON fragment that is already serialised; `ApiJson` copies it verbatim. |
 | [`ApiRefreshPolicy`](#apirefreshpolicy) | sealed class | When the API's main-thread ticker rebuilds the save-backed part of `/v1/state`: soon after a change (`ApiRefreshPolicy.MinIntervalSeconds`), and at least every `ApiRefreshPolicy.MaxAgeSeconds`. |
 | [`ApiRequest`](#apirequest) | sealed class | One HTTP request as the router sees it, whatever transport carried it. |
-| [`ApiResponse`](#apiresponse) | sealed class | One HTTP response: status, JSON body and extra headers. |
+| [`ApiResponse`](#apiresponse) | sealed class | One HTTP response: status, JSON body (or, for Pack Maker's web files, raw bytes of another type) and extra headers. |
 | [`ApiRouter`](#apirouter) | sealed class | The local game API's request pipeline, shared by both transports. |
 | [`ApiRouterOptions`](#apirouteroptions) | sealed class | Everything the router works with. |
 | [`ApiRuntime`](#apiruntime) | sealed class | One API session from `api on` to `api off`: the router, the event ring, the live state and the state document, plus the main-thread intake the plugin wires to the game (events in, a once-per-frame `ApiRuntime.Tick`). |
@@ -607,6 +607,16 @@ A body that was read.
 
 - `bytes`: The bytes.
 
+<a id="apibody--timedout"></a>
+
+### `static ApiBody TimedOut(string problem)`
+
+A body whose read deadline expired before it arrived in full.
+
+**Parameters**
+
+- `problem`: Why.
+
 <a id="apibody--toolarge"></a>
 
 ### `static ApiBody TooLarge()`
@@ -628,6 +638,7 @@ How reading a request body ended.
 | <a id="apibodystatus--ok"></a>`Ok` | 0 | The body was read (possibly empty). |
 | <a id="apibodystatus--toolarge"></a>`TooLarge` | 1 | The body is larger than the cap; it was not read in full. |
 | <a id="apibodystatus--failed"></a>`Failed` | 2 | The connection failed or timed out while reading. |
+| <a id="apibodystatus--timedout"></a>`TimedOut` | 3 | The request body did not arrive before its fixed deadline. |
 
 ---
 
@@ -803,6 +814,12 @@ Longest a long-poll (`wait`) may last, in seconds; below common 30 s client time
 
 Lowest accepted port (no privileged ports).
 
+<a id="apidefaults--minworkerthreads"></a>
+
+### `const int MinWorkerThreads = 32`
+
+Minimum thread-pool worker threads raised when the server starts (slot count plus margin).
+
 <a id="apidefaults--pathprefix"></a>
 
 ### `const string PathPrefix = "/v1"`
@@ -849,6 +866,16 @@ The base address for a port: `http://127.0.0.1:7870/`.
 
 - `port`: The port.
 
+<a id="apidefaults--ensureminworkerthreads"></a>
+
+### `static void EnsureMinWorkerThreads(int minWorkers = 32)`
+
+Raises the thread-pool minimum worker count so a cold burst on Mono does not stall behind ramp-up.
+
+**Parameters**
+
+- `minWorkers`: Desired floor (at least [`ApiDefaults.MinWorkerThreads`](#apidefaults--minworkerthreads)).
+
 <a id="apidefaults--hostauthority"></a>
 
 ### `static string HostAuthority(int port)`
@@ -889,7 +916,7 @@ The stable error codes the API answers with (documented in `Core/Api/README.md`)
 
 ### `const string BrowserRefused = "browser_refused"`
 
-403: the request carries an `Origin` or `Sec-Fetch-*` header (a browser).
+403: the request carries an `Origin`, `Sec-Fetch-Site` or `Sec-Fetch-Mode` header (a browser).
 
 <a id="apierrorcodes--confirmationunavailable"></a>
 
@@ -950,6 +977,12 @@ The stable error codes the API answers with (documented in `Core/Api/README.md`)
 ### `const string RateLimited = "rate_limited"`
 
 429: a rate limit or a concurrency cap; see `Retry-After`.
+
+<a id="apierrorcodes--requesttimeout"></a>
+
+### `const string RequestTimeout = "request_timeout"`
+
+408: the request body did not arrive before its fixed deadline.
 
 <a id="apierrorcodes--toolarge"></a>
 
@@ -1784,6 +1817,16 @@ True when an exception (or one inside it) says the address is in use: a socket e
 
 - `error`: The exception.
 
+<a id="apiportprobe--silencemeanstaken"></a>
+
+### `static bool SilenceMeansTaken(bool windows)`
+
+What a connection attempt that neither succeeded nor failed within the wait means: on Windows nothing (a free port is refused only after about two seconds), elsewhere a listener with a full backlog, so taken.
+
+**Parameters**
+
+- `windows`: True on Windows.
+
 ---
 
 <a id="apiportstate"></a>
@@ -2103,7 +2146,7 @@ Reads the body once, up to `maxBytes`; later calls return the same result.
 
 sealed class · `CwyLs.ModLoader.Core.Api.ApiResponse` · assembly `CwyLs.ModLoader.Core`
 
-One HTTP response: status, JSON body and extra headers. Immutable.
+One HTTP response: status, JSON body (or, for Pack Maker's web files, raw bytes of another type) and extra headers. Immutable.
 
 <a id="apiresponse--ctor"></a>
 
@@ -2128,7 +2171,13 @@ The value of the `Content-Type` header of every response.
 
 ### `string Body { get; }`
 
-The JSON body.
+The JSON body (empty when [`ApiResponse.Bytes`](#apiresponse--bytes) carries the body).
+
+<a id="apiresponse--bytes"></a>
+
+### `byte[] Bytes { get; }`
+
+A raw body (Pack Maker's web files), or null for the JSON [`ApiResponse.Body`](#apiresponse--body).
 
 <a id="apiresponse--commonheaders"></a>
 
@@ -2148,11 +2197,23 @@ The error code, or null.
 
 Extra headers.
 
+<a id="apiresponse--mediatype"></a>
+
+### `string MediaType { get; }`
+
+This response's `Content-Type`: [`ApiResponse.ContentType`](#apiresponse--contenttype) for JSON.
+
 <a id="apiresponse--status"></a>
 
 ### `int Status { get; }`
 
 The HTTP status.
+
+<a id="apiresponse--bodybytes"></a>
+
+### `byte[] BodyBytes()`
+
+The bytes to send: [`ApiResponse.Bytes`](#apiresponse--bytes), or [`ApiResponse.Body`](#apiresponse--body) as UTF-8.
 
 <a id="apiresponse--error"></a>
 
@@ -2190,6 +2251,19 @@ A JSON success response.
 - `json`: The body.
 - `headers`: Extra headers, or null.
 
+<a id="apiresponse--raw"></a>
+
+### `static ApiResponse Raw(int status, byte[] bytes, string mediaType, params KeyValuePair<string, string>[] headers)`
+
+A raw response of any type (Pack Maker's web files).
+
+**Parameters**
+
+- `status`: The HTTP status.
+- `bytes`: The body.
+- `mediaType`: The `Content-Type`.
+- `headers`: Extra headers, or none.
+
 <a id="apiresponse--reason"></a>
 
 ### `static string Reason(int status)`
@@ -2218,7 +2292,7 @@ A `Retry-After` header, whole seconds rounded up (at least 1).
 
 sealed class · `CwyLs.ModLoader.Core.Api.ApiRouter` · assembly `CwyLs.ModLoader.Core`
 
-The local game API's request pipeline, shared by both transports. Order: stopping → browser checks (any `Origin` or `Sec-Fetch-*` header: 403) → `Host` must be exactly `127.0.0.1:<port>` (421) → access key in constant time (401) → route (404/405) → rate limit (429) → query and body (400/411/413/415) → handler. Exactly one audit record per request. Never throws; never touches Unity: reads come from the published snapshot and the event ring, actions go to the runner ([`ActionServices`](CwyLs.ModLoader.Core.Actions.md#actionservices)), which owns the main-thread hop with the 2 s wall-clock timeout.
+The local game API's request pipeline, shared by both transports. Order: stopping → browser checks (any `Origin`, `Sec-Fetch-Site` or `Sec-Fetch-Mode` header: 403) → `Host` must be exactly `127.0.0.1:<port>` (421) → access key in constant time (401) → route (404/405) → rate limit (429) → query and body (400/411/413/415) → handler. Exactly one audit record per request. Never throws; never touches Unity: reads come from the published snapshot and the event ring, actions go to the runner ([`ActionServices`](CwyLs.ModLoader.Core.Actions.md#actionservices)), which owns the main-thread hop with the 2 s wall-clock timeout.
 
 <a id="apirouter--ctor"></a>
 
@@ -2343,6 +2417,16 @@ Replaces the access key (`api rotate`); requests with the old one get 401 from n
 **Parameters**
 
 - `key`: The new key.
+
+<a id="apirouter--usemaker"></a>
+
+### `void UseMaker(MakerRouter maker)`
+
+Hands `/maker` and `/v1/maker/*` to Pack Maker's router (its own browser, Host and token rules), or stops doing so (null). Every other route is unchanged.
+
+**Parameters**
+
+- `maker`: The maker router, or null.
 
 ---
 
@@ -2992,11 +3076,11 @@ sealed class · `CwyLs.ModLoader.Core.Api.HttpListenerApiTransport` · assembly 
 
 Implements: [`IApiTransport`](#iapitransport), `IDisposable`
 
-The primary transport: `HttpListener` (Mono's managed implementation in the game, verified in testing) on the literal prefix `http://127.0.0.1:<port>/`. Requests are served on thread-pool threads; at most [`ApiDefaults.MaxConcurrentRequests`](#apidefaults--maxconcurrentrequests) at once (more get 503).
+The primary transport: `HttpListener` (Mono's managed implementation in the game, verified in testing) on the literal prefix `http://127.0.0.1:<port>/`. Requests are served on thread-pool threads; at most [`ApiDefaults.MaxConcurrentRequests`](#apidefaults--maxconcurrentrequests) at once (more get 503). Once HttpListener has delivered a complete request head, a request with a body has one fixed [`HttpListenerApiTransport.ReadDeadline`](#httplistenerapitransport--readdeadline) to finish arriving. A dedicated watchdog aborts slow contexts, so blocked pool readers cannot starve their own deadline.
 
 <a id="httplistenerapitransport--ctor"></a>
 
-### `HttpListenerApiTransport(int port, Func<ApiRequest, ApiResponse> handler, Action<string> diagnostics)`
+### `HttpListenerApiTransport(int port, Func<ApiRequest, ApiResponse> handler, Action<string> diagnostics, Action<HttpListenerResponse> abortResponse = null)`
 
 Creates the transport (not started).
 
@@ -3005,6 +3089,25 @@ Creates the transport (not started).
 - `port`: The port.
 - `handler`: The router.
 - `diagnostics`: Where request failures are reported.
+- `abortResponse`: Optional runtime abort adapter; defaults to HttpListenerResponse.Abort.
+
+<a id="httplistenerapitransport--readdeadline"></a>
+
+### `static readonly TimeSpan ReadDeadline`
+
+The longest a request body may take to arrive after HttpListener has delivered its complete head. HttpListener owns head reads, so this transport cannot apply the TCP transport's head deadline.
+
+<a id="httplistenerapitransport--activebodyreads"></a>
+
+### `int ActiveBodyReads { get; }`
+
+Workers currently inside body acquisition, including a blocked stream read.
+
+<a id="httplistenerapitransport--activerequests"></a>
+
+### `int ActiveRequests { get; }`
+
+Requests admitted and not yet finished, including handlers running after their body arrived.
 
 <a id="httplistenerapitransport--isrunning"></a>
 
@@ -3023,6 +3126,12 @@ True between a successful [`IApiTransport.Start`](#iapitransport--start) and [`I
 ### `int Port { get; }`
 
 The port.
+
+<a id="httplistenerapitransport--readingbodies"></a>
+
+### `int ReadingBodies { get; }`
+
+Request bodies currently guarded by the fixed read deadline.
 
 <a id="httplistenerapitransport--dispose"></a>
 
@@ -3146,7 +3255,7 @@ sealed class · `CwyLs.ModLoader.Core.Api.TcpApiTransport` · assembly `CwyLs.Mo
 
 Implements: [`IApiTransport`](#iapitransport), `IDisposable`
 
-The fallback transport: a small HTTP/1.1 server on a `TcpListener` bound to the IPv4 loopback only. One request per connection (`Connection: close`), head capped at [`ApiDefaults.MaxHeadBytes`](#apidefaults--maxheadbytes), 2 s read/write timeouts, at most [`ApiDefaults.MaxConcurrentRequests`](#apidefaults--maxconcurrentrequests) requests at once (more get 503).
+The fallback transport: a small HTTP/1.1 server on a `TcpListener` bound to the IPv4 loopback only. One request per connection (`Connection: close`), each on its own background thread, head capped at [`ApiDefaults.MaxHeadBytes`](#apidefaults--maxheadbytes), 2 s idle timeouts on head reads and on writes, at most [`ApiDefaults.MaxConcurrentRequests`](#apidefaults--maxconcurrentrequests) requests at once (more get 503). The whole request, head and body, must arrive within [`TcpApiTransport.ReadDeadline`](#tcpapitransport--readdeadline) of the connection being accepted: one fixed deadline, not per read and not restarted when the head ends, so a client that drips a byte at a time cannot keep a request slot past it (DS-06 finding 4). A body is bounded by that deadline alone, so a body that stalls outright and one that drips both end in 408 `request_timeout`, as on HttpListener.
 
 <a id="tcpapitransport--ctor"></a>
 
@@ -3159,6 +3268,18 @@ Creates the transport (not started).
 - `port`: The port.
 - `handler`: The router.
 - `diagnostics`: Where connection failures are reported.
+
+<a id="tcpapitransport--readdeadline"></a>
+
+### `static readonly TimeSpan ReadDeadline`
+
+The longest a whole request (head and body) may take to arrive, counted from the accept; every route, `/v1` included. A 16 MiB dub over loopback takes well under a second.
+
+<a id="tcpapitransport--activerequests"></a>
+
+### `int ActiveRequests { get; }`
+
+Admitted connections, including response drain, which have not released their slot.
 
 <a id="tcpapitransport--isrunning"></a>
 

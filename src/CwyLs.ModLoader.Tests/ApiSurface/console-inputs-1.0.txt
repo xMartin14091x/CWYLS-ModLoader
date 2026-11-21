@@ -1,0 +1,22 @@
+# Input TAB expected handler arguments through the Core CommandRegistry.
+help	""
+help packs	packs
+commands	""
+version	""
+paths	""
+stats	""
+packs list	list
+packs rescan	rescan
+keys	""
+panels	""
+panels mypanel	mypanel
+dump	""
+dump "folder/file name.txt"	folder/file name.txt
+clear	""
+mods	""
+mods list	list
+mods status	status
+api on	on
+api off	off
+api status	status
+api rotate	rotate

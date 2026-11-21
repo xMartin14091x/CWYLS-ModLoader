@@ -1,0 +1,19 @@
+# Experimental declarations on frozen containers; exact names, never whole-type exclusions.
+CwyLs.ModLoader.Mods.ICwyModEvents::SubscribeAny(System.Action<CwyLs.ModLoader.Core.Events.AnyEvent>)
+CwyLs.ModLoader.Mods.ICwyModHelper::Actions
+CwyLs.ModLoader.Mods.ICwyModHelper::Api
+CwyLs.ModLoader.Mods.ICwyModHelper::Audio
+CwyLs.ModLoader.Mods.ICwyModHelper::Camera
+CwyLs.ModLoader.Mods.ICwyModHelper::Conditions
+CwyLs.ModLoader.Mods.ICwyModHelper::Content
+CwyLs.ModLoader.Mods.ICwyModHelper::EditData
+CwyLs.ModLoader.Mods.ICwyModHelper::GameData
+CwyLs.ModLoader.Mods.ICwyModHelper::Grading
+CwyLs.ModLoader.Mods.ICwyModHelper::Harmony
+CwyLs.ModLoader.Mods.ICwyModHelper::Language
+CwyLs.ModLoader.Mods.ICwyModHelper::Mic
+CwyLs.ModLoader.Mods.ICwyModHelper::Satone
+CwyLs.ModLoader.Mods.ICwyModHelper::Scenes
+CwyLs.ModLoader.Mods.ICwyModHelper::Ui
+CwyLs.ModLoader.Mods.ICwyModHelper::UiSkin
+CwyLs.ModLoader.Mods.ICwyModHelper::VoiceStream

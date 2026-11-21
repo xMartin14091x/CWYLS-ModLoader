@@ -65,15 +65,21 @@ namespace CwyLs.ModLoader.Mods
         void WriteText(string key, string? text);
 
         /// <summary>
-        /// The file parsed as strict JSON: <c>JsonObject</c>, lists, strings, <c>long</c>/<c>double</c>,
-        /// booleans or null; null when the file does not exist.
+        /// The file parsed as strict JSON. Objects come back as <c>JsonObject</c> (document order), arrays as
+        /// <c>List&lt;object?&gt;</c>, strings as <c>string</c>, numbers as <c>long</c> (an integer that fits)
+        /// or <c>double</c>, <c>true</c>/<c>false</c> as <c>bool</c>. Returns null both when the file does not
+        /// exist and when it holds JSON <c>null</c>; call <see cref="Exists"/> to tell them apart.
         /// </summary>
         /// <param name="key">A data key.</param>
         /// <exception cref="ArgumentException">The key breaks the naming rule.</exception>
         /// <exception cref="Core.Json.JsonParseException">The file is not valid JSON (the message has line:column).</exception>
         object? ReadJson(string key);
 
-        /// <summary>Writes <paramref name="value"/> as JSON (public properties and fields, depth 12), atomically.</summary>
+        /// <summary>
+        /// Writes <paramref name="value"/> as JSON (public properties and fields, depth 12), atomically.
+        /// Dictionaries, including a <c>JsonObject</c> from <see cref="ReadJson"/>, are written as JSON
+        /// objects, so a value read with <see cref="ReadJson"/> writes back as the same JSON.
+        /// </summary>
         /// <param name="key">A data key.</param>
         /// <param name="value">The value.</param>
         /// <exception cref="ArgumentException">The key breaks the naming rule.</exception>

@@ -1,8 +1,7 @@
 # Mods/Facets — further helper facets
 
-The base helper (`../README.md`) has eleven further facets on `ICwyModHelper`. The API version stays
-`CwyApi.Version` 0.9.0: only the framework implements these interfaces, so adding members is
-additive. One file per facet, so each feature edits only its own file.
+The base helper (`../README.md`) has twelve further facets on `ICwyModHelper`. Only the framework
+implements these interfaces, so adding members is additive and does not change `CwyApi.Version`. One file per facet, so each feature edits only its own file.
 
 | Facet | File | State | Backed by |
 |---|---|---|---|

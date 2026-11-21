@@ -188,7 +188,7 @@ namespace CwyLs.ModLoader.Core.Api
         /// <summary>401: no access key, or the wrong one.</summary>
         public const string Unauthorized = "unauthorized";
 
-        /// <summary>403: the request carries an <c>Origin</c> or <c>Sec-Fetch-*</c> header (a browser).</summary>
+        /// <summary>403: the request carries an <c>Origin</c>, <c>Sec-Fetch-Site</c> or <c>Sec-Fetch-Mode</c> header (a browser).</summary>
         public const string BrowserRefused = "browser_refused";
 
         /// <summary>403: the tier gate refused the action for API callers.</summary>
@@ -202,6 +202,9 @@ namespace CwyLs.ModLoader.Core.Api
 
         /// <summary>405: the route exists but not for this method (see <c>Allow</c>).</summary>
         public const string MethodNotAllowed = "method_not_allowed";
+
+        /// <summary>408: the request body did not arrive before its fixed deadline.</summary>
+        public const string RequestTimeout = "request_timeout";
 
         /// <summary>409: the idempotency key was used before with a different request.</summary>
         public const string IdempotencyConflict = "idempotency_conflict";

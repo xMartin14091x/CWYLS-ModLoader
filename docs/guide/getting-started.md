@@ -3,7 +3,7 @@
   <img src="../../.github/assets/banner/docs-getting-started-light.svg" width="100%" alt="CWY:LS Mod Loader: Getting started">
 </picture>
 
-<sub>[Guide](README.md) &nbsp;·&nbsp; **Getting started** &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [Translate](translate.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
+<sub>[Guide](README.md) &nbsp;·&nbsp; **Getting started** &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [API stability](api-stability.md) &nbsp;·&nbsp; [Translate](translate.md) &nbsp;·&nbsp; [Textures](textures.md) &nbsp;·&nbsp; [Porting](porting.md) &nbsp;·&nbsp; [Dub & Subtitle Studio](pack-maker.md) &nbsp;·&nbsp; [คู่มือภาษาไทย](pack-maker.th.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
 
 # Getting started: your first code mod
 
@@ -11,9 +11,10 @@ By the end of this page you have a mod that loads, logs a line and reacts when t
 and you know how to read what the loader says about it. Then we walk through the sample mod,
 `cwy.sample.hello`, line by line.
 
-Content packs need no programming, but for now you edit JSON text files by hand (a point-and-click
-Pack Maker is planned for 1.0): copy `packs/cwy.example/`, edit its `manifest.json`, add files as
-`packs/cwy.example/README.md` describes, and install it the same way as in step 5 below.
+Content packs need no programming. For a general-purpose content pack, edit JSON text files by hand:
+copy `packs/cwy.example/`, edit its `manifest.json`, add files as `packs/cwy.example/README.md`
+describes, and install it the same way as in step 5 below. For a subtitle and dub pack, use the
+point-and-click [Dub & Subtitle Studio guide](pack-maker.md).
 
 ## What you need
 
@@ -98,15 +99,19 @@ cd mods-src/yourname.mymod
 dotnet build -c Release
 ```
 
-(Outside the checkout: `dotnet build -c Release -p:CwyRepoRoot=/path/to/checkout/`.)
+Outside the checkout, the template uses the loader installed under
+`<game root>/BepInEx/plugins/CwyLsModLoader/`. To use a built checkout instead, pass
+`-p:CwyRepoRoot=/path/to/checkout/` (include the trailing slash). For a game outside the default
+Steam library, pass `-p:SteamGameRoot=/path/to/game/`. Individual paths can be overridden with
+`-p:CwyPluginsPath=...`, `-p:BepInExCorePath=...`, and `-p:GameManagedPath=...`.
 
 The build assembles the whole mod folder in `bin/Release/netstandard2.1/pack/<ModId>/`: your DLL,
 its `.pdb` and `manifest.json`. Nothing else belongs there: every reference is `Private=false`, so
 the framework, BepInEx and Unity DLLs are never copied. Keep the `.pdb`; it is what gives stack
 traces line numbers.
 
-If the build cannot find `CwyLs.ModLoader.dll`, the framework is not built yet or `CwyRepoRoot` points
-at the wrong folder. If it cannot find `UnityEngine.CoreModule.dll`, pass
+If the build cannot find `CwyLs.ModLoader.dll`, check the installed loader or `CwyPluginsPath`;
+if using a checkout, build the framework and check `CwyRepoRoot`. If it cannot find `UnityEngine.CoreModule.dll`, pass
 `-p:GameManagedPath=<the game's Managed folder>`.
 
 <!-- Output folder: templates/cwy-mod/MyMod.csproj ($(OutDir)pack/$(ModId)/, OutDir = bin/Release/netstandard2.1/). Private=false: the Reference items in MyMod.csproj. -->

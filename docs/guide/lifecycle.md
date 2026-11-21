@@ -3,7 +3,7 @@
   <img src="../../.github/assets/banner/docs-lifecycle-light.svg" width="100%" alt="CWY:LS Mod Loader: Lifecycle">
 </picture>
 
-<sub>[Guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; **Lifecycle** &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [Translate](translate.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
+<sub>[Guide](README.md) &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; **Lifecycle** &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [API stability](api-stability.md) &nbsp;·&nbsp; [Translate](translate.md) &nbsp;·&nbsp; [Textures](textures.md) &nbsp;·&nbsp; [Porting](porting.md) &nbsp;·&nbsp; [Dub & Subtitle Studio](pack-maker.md) &nbsp;·&nbsp; [คู่มือภาษาไทย](pack-maker.th.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
 
 # Lifecycle: when your code runs
 
@@ -187,11 +187,11 @@ Your config and data files stay.
 
 - **Your own threads and tasks** (`Task.Run`, `new Thread`). Catch and log inside them; use
   `helper.MainThread` to get back to the main thread.
-- **Your own Harmony patches.** If you patch the game, create `new Harmony("<your mod id>")`, catch
-  inside every patch and fall back to the original code, and never call an id-less `UnpatchAll()`,
-  which would remove every other mod's and the framework's patches too. A `helper.Harmony` facet
-  with your mod's id and automatic unpatching on failure and shutdown is coming in 1.0 (see
-  [helper.md](helper.md#coming-in-10)).
+- **Your own Harmony patches.** If you patch the game, use `helper.Harmony`
+  ([helper.md](helper.md#harmony)): it has your mod's id, and the framework unpatches it when your
+  mod fails or the game quits. Catch inside every patch and fall back to the original code, and
+  never call an id-less `UnpatchAll()`, which would remove every other mod's and the framework's
+  patches too.
 
 <!-- Isolation: src/CwyLs.ModLoader/Mods/README.md "Isolation"; Guard: src/CwyLs.ModLoader/Mods/ModRuntime.cs:217-307; Entry failure: ModLoader.cs:353-363, :421-428; Deactivate: src/CwyLs.ModLoader/Mods/ModHelper.cs:241-298; command failure text: ModFacets.Framework.cs:393-404; InvokeAsync not wrapped: ModFacets.Framework.cs:430-438; limiter window 10 s: src/CwyLs.ModLoader.Core/Mods/ModFailureLimiter.cs:18; failure line: src/CwyLs.ModLoader.Core/Mods/ModConsoleLines.cs:89-109; Harmony advice: src/CwyLs.ModLoader/Mods/README.md:74-76; helper.Harmony: src/CwyLs.ModLoader/Mods/ICwyModHelper.cs. -->
 

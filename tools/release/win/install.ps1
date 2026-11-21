@@ -3,7 +3,8 @@
   Unattended (testing, automation):
     powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1 -GameRoot "<game folder>" -Action Install|Uninstall|UninstallAll|Trace|Status [-Trace On|Full|Off]
 
-  Nothing is ever deleted: uninstalling moves files into a dated folder inside the game folder.
+  Nothing is ever deleted: uninstalling moves files into a dated folder inside the game folder. An update
+  replaces the loader's own files (its DLLs and the Pack Maker page, maker\) with the new release's.
   Leaving takes two presses: Ctrl+C (read as a key, never a signal) or q on the main menu, twice within
   3 seconds. Installing and uninstalling are never interrupted.
   The animated screens need a console window of at least 60 x 23 (the classic console is asked for
@@ -122,7 +123,20 @@ function Installed-Version {
     return ''
 }
 function BepInEx-Installed { return ([IO.File]::Exists((Game-Path 'BepInEx\core\BepInEx.dll')) -and [IO.File]::Exists((Game-Path 'winhttp.dll'))) }
+# The BepInEx core actually in the game folder. Another mod's archive can replace ours with an older one
+# (2026-11-07: a Windows-only mod shipped 5.4.23.5). Empty when fine, else one sentence saying what to do.
+function BepInEx-CoreVersion {
+    try { $v = [Diagnostics.FileVersionInfo]::GetVersionInfo((Game-Path 'BepInEx\core\BepInEx.dll')).FileVersion; if ($v) { return ([string]$v).Trim() } } catch { }
+    return ''
+}
+function BepInEx-Problem {
+    if (-not (BepInEx-Installed)) { return '' }
+    $v = BepInEx-CoreVersion
+    try { if ($v -and ([version]$v -lt [version]$BEPINEX_VERSION)) { return "BepInEx $v is older than $BEPINEX_VERSION (another mod replaced it). Choose Install or update." } } catch { }
+    return ''
+}
 function Loader-Installed { return [IO.Directory]::Exists((Game-Path "BepInEx\plugins\$PLUGIN_DIR_NAME")) }
+function Maker-Installed { return [IO.File]::Exists((Game-Path "BepInEx\plugins\$PLUGIN_DIR_NAME\maker\index.html")) }
 function Trace-Level {
     $cfg = Game-Path "BepInEx\config\$TRACE_CFG_NAME"; $level = ''
     try {
@@ -253,16 +267,151 @@ function Do-BepInEx {
         } catch { }
     }
 }
+# This list is the shipped page runtime, including both UI versions and font notices.
+function Maker-PayloadComplete {
+    $src = [IO.Path]::Combine($FILES, "$PLUGIN_DIR_NAME\maker")
+    $required = @(
+        'config.js',
+        'fonts/Kanit-Bold.ttf',
+        'fonts/NotoSansThai.ttf',
+        'fonts/OFL-Kanit.txt',
+        'fonts/OFL-NotoSansThai.txt',
+        'fonts/OFL-Outfit.txt',
+        'fonts/Outfit.ttf',
+        'index.html',
+        'modules/app.js',
+        'modules/audio.js',
+        'modules/bus.js',
+        'modules/data.js',
+        'modules/i18n.js',
+        'modules/icons.js',
+        'modules/loader/contract.js',
+        'modules/loader/events.js',
+        'modules/loader/http.js',
+        'modules/loader/index.js',
+        'modules/loader/mock.js',
+        'modules/loader/routes.js',
+        'modules/loader/studio-api.js',
+        'modules/loader/studio-mock.js',
+        'modules/store.js',
+        'modules/studio-model.js',
+        'modules/studio.js',
+        'styles.css',
+        'ui/actions.js',
+        'ui/api.js',
+        'ui/api/dev-phase-c.js',
+        'ui/api/model.js',
+        'ui/art/pack-maker-icon.svg',
+        'ui/art/pack-maker-mark.svg',
+        'ui/audio/capture-worklet.js',
+        'ui/audio/capture.js',
+        'ui/audio/import.js',
+        'ui/audio/levels.js',
+        'ui/audio/peaks.js',
+        'ui/audio/player.js',
+        'ui/audio/wav.js',
+        'ui/boot.js',
+        'ui/choose.js',
+        'ui/clientlog.js',
+        'ui/dub.js',
+        'ui/i18n/en.js',
+        'ui/i18n/i18n.js',
+        'ui/i18n/th.js',
+        'ui/logic/draft.js',
+        'ui/logic/export-copy.js',
+        'ui/logic/glossary.js',
+        'ui/logic/pack-naming.js',
+        'ui/logic/progress.js',
+        'ui/logic/qa.js',
+        'ui/logic/reading.js',
+        'ui/logic/source.js',
+        'ui/logic/takes.js',
+        'ui/logic/thai.js',
+        'ui/main.js',
+        'ui/motion.js',
+        'ui/selectors.js',
+        'ui/store.js',
+        'ui/styles/card.css',
+        'ui/styles/deck.css',
+        'ui/styles/hero.css',
+        'ui/styles/index.css',
+        'ui/styles/layout.css',
+        'ui/styles/motion.css',
+        'ui/styles/overlays.css',
+        'ui/styles/scenes.css',
+        'ui/styles/tokens.css',
+        'ui/styles/topbar.css',
+        'ui/util.js',
+        'ui/zones/art.js',
+        'ui/zones/dropdown.js',
+        'ui/zones/dub-deck.js',
+        'ui/zones/hero.js',
+        'ui/zones/icons.js',
+        'ui/zones/line-card.js',
+        'ui/zones/packs-modal.js',
+        'ui/zones/scenes.js',
+        'ui/zones/topbar.js',
+        'ui/zones/tour.js'
+    )
+    foreach ($file in $required) {
+        if (-not [IO.File]::Exists([IO.Path]::Combine($src, $file.Replace('/', [IO.Path]::DirectorySeparatorChar)))) {
+            $script:ERR = "Pack Maker is incomplete (missing maker/$file). Download the release zip again."
+            return $false
+        }
+    }
+    return $true
+}
 function Do-Loader {
+    if (-not (Maker-PayloadComplete)) { return $false }
     $dlls = @(Loader-Dlls)
     if ($dlls.Count -eq 0) { $script:ERR = "The mod loader is missing from this download (files\$PLUGIN_DIR_NAME). Download the release zip again."; return $false }
     Unblock-Package
     try {
         $dest = Game-Path "BepInEx\plugins\$PLUGIN_DIR_NAME"
         [void][IO.Directory]::CreateDirectory($dest)
-        foreach ($dll in $dlls) { [IO.File]::Copy($dll, [IO.Path]::Combine($dest, [IO.Path]::GetFileName($dll)), $true) }
+        foreach ($dll in $dlls) {
+            $to = [IO.Path]::Combine($dest, [IO.Path]::GetFileName($dll))
+            [IO.File]::Copy($dll, $to, $true)
+            # The release zips carry one fixed file date (reproducible builds), and BepInEx caches each plugin's details
+            # by the DLL's date: stamp the new DLLs now, or an update keeps the previous version's cached details.
+            [IO.File]::SetLastWriteTimeUtc($to, [DateTime]::UtcNow)
+        }
+        if (-not (Do-Maker $dest)) { return $false }
         [IO.File]::WriteAllText([IO.Path]::Combine($dest, 'VERSION.txt'), "$VERSION`r`n", $UTF8)
     } catch { $script:ERR = 'Could not copy the mod loader into BepInEx\plugins.'; return $false }
+    return $true
+}
+function Drop-Staged([string]$p) {  # deletes one folder Do-Maker made for its swap (.maker-new.* or .maker-old.*), and nothing else
+    if (-not $p) { return }
+    $n = [IO.Path]::GetFileName($p)
+    if (-not ($n -cmatch '^\.maker-(new|old)\..+$')) { return }
+    try {
+        if ([IO.Directory]::Exists($p)) { [IO.Directory]::Delete($p, $true) }
+        elseif ([IO.File]::Exists($p)) { [IO.File]::Delete($p) }
+    } catch { }
+}
+function Do-Maker([string]$dir) {  # stage the complete Pack Maker page, then swap it into place
+    $src = [IO.Path]::Combine($FILES, "$PLUGIN_DIR_NAME\maker")
+    if (-not (Maker-PayloadComplete)) { return $false }
+    try { foreach ($d in [IO.Directory]::GetFileSystemEntries($dir, '.maker-*')) { Drop-Staged $d } } catch { }   # left by an install that was cut off
+    # Copied next to the old page first, then swapped in: a failed copy leaves the old page as it was, and files a
+    # release no longer ships do not linger.
+    $tag = [Guid]::NewGuid().ToString('N').Substring(0, 8)
+    $new = [IO.Path]::Combine($dir, ".maker-new.$tag")
+    $old = [IO.Path]::Combine($dir, ".maker-old.$tag")
+    $page = [IO.Path]::Combine($dir, 'maker')
+    try { Copy-Tree $src $new } catch { Drop-Staged $new; $script:ERR = 'Could not copy the Pack Maker page into BepInEx\plugins.'; return $false }
+    $moved = $false
+    try {
+        if ([IO.Directory]::Exists($page)) { [IO.Directory]::Move($page, $old); $moved = $true }
+        elseif ([IO.File]::Exists($page)) { [IO.File]::Move($page, $old); $moved = $true }
+        [IO.Directory]::Move($new, $page)
+    } catch {
+        if ($moved) { try { if ([IO.Directory]::Exists($old)) { [IO.Directory]::Move($old, $page) } else { [IO.File]::Move($old, $page) } } catch { } }
+        Drop-Staged $new
+        $script:ERR = 'Could not replace the Pack Maker page in BepInEx\plugins.'; return $false
+    }
+    if ($moved) { Drop-Staged $old }
     return $true
 }
 function Do-ModsFolder {
@@ -338,6 +487,7 @@ function Set-Trace([string]$want) {  # off | on | full
     return $true
 }
 function Full-Install {  # the whole install, in order; used by the plain and unattended modes
+    if (-not (Maker-PayloadComplete)) { return $false }
     if (-not (Do-Migrate)) { return $false }
     if (-not (Do-BepInEx)) { return $false }
     if (-not (Do-Loader)) { return $false }
@@ -351,7 +501,11 @@ function Plain-Status {
     Say "  Game:        $($script:GAME_ROOT)"
     $iv = Installed-Version; if (-not $iv) { $iv = 'not installed' }
     Say "  Mod loader:  $iv"
-    if (BepInEx-Installed) { Say '  BepInEx:     installed' } else { Say '  BepInEx:     not installed' }
+    if (BepInEx-Installed) {
+        $bp = BepInEx-Problem
+        if ($bp) { Say "  BepInEx:     WARNING: $bp" } else { Say "  BepInEx:     installed ($(BepInEx-CoreVersion))" }
+    } else { Say '  BepInEx:     not installed' }
+    if (Maker-Installed) { Say '  Pack Maker:  installed' } else { Say '  Pack Maker:  not installed' }
     Say "  Trace:       $(Trace-Level)"
     Say "  Mods:        $(Mods-Count) in `"$MODS_DIR_NAME`""
 }
@@ -1014,6 +1168,7 @@ try {
     function Refresh-State {
         $script:IV = Installed-Version
         $script:BEP = BepInEx-Installed
+        $script:BEPWARN = BepInEx-Problem
         $script:LOAD = Loader-Installed
         $script:TRACE_STATE = Trace-Level
         $script:MODS = Mods-Count
@@ -1030,7 +1185,9 @@ try {
         Setup-Row ($SP + 1) 'Game'; [void]$SB.Append($CC[121] + $GL.CHECK + $RST + '  ' + $BOLD + $CC[253] + 'Chill With You: Lo-Fi Story' + $RST)
         Setup-Row ($SP + 2) 'Location'; [void]$SB.Append($CC[250] + $script:SHORT_PATH + $RST)
         Setup-Row ($SP + 3) 'Mod loader'
-        if ($script:LOAD -and $script:IV -eq $VERSION) {
+        if ($script:LOAD -and $script:IV -eq $VERSION -and $script:BEPWARN) {
+            [void]$SB.Append($CC[222] + '!' + $RST + '  ' + $CC[253] + (Trunc $script:BEPWARN $vw) + $RST)
+        } elseif ($script:LOAD -and $script:IV -eq $VERSION) {
             [void]$SB.Append($CC[121] + $GL.CHECK + $RST + '  ' + $CC[253] + (Trunc "$VERSION_UI installed, with BepInEx $BEPINEX_VERSION" $vw) + $RST)
         } elseif ($script:LOAD) {
             $ivs = $script:IV; if (-not $ivs) { $ivs = '?' }
@@ -1048,6 +1205,7 @@ try {
     function Menu-Meta {
         $mm = @('', '', '', '', '', '')
         if ($script:LOAD -and $script:IV -ne $VERSION) { $mm[0] = '@117:UPDATE' }
+        elseif ($script:BEPWARN) { $mm[0] = '@222:REPAIR' }
         elseif ($script:LOAD) { $mm[0] = 'reinstall' } else { $mm[0] = 'BepInEx + loader' }
         if ($script:TRACE_STATE -eq 'off') { $mm[1] = '@244:OFF' } elseif ($script:TRACE_STATE -eq 'on') { $mm[1] = '@121:ON' } elseif ($script:TRACE_STATE -eq 'full') { $mm[1] = '@222:FULL' }
         if ($script:MODS -eq 1) { $mm[2] = '1 mod' } elseif ($script:MODS -gt 1) { $mm[2] = "$($script:MODS) mods" } else { $mm[2] = 'empty' }
@@ -1083,6 +1241,7 @@ try {
 
     # ---- 1. install or update
     function Act-Install {
+        if (-not (Maker-PayloadComplete)) { Error-Screen 'THE INSTALL STOPPED'; return }
         if (-not (Ensure-Closed)) { $script:NOTICE = 'Nothing changed.'; return }
         $title = 'INSTALLING'; if ($script:LOAD) { $title = 'UPDATING' }
         $steps = @('Game is closed|checked|Do-Nothing')

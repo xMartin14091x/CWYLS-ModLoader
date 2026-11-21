@@ -93,7 +93,19 @@ namespace CwyLs.ModLoader.Tests
             Assert.Equal(ScenePlayPath.Refused, plan.Path);
         }
 
-        private static ScenePlayFacts Facts(bool gameClick, int scenario, bool idle = true, bool satone = true, bool replayable = false, bool gameStory = false, bool allowUnseen = false) =>
+        [Fact]
+        public void Paid_dlc_is_never_previewed_or_played_as_a_click_talk()
+        {
+            var preview = ScenePlayPlanner.Plan(Facts(gameClick: false, scenario: 3, gameStory: true, allowUnseen: true, paid: true));
+            Assert.Equal(ScenePlayPath.Refused, preview.Path);
+            Assert.Contains("paid DLC", preview.Reason);
+            Assert.Equal(ScenePlayPath.Refused, ScenePlayPlanner.Plan(Facts(gameClick: true, scenario: 8, paid: true)).Path);
+
+            // what the game's own history already offers this player stays a replay
+            Assert.Equal(ScenePlayPath.GameReplay, ScenePlayPlanner.Plan(Facts(gameClick: false, scenario: 3, replayable: true, gameStory: true, paid: true)).Path);
+        }
+
+        private static ScenePlayFacts Facts(bool gameClick, int scenario, bool idle = true, bool satone = true, bool replayable = false, bool gameStory = false, bool allowUnseen = false, bool paid = false) =>
             new ScenePlayFacts
             {
                 GroupId = "clickheroine_normal_003",
@@ -109,6 +121,7 @@ namespace CwyLs.ModLoader.Tests
                 RoomIdle = idle,
                 SatoneFree = satone,
                 SaveGuardActive = true,
+                IsPaidDlc = paid,
             };
     }
 }

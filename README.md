@@ -2,12 +2,12 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner/0.9-dusk-dark.svg">
-  <img src=".github/assets/banner/0.9-dusk-light.svg" width="100%" alt="CWY:LS Mod Loader, release 0.9 · Dusk: the installer's block-letter CWY:LS, MOD LOADER and v0.9.1 · developer preview, under a pixel-art evening sky with twinkling stars, the Teacup constellation, a crescent moon and a small lit house on the hills.">
+  <img src=".github/assets/banner/0.9-dusk-light.svg" width="100%" alt="CWY:LS Mod Loader, release 0.9 · Dusk: the installer's block-letter CWY:LS, MOD LOADER and v0.9 · developer preview, under a pixel-art evening sky with twinkling stars, the Teacup constellation, a crescent moon and a small lit house on the hills.">
 </picture>
 
 **A mod loader for *Chill With You: Lo-Fi Story*, built so your mods keep working when the game updates.**
 
-[![0.9.1 preview · Dusk](https://img.shields.io/badge/0.9.1_preview-Dusk-f5a9c2?style=for-the-badge&labelColor=1a1f3f&logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xMCAtMTAgMjAgMjAiPjxwYXRoIGZpbGw9IiNmNWE5YzIiIGQ9Ik0wLC0xMFExLjYsLTEuNiAxMCwwUTEuNiwxLjYgMCwxMFEtMS42LDEuNiAtMTAsMFEtMS42LC0xLjYgMCwtMTBaIi8%2BPC9zdmc%2B)](https://github.com/xMartin14091x/CWYLS-ModLoader/releases)
+[![0.9.2 preview · Dusk](https://img.shields.io/badge/0.9.2_preview-Dusk-f5a9c2?style=for-the-badge&labelColor=1a1f3f&logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xMCAtMTAgMjAgMjAiPjxwYXRoIGZpbGw9IiNmNWE5YzIiIGQ9Ik0wLC0xMFExLjYsLTEuNiAxMCwwUTEuNiwxLjYgMCwxMFEtMS42LDEuNiAtMTAsMFEtMS42LC0xLjYgMCwtMTBaIi8%2BPC9zdmc%2B)](https://github.com/xMartin14091x/CWYLS-ModLoader/releases)
 [![runs on macOS · Windows](https://img.shields.io/badge/runs_on-macOS_%C2%B7_Windows-b9a7e8?style=for-the-badge&labelColor=1a1f3f)](#-install)
 [![licence PolyForm NC](https://img.shields.io/badge/licence-PolyForm_NC-9fd9c2?style=for-the-badge&labelColor=1a1f3f)](LICENSE.md)
 
@@ -20,7 +20,7 @@
 > Runs on the **full Steam release only**; it switches itself off on the free demo.
 
 > [!NOTE]
-> **0.9 is a developer preview.** Everything below works today; the mod API may still change before 1.0.
+> **CWY:LS Mod Loader v0.9.2 is a developer preview, including Pack Maker.** The mod API may still change before 1.0. The roadmap lists future work.
 
 ## ✦ Why
 
@@ -38,7 +38,8 @@ game version.
 
 | | |
 |---|---|
-| **Content packs** | A folder of JSON text files and media, no programming (for now you edit the files by hand; a point-and-click Pack Maker is planned for 1.0): text and new languages, voice clips, sound effects, extra music for the player, texture swaps, scenery colour grading, new dialogue lines and short scenes. |
+| **Content packs** | A folder of JSON text files and media, no programming: text and new languages, voice clips, sound effects, extra music for the player, texture swaps, scenery colour grading, new dialogue lines and short scenes. [Pack Maker](docs/guide/pack-maker.md) edits story subtitles and dub takes in the browser; other content uses files. |
+| **Pack Maker (preview)** | Create a language pack, write subtitles, record or import dub takes, label their voice origin, try a line in game (subtitles alone work with the original voice), and export a checked `.zip`. Open it with `maker` in the mod console while the game is running. Restart the game once after creating a pack. |
 | **Code mods** | A C# entry point with a helper API: game events, Satone's lines and expressions, mod windows, console commands, and game actions behind a safety gate. |
 | **Version safety** | The 359 game methods and fields the loader relies on are checked at startup, and offline with `tools/seamcheck`. If an update moves one, only that feature switches off. |
 | **Save safety** | Mod content never goes into your save files, so they keep loading without mods. |
@@ -64,7 +65,7 @@ Download the zip for your system from **[Releases](https://github.com/xMartin140
 <tr><th width="50%">macOS</th><th width="50%">Windows</th></tr>
 <tr valign="top"><td>
 
-1. Quit the game. Double-click **`install.command`**. If macOS blocks it, right-click it, then **Open** and **Open** again.
+1. Quit the game. Double-click **`install.command`**. If macOS blocks it, open **System Settings › Privacy & Security**, click **Open Anyway** next to `install.command`, and open it again (macOS 14 and older: right-click it, then **Open** and **Open** again).
 2. Choose **Install or update**.
 3. In Steam, right-click the game, then **Properties… › Launch Options**, and press <kbd>⌘</kbd>+<kbd>V</kbd>. The installer has already copied the line for you.
 4. Press **Play**.
@@ -107,9 +108,10 @@ Either way the files are moved into a dated folder inside the game folder, never
 |---|---|
 | macOS on Apple Silicon, game 1.17.3 from Steam | Install, play through Steam, uninstall back to the plain game |
 | Windows 11, game 1.17.3 | Install, loader and a content pack running in game |
+| Windows 11, game 1.18.0 (2026-11-01) | Update from 0.9.0 with the installer; content packs, pack lines, Thai, mod windows, `scene play`, save backups and the local API running in game |
 | Game 1.18.0 (2026-10-31) | All 359 checks found on macOS and Windows (`tools/seamcheck`); on macOS, loader and content packs running in game |
 | Intel Macs | Not tested yet |
-| Other BepInEx mods alongside | Not tested yet |
+| Other BepInEx mods alongside | Not supported; see "Do other BepInEx mods work alongside it?" below |
 
 </details>
 
@@ -118,6 +120,8 @@ Either way the files are moved into a dated folder inside the game folder, never
 A mod is a folder in `CWYLS Mods` with a `manifest.json`. Files are enough for most things; code is there when you need it.
 
 **Translating the game?** Start from [`templates/cwy-language/`](templates/cwy-language/) and the [translation guide](docs/guide/translate.md). The loader handles Thai tone marks and line breaks for you.
+
+**Making story subtitles or dubs?** Follow the [Pack Maker creator guide](docs/guide/pack-maker.md). Its browser editor covers story lines; game UI text still uses files.
 
 <details>
 <summary><b>A content pack: no programming, just text files</b></summary>
@@ -172,7 +176,7 @@ The full, commented version is the [working sample](mods-src/cwy.sample.hello); 
   - [`cwy.demo.audio`](packs/cwy.demo.audio): sounds and music;
   - [`cwy.demo.scenery`](packs/cwy.demo.scenery): colour grading;
   - [`cwy.demo.script`](packs/cwy.demo.script): scenes.
-- **Reference:** the [API reference](docs/api/), generated from the source.
+- **Reference:** the [API reference](docs/api/), generated from the source, and [API stability](docs/guide/api-stability.md) (what freezes at 1.0 vs stays experimental or internal).
 
 Rules for mods made for or with the loader: **free of charge**, **no game files inside**, **no paid-content unlocks**.
 
@@ -220,6 +224,21 @@ No. It runs on the full Steam release only and switches itself off on the free d
 </details>
 
 <details>
+<summary><b>Do other BepInEx mods work alongside it?</b></summary>
+
+<br>
+
+They may, but CWY:LS only supports mods made for CWY:LS: content packs and code mods in `CWYLS Mods`. We
+don't block other BepInEx plugins, and we don't test them either. If something breaks, try without them first,
+and report it to that mod's author. A plugin that replaces the game's song list, for example, also hides the music
+your packs add. Some mods ship their own copy of BepInEx: copying it over ours can replace it with an older
+version, and on a Mac an older BepInEx stops every mod from loading. Copy only that mod's own folder from
+`BepInEx/plugins/`, or run our installer again afterwards; its status screen warns when BepInEx was replaced.
+Authors can move a plugin over: see [Port a BepInEx mod](docs/guide/porting.md).
+
+</details>
+
+<details>
 <summary><b>Is this allowed?</b></summary>
 
 <br>
@@ -240,6 +259,7 @@ tools/release/make-release.sh     # the release zips, into dist/
 ```
 
 The build compiles against the game's own files **on your machine**; none of them are in this repository.
+When the game updates, follow [docs/maintaining/game-updates.md](docs/maintaining/game-updates.md).
 
 ## ☾ Roadmap
 
@@ -247,8 +267,9 @@ Each release is a later hour of the same night, and adds one constellation to th
 
 | Release | | What's in it |
 |---|---|---|
-| **0.9 · Dusk** | now | The loader, content packs, the code-mod API (preview), the installers. |
-| **1.0 · Starlit** | next | A point-and-click Pack Maker for creators, no file editing; a frozen, versioned mod API; game actions for music, room and timer; cutscene triggers and conditions; editing any game table; hot reload; a bridge for voice packs. |
+| **0.9 · Dusk** | now | The loader, content packs, the code-mod API (preview), the installers, Thai script support built in (0.9.1), and [Pack Maker for story subtitles and dubs](docs/guide/pack-maker.md) (0.9.2 preview); the Thai translation pack comes later. |
+| **0.9.x** | planned | Notes on running alongside the popular mods (Costume Mod, music players, Radio). The [outfit and texture guide](docs/guide/textures.md) is available now. |
+| **1.0 · Starlit** | next | Fonts shipped in packs, for scripts the game cannot draw yet; a frozen, versioned mod API; game actions for music, room and timer; cutscene triggers and conditions evaluated at runtime; editing any game table; hot reload for pack lines, voices, audio and master data. |
 | **after** | | Language packs, Thai subtitles first, built on top of the loader. |
 
 ## ⚖ Licence and credits
@@ -258,6 +279,8 @@ Each release is a later hour of the same night, and adds one constellation to th
 - videos, streams and other content made with it are fine, paid ones included;
 - mods made for or with the loader must be free (tips are fine);
 - copies and changed versions must keep the **demo lock**.
+- you are responsible for the packs you make and share (no game files, no game text copied in bulk);
+- every copy keeps [`AGENTS.md`](AGENTS.md), the rules for AI assistants, unchanged.
 
 See also [`NOTICE.md`](NOTICE.md).
 

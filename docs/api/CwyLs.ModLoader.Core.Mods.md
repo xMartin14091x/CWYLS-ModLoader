@@ -45,7 +45,7 @@ static class · `CwyLs.ModLoader.Core.Mods.CwyApi` · assembly `CwyLs.ModLoader.
 
 The version of the CWY:LS Mod Loader mod API: the one number a manifest's `loaderVersion` is checked against, for content packs and code mods alike.
 
-SemVer. Until [`CwyApi.FreezeVersion`](#cwyapi--freezeversion) (CWY:LS Mod Loader 1.0) the API is 0.x: a minor version may change or remove members, and every such change first ships a [`CwyDeprecatedAttribute`](#cwydeprecatedattribute) notice. From 1.0 on a breaking change needs a new major version; deprecated members stay until then.
+SemVer. Until [`CwyApi.FreezeVersion`](#cwyapi--freezeversion) (CWY:LS Mod Loader 1.0) the API is 0.x: a minor version may change or remove members, and every such change first ships a [`CwyDeprecatedAttribute`](#cwydeprecatedattribute) notice. From 1.0 on, the frozen surface listed in `docs/guide/api-stability.md` freezes—not every public type in the framework assemblies: breaking changes to the frozen surface need a new major version, and deprecated frozen members stay until then, while experimental surfaces listed there may still change in a 1.x minor version with a release note and internal public types have no compatibility promise.
 
 The BepInEx plugin version of CwyLs.ModLoader is this same string, so the startup line, the `version` command and the manifest check can never disagree.
 
@@ -53,11 +53,11 @@ The BepInEx plugin version of CwyLs.ModLoader is this same string, so the startu
 
 ### `const string FreezeVersionText = "1.0.0"`
 
-The version at which the API freezes (SemVer 1.0.0).
+The version at which the frozen surface listed in `docs/guide/api-stability.md` freezes (SemVer 1.0.0).
 
 <a id="cwyapi--pluginversiontext"></a>
 
-### `const string PluginVersionText = "0.9.1"`
+### `const string PluginVersionText = "0.9.2"`
 
 The API version as a compile-time constant, for attribute arguments such as the framework's own `[BepInPlugin]`. A mod must not use it: a constant is copied into the mod when it is compiled, so it would keep reporting the version the mod was built against. Read [`CwyApi.Version`](#cwyapi--version) (or [`CwyApi.VersionText`](#cwyapi--versiontext)) at run time instead.
 
@@ -71,13 +71,13 @@ The running API version as text. `static readonly`, not a constant, so a mod rea
 
 ### `static SemVer FreezeVersion { get; }`
 
-The version at which the API freezes, parsed.
+The version at which the frozen surface listed in `docs/guide/api-stability.md` freezes, parsed.
 
 <a id="cwyapi--isfrozen"></a>
 
 ### `static bool IsFrozen { get; }`
 
-True once the API has reached [`CwyApi.FreezeVersion`](#cwyapi--freezeversion): after that, only a major version may break a mod.
+True once the API has reached [`CwyApi.FreezeVersion`](#cwyapi--freezeversion): after that, only a major version may break the frozen surface listed in `docs/guide/api-stability.md` (not every public type is frozen; experimental and internal surfaces are listed there).
 
 <a id="cwyapi--version"></a>
 

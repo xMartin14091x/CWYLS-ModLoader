@@ -130,6 +130,10 @@ namespace CwyLs.ModLoader.Api
             Facts.GameVersion = Application.version;
 
             ApiCommands.Register();
+            MakerFeature.Initialize(
+                () => _port?.Value ?? ApiDefaults.DefaultPort,
+                () => _transport?.Value ?? ApiTransportMode.Auto,
+                () => _consoleReads?.Value ?? false);
             Hotkeys.Register(
                 KillKeyId,
                 "Kill switch of the local game API: closes the listener at once and deletes the key file. " +
@@ -190,9 +194,12 @@ namespace CwyLs.ModLoader.Api
             session.Ticker = MainThread.AddTicker("api.state", () => session.Tick(), Owner);
             session.Tick();
 
+            // Pack Maker on its own listener holds this port: it moves over to the API's listener below.
+            MakerFeature.BeforeApiStart();
             var started = ApiServer.Start(port, mode, runtime.Router.Handle, Diagnose);
             if (!started.IsRunning || started.Transport is null)
             {
+                MakerFeature.AfterApiStart(null);
                 session.Close();
                 _offReason = started.Problem == ApiStartProblem.PortTaken
                     ? "port " + port + " is taken by another program (set [Api] Port)"
@@ -211,6 +218,7 @@ namespace CwyLs.ModLoader.Api
                 runtime.Router.BeginStop();
                 started.Transport.Stop();
                 session.Close();
+                MakerFeature.AfterApiStart(null);
                 _offReason = "the key file could not be made owner-only: " + file.Problem;
                 Warn("off", "local API off: " + _offReason, ("keyFile", file.Path), ("trigger", trigger));
                 return "the API did not start: " + _offReason;
@@ -218,6 +226,7 @@ namespace CwyLs.ModLoader.Api
 
             _session = session;
             _offReason = string.Empty;
+            MakerFeature.AfterApiStart(runtime.Router);
             if (started.FallbackReason != null)
             {
                 Warn("fallback", "local API uses the TCP fallback: " + started.FallbackReason, ("port", port));
@@ -252,6 +261,7 @@ namespace CwyLs.ModLoader.Api
 
             _session = null;
             _offReason = reason;
+            MakerFeature.OnApiStopping(reason);
             session.Runtime.Router.BeginStop();
             session.Transport?.Stop();
             session.Close();
@@ -303,13 +313,22 @@ namespace CwyLs.ModLoader.Api
         /// <summary>The kill switch (Ctrl+Shift+K).</summary>
         internal static void Kill()
         {
+            var why = "kill switch " + (Hotkeys.Find(KillKeyId)?.Chords() ?? Hotkeys.Chord(KillKeyDefault).Format());
             if (_session is null)
             {
+                // Pack Maker's own listener (the API off) is closed by the same switch.
+                if (MakerFeature.IsOpen)
+                {
+                    MakerFeature.Close(why);
+                    return;
+                }
+
                 ConsoleEvents.Emit(ApiAuditLog.Sys, "kill", ConsoleTags.Api, "kill switch: the API is already off", null);
                 return;
             }
 
-            Stop("kill switch " + (Hotkeys.Find(KillKeyId)?.Chords() ?? Hotkeys.Chord(KillKeyDefault).Format()));
+            Stop(why);
+            MakerFeature.Close(why);
         }
 
         /// <summary>The <c>api status</c> text.</summary>

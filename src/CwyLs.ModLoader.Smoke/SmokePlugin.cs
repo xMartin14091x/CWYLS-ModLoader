@@ -24,7 +24,7 @@ namespace CwyLs.ModLoader.Smoke
         public const string PluginName = "CWYLS Smoke";
 
         /// <summary>Version of this plugin.</summary>
-        public const string PluginVersion = "0.2.0";
+        public const string PluginVersion = CwyLsModLoader.PluginVersion; // every plugin reports the loader's version
 
         private void Awake()
         {

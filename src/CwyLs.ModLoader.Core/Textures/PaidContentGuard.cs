@@ -10,9 +10,9 @@ namespace CwyLs.ModLoader.Core.Textures
     /// What the game marks as paid, as observed in game 1.17.3:
     /// </para>
     /// <list type="bullet">
-    ///   <item><description>Steam DLC: <c>NestopiSystem.Steam.BulbulSteamDLC.DLC_1 = 3718890</c>
-    ///   - the original soundtrack, audio only;
-    ///   <c>NestopiSystem.Steam.SteamManager.IsInstalledDLC</c> has no caller.</description></item>
+    ///   <item><description>Steam: the original soundtrack is its own app (4161250, audio only, never checked
+    ///   in game); <c>NestopiSystem.Steam.BulbulSteamDLC.DLC_1 = 3718890</c> is the Room &amp; Cozy Activities
+    ///   Expansion (store page checked 2026-11-17).</description></item>
     ///   <item><description>Decorations and environments unlock through
     ///   <c>UnlockItemService.ConditionsType</c> <c>None</c>/<c>Scenario</c>/<c>PointPurchase</c>:
     ///   in-game points, not money (collaborations and exclusives are treated as free).</description></item>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AdapterSource Condition="'$(AdapterSource)' == ''">../../CwyLs.ModLoader.Bulbul/Maker/MakerEditorPlay.cs</AdapterSource>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../CwyLs.ModLoader.Core/CwyLs.ModLoader.Core.csproj" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Stubs.cs" />
+    <Compile Include="$(AdapterSource)" />
+  </ItemGroup>
+</Project>

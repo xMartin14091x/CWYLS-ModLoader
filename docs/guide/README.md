@@ -3,7 +3,7 @@
   <img src="../../.github/assets/banner/docs-guide-light.svg" width="100%" alt="CWY:LS Mod Loader author's guide">
 </picture>
 
-<sub>**Guide** &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [Translate](translate.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
+<sub>**Guide** &nbsp;·&nbsp; [Getting started](getting-started.md) &nbsp;·&nbsp; [Manifest](manifest.md) &nbsp;·&nbsp; [Lifecycle](lifecycle.md) &nbsp;·&nbsp; [Helper](helper.md) &nbsp;·&nbsp; [Troubleshooting](troubleshooting.md) &nbsp;·&nbsp; [Versioning](versioning.md) &nbsp;·&nbsp; [API stability](api-stability.md) &nbsp;·&nbsp; [Translate](translate.md) &nbsp;·&nbsp; [Textures](textures.md) &nbsp;·&nbsp; [Porting](porting.md) &nbsp;·&nbsp; [Dub & Subtitle Studio](pack-maker.md) &nbsp;·&nbsp; [คู่มือภาษาไทย](pack-maker.th.md) &nbsp;·&nbsp; [API reference](../api/README.md)</sub>
 
 # CWY:LS Mod Loader author's guide
 
@@ -15,8 +15,9 @@ and **code mods** from one folder, applies them in memory while the game runs, a
 game file.
 
 This guide is for people who make packs and mods. It describes CWY:LS Mod Loader **0.9**, a
-developer preview (mod API `0.9.0`). The API freezes at **1.0**; until then a minor version may
-still change it, always announced first (see [versioning](versioning.md)).
+developer preview (mod API `0.9.0`). At **1.0** the **frozen surface** in
+[API stability](api-stability.md) freezes, while experimental surfaces may still change in a `1.x`
+minor version with release notes (see [versioning](versioning.md)).
 
 <!-- API version: src/CwyLs.ModLoader.Core/Mods/CwyApi.cs:24; freeze: CwyApi.cs:27. -->
 
@@ -26,11 +27,16 @@ still change it, always announced first (see [versioning](versioning.md)).
 |---|---|
 | [getting-started.md](getting-started.md) | You want a first mod running: copy the template, build, install, read the console. Includes a line-by-line tour of the sample mod |
 | [translate.md](translate.md) | You want to translate the game into your language: copy the language-pack template, add your text, share it. What the loader does for Thai |
+| [Dub & Subtitle Studio](pack-maker.md) | You want to create a subtitle and dub pack with Pack Maker: write lines, record takes, use the page help and export a shareable ZIP |
+| [Dub & Subtitle Studio (ไทย)](pack-maker.th.md) | ต้องการสร้างแพ็กซับและเสียงพากย์ด้วย Pack Maker ตั้งแต่แก้บรรทัดไปจนถึงส่งออกไฟล์ ZIP |
+| [textures.md](textures.md) | You want to change how Satone or the room looks: outfits and textures from your own images, no programming |
+| [porting.md](porting.md) | You already made a BepInEx plugin for this game and want it to run through CWY:LS |
 | [manifest.md](manifest.md) | You write or debug a `manifest.json` or a `language.json`; every field, and every reason a pack or mod is skipped |
 | [lifecycle.md](lifecycle.md) | You need to know when your code runs, what `Entry` may do, how mods talk to each other, and what happens when something throws |
 | [helper.md](helper.md) | You use the helper: one short example per facet, and the threading rules |
 | [troubleshooting.md](troubleshooting.md) | Something did not load or does not work; the log lines and what they mean |
 | [versioning.md](versioning.md) | You want to know what can change under your mod, and how deprecations are announced |
+| [api-stability.md](api-stability.md) | You want the authoritative list of what is frozen at 1.0, what is experimental, and what is internal |
 
 Reference: the generated [API reference](../api/README.md) (every public type and member, from the
 source comments). The module READMEs go deeper: `src/CwyLs.ModLoader/Mods/README.md` (the loader),
@@ -114,7 +120,10 @@ and [`AGENTS.md`](../../AGENTS.md), and from the game's own terms.
    Nestopi Inc. Please do not contact Nestopi about it or about mods made with it; report problems
    to this project instead. The game's own terms restrict analysing and modifying it, so you make
    and use mods at your own risk. If Nestopi asks, this project will change or be taken down.
+7. **No explicit or sexual content.** Never share a mod or pack with explicit or sexual content.
+8. **Your pack, your responsibility.** You answer for everything in the packs you share: the rights to
+   its text, voices, audio, images and fonts, and how it labels AI voices. No game text copied in bulk.
+9. **AGENTS.md stays.** Copies keep `AGENTS.md`, the rules for AI assistants, unchanged; never tell an
+   assistant to ignore it.
 
 This is a summary for authors, not legal advice.
-
-<!-- Rule 1: LICENSE.md (Additional Terms), NOTICE.md; rules 2-4: AGENTS.md "Project rules", NOTICE.md; rule 5: AGENTS.md "Protected controls", NOTICE.md; rule 6: NOTICE.md. -->

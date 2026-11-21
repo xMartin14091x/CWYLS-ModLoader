@@ -1,0 +1,60 @@
+/* ---------------- 5 · Play original / Play my version inside the card ---------------- */
+.hero, .hero-inline { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; min-height: 0; margin-left: auto; }
+.hero-b { display: inline-flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.hb {
+  position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: .5rem;
+  padding: .42rem .75rem .42rem .6rem; border-radius: .75rem; text-align: left; transition: transform .12s ease, box-shadow .2s ease;
+}
+.hb:hover:not(:disabled) { transform: translateY(-1px); }
+.hb-ico { display: grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: .5rem; padding: .3rem; flex: none; }
+.hb-t { display: flex; flex-direction: column; min-width: 0; }
+.hb-t b { font: 700 .88rem/1.35 var(--f-ui); white-space: nowrap; }
+.hb-t small { font: 400 .7rem/1.35 var(--f-read); }
+.hb kbd { align-self: center; }
+.hb-orig { background: rgba(13, 16, 44, .62); border: 1px solid rgba(246, 230, 189, .38); color: var(--cream); }
+.hb-orig .hb-ico { background: rgba(246, 230, 189, .12); color: var(--cream); }
+.hb-orig small { color: var(--ink3); }
+.hb-mine { background: linear-gradient(180deg, #f3b294, var(--peach)); color: var(--peach-ink); box-shadow: 0 .4rem 1.2rem rgba(239, 167, 134, .25), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.hb-mine .hb-ico { background: rgba(44, 21, 48, .14); color: var(--peach-ink); }
+.hb-mine b { font-size: .9rem; }
+.hb-mine small { color: rgba(44, 21, 48, .72); }
+.hb-mine kbd { color: var(--peach-ink); border-color: rgba(44, 21, 48, .3); background: rgba(255, 255, 255, .25); }
+.hb:disabled { cursor: not-allowed; }
+.hb-orig:disabled { color: var(--ink3); border-color: var(--edge-soft); }
+.hb-mine:disabled { background: linear-gradient(180deg, rgba(74, 48, 74, .92), rgba(62, 40, 66, .92)); color: #e9bfae; box-shadow: inset 0 0 0 1px rgba(239, 167, 134, .28); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.hb-mine:disabled .hb-ico { color: #f0cbbb; background: rgba(255, 255, 255, .06); }
+.hb-mine:disabled small { color: #e7c2b4; }
+.hb-mine:disabled kbd { color: #f0cbbb; background: transparent; }
+.hb.wait { box-shadow: 0 0 0 2px rgba(255, 196, 107, .8), 0 .7rem 2rem rgba(239, 167, 134, .25); }
+.hb.wait .hb-ico { animation: pulse 1.4s ease-in-out infinite; }
+.hb-prog { position: absolute; left: 0; bottom: 0; height: .22rem; width: 100%; transform-origin: left; background: currentColor; opacity: .55; animation: prog linear forwards; }
+@keyframes prog { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.hero .keys { margin-top: auto; }
+.said { display: flex; flex-direction: column; gap: .16rem; padding: .6rem .75rem .65rem; min-width: 0; }
+.said-k { font: 700 .7rem/1.5 var(--f-ui); color: var(--ink4); text-transform: uppercase; letter-spacing: .04em; }
+.said-t { font: 500 .9rem/1.65 var(--f-game); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: .06rem 0; }
+.said-m { display: inline-flex; align-items: center; gap: .35rem; font: 400 .74rem/1.5 var(--f-read); color: var(--ink3); width: 100%; }
+.vdot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--cream); flex: none; }
+.vdot.dub { background: var(--peach); }
+
+/* the line the game just spoke: Open line (W3-10 d) */
+.said-open { margin-left: auto; padding: .05rem .55rem; border-radius: 99px; border: 1px solid var(--edge); background: rgba(182, 184, 247, .1); color: var(--lav); font: 700 .72rem/1.5 var(--f-ui); cursor: pointer; }
+.said-open:hover { background: rgba(182, 184, 247, .2); color: var(--ink); }
+.said-here { margin-left: auto; color: var(--ink4); font: 400 .72rem/1.5 var(--f-read); }
+/* the game's language is not the pack's (W3-10 e) */
+.mir-lang { display: flex; align-items: flex-start; gap: .4rem; flex-wrap: wrap; padding: .42rem .65rem; border-radius: .75rem; background: rgba(255, 196, 107, .1); border: 1px solid rgba(255, 196, 107, .38); color: var(--ink2); font: 400 .74rem/1.5 var(--f-read); }
+.mir-lang .ico { color: var(--amber); margin-top: .2rem; flex: none; }
+.mir-lang span { flex: 1 1 8rem; min-width: 0; overflow-wrap: anywhere; }
+.mir-lang .btn { flex: none; }
+
+/* quick dub flow card (Phase B part 1) */
+.qflow { display: flex; flex-direction: column; gap: .38rem; padding: .52rem .7rem .56rem; min-width: 0; }
+.qf-head { display: flex; align-items: center; justify-content: space-between; gap: .4rem; }
+.qf-k { font: 700 .7rem/1.5 var(--f-ui); color: var(--ink4); text-transform: uppercase; letter-spacing: .04em; }
+.qf-st { font: 700 .68rem/1.45 var(--f-ui); padding: .06rem .45rem; border-radius: 99px; border: 1px solid var(--edge-soft); color: var(--ink3); background: rgba(6, 8, 26, .4); }
+.qf-st.done { color: var(--mint); border-color: rgba(147, 226, 181, .38); }
+.qf-st.draft { color: var(--peach); border-color: rgba(239, 167, 134, .4); }
+.qf-acts { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; min-width: 0; }
+.qf-acts .btn { flex: 1 1 auto; justify-content: center; padding: .24rem .42rem; font-size: .72rem; min-width: 0; }
+.qf-acts .btn span { line-height: 1.5; padding: .04rem 0; }

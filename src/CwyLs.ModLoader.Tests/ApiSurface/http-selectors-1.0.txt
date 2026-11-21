@@ -1,0 +1,11 @@
+# Route selectors in compiled ApiRouter.HandleCore. A new selector needs explicit route classification.
+/actions
+/events
+/info
+/state
+/v1
+/v1/actions
+/v1/actions/
+/v1/events
+/v1/info
+/v1/state

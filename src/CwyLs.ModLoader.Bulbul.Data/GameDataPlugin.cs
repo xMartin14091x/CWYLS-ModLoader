@@ -33,7 +33,7 @@ namespace CwyLs.ModLoader.Bulbul.Data
         public const string PluginName = "CWYLS Game Data";
 
         /// <summary>Version of this plugin; also stamped into every snapshot.</summary>
-        public const string PluginVersion = "0.1.0";
+        public const string PluginVersion = CwyLsModLoader.PluginVersion; // every plugin reports the loader's version
 
         private static Harmony? _harmony;
 

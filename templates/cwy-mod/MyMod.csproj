@@ -8,12 +8,9 @@
     dependencies (NuGet packages or DLLs you reference with Private=true) that the game does not
     already provide.
 
-    References come from a CWY:LS Mod Loader checkout whose framework is built (CwyRepoRoot) and from
-    the installed game: its Managed folder (GameManagedPath) and the BepInEx installed in it
-    (BepInExCorePath, <game root>/BepInEx/core). Inside the checkout all of them are found
-    automatically; from anywhere else pass the checkout, and the game folder when it is not in the
-    default Steam library:
-      dotnet build -c Release -p:CwyRepoRoot=/path/to/checkout/ -p:SteamGameRoot=/path/to/game/
+    References come from a built checkout (CwyRepoRoot), or the installed loader
+    (CwyPluginsPath), and the game Managed folder and BepInEx/core. Set SteamGameRoot
+    for a non-default game location. See README.md for the available overrides.
   -->
 
   <PropertyGroup>
@@ -30,7 +27,7 @@
     <!-- NuGet packages' DLLs flow into the build output, so the pack step below can ship them. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
-    <CwyRepoRoot Condition="'$(CwyRepoRoot)' == ''">$(MSBuildThisFileDirectory)../../</CwyRepoRoot>
+    <CwyRepoRoot Condition="'$(CwyRepoRoot)' == '' and '$(CwyPluginsPath)' == '' and Exists('$(MSBuildThisFileDirectory)../../src/CwyLs.ModLoader/CwyLs.ModLoader.csproj')">$(MSBuildThisFileDirectory)../../</CwyRepoRoot>
     <CwyConfiguration Condition="'$(CwyConfiguration)' == ''">Release</CwyConfiguration>
   </PropertyGroup>
 
@@ -44,6 +41,7 @@
     <SteamGameRoot Condition="'$(SteamGameRoot)' == ''">$(HOME)/Library/Application Support/Steam/steamapps/common/Chill with You Lo-Fi Story</SteamGameRoot>
     <GameManagedPath Condition="'$(GameManagedPath)' == '' and '$(OS)' == 'Windows_NT'">$(SteamGameRoot)\Chill With You_Data\Managed</GameManagedPath>
     <GameManagedPath Condition="'$(GameManagedPath)' == ''">$(SteamGameRoot)/Chill With You.app/Contents/Resources/Data/Managed</GameManagedPath>
+    <CwyPluginsPath Condition="'$(CwyPluginsPath)' == '' and '$(CwyRepoRoot)' == ''">$(SteamGameRoot)/BepInEx/plugins/CwyLsModLoader</CwyPluginsPath>
     <BepInExCorePath Condition="'$(BepInExCorePath)' == ''">$(SteamGameRoot)/BepInEx/core</BepInExCorePath>
   </PropertyGroup>
 
@@ -55,11 +53,13 @@
   -->
   <ItemGroup>
     <Reference Include="CwyLs.ModLoader">
-      <HintPath>$(CwyRepoRoot)src/CwyLs.ModLoader/bin/$(CwyConfiguration)/netstandard2.1/CwyLs.ModLoader.dll</HintPath>
+      <HintPath Condition="'$(CwyPluginsPath)' == ''">$(CwyRepoRoot)src/CwyLs.ModLoader/bin/$(CwyConfiguration)/netstandard2.1/CwyLs.ModLoader.dll</HintPath>
+      <HintPath Condition="'$(CwyPluginsPath)' != ''">$(CwyPluginsPath)/CwyLs.ModLoader.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="CwyLs.ModLoader.Core">
-      <HintPath>$(CwyRepoRoot)src/CwyLs.ModLoader.Core/bin/$(CwyConfiguration)/netstandard2.1/CwyLs.ModLoader.Core.dll</HintPath>
+      <HintPath Condition="'$(CwyPluginsPath)' == ''">$(CwyRepoRoot)src/CwyLs.ModLoader.Core/bin/$(CwyConfiguration)/netstandard2.1/CwyLs.ModLoader.Core.dll</HintPath>
+      <HintPath Condition="'$(CwyPluginsPath)' != ''">$(CwyPluginsPath)/CwyLs.ModLoader.Core.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="BepInEx">

@@ -2,7 +2,7 @@
 
 # Namespace `CwyLs.ModLoader.Core.PackLines`
 
-Assembly `CwyLs.ModLoader.Core` · 25 public type(s) · [API index](README.md)
+Assembly `CwyLs.ModLoader.Core` · 27 public type(s) · [API index](README.md)
 
 | Type | Kind | Summary |
 |---|---|---|
@@ -21,7 +21,7 @@ Assembly `CwyLs.ModLoader.Core` · 25 public type(s) · [API index](README.md)
 | [`PackLineRegistry`](#packlineregistry) | sealed class | The accepted pack lines, indexed the ways the game-side patches ask: by pool, by (pool, episode), by group id. |
 | [`PackLineRejection`](#packlinerejection) | sealed class | A language-exclusive group `PackLineScreen` refused: which row, and why. |
 | [`PackLineReport`](#packlinereport) | static class | The text of the console's `lines list`: pure, so its wording is unit-tested. |
-| [`PackLineSaveFilter`](#packlinesavefilter) | static class | Keeps pack-line ids out of the game's save. |
+| [`PackLineSaveFilter`](#packlinesavefilter) | static class | Keeps pack ids out of the game's save: pack-line ids, and every plain scene group a pack added (`PackAddedGroups`), which the game's own small-talk lottery can draw and log. |
 | [`PackLineScreen`](#packlinescreen) | static class | Decides which language-exclusive scenario groups (a `Languages` member in `data/scenario_groups.json`) reach the game. |
 | [`PackLineScreenResult`](#packlinescreenresult) | sealed class | What `PackLineScreen.Screen` decided: the rows to inject, the lines that may join the game's pools, the groups it refused and the warnings that are not refusals. |
 | [`PackLineSeen`](#packlineseen) | static class | Which pack small talks the player has already heard, kept in the mod's own data folder so the game's lottery treats them as seen in later sessions - without the id ever reaching the save. |
@@ -31,6 +31,8 @@ Assembly `CwyLs.ModLoader.Core` · 25 public type(s) · [API index](README.md)
 | [`PackLineTimerMode`](#packlinetimermode) | enum | Which timer mode a `PackLineFamily.TimerLine` pool belongs to (`Bulbul.TimerMode`). |
 | [`PackLineTimerPhase`](#packlinetimerphase) | enum | Which timer moment a `PackLineFamily.TimerLine` pool speaks at. |
 | [`PackLineWeights`](#packlineweights) | static class | The weighted pick: at each pick of a pool, the weighted lines offered there - written for the pool, or copies of a `gamestart.any` / global line - share one roll. |
+| [`PackSaveFilterSmoke`](#packsavefiltersmoke) | static class | The smoke check `p2.masterdata.save_filter`: whether master data's save filter (`PackSaveHoldBack`) is in place, and a dry run of it on a copy of the game's played list. |
+| [`PackSaveHoldBack`](#packsaveholdback) | sealed class | The one save filter for every pack id. |
 
 ---
 
@@ -1201,11 +1203,26 @@ What has to happen in the game for a line under test to play (an armed timer lin
 
 static class · `CwyLs.ModLoader.Core.PackLines.PackLineSaveFilter` · assembly `CwyLs.ModLoader.Core`
 
-Keeps pack-line ids out of the game's save.
+Keeps pack ids out of the game's save: pack-line ids, and every plain scene group a pack added ([`PackAddedGroups`](CwyLs.ModLoader.Core.MasterData.md#packaddedgroups)), which the game's own small-talk lottery can draw and log.
 
 The only save list a pack line can reach is `ScenarioProgressData.PlayedScenarioGroupIDs`: a small talk adds its group id when it ends (`SmallTalkSelector`), and the save file is synced by Steam Cloud. Every write of that list goes through `Bulbul.SaveDataManager.SaveScenarioProgressData`, which serialises synchronously (`SaveDataIO.Save` -&gt; `ES3.Save`). The adapter strips the pack ids in a prefix of that method and restores them, in place, in a finalizer: the file never holds them, and in-session behaviour (a small talk counts as seen and switches to its "seen" odds) is unchanged.
 
 Click, self-talk, timer and answer-choice lines are never logged anywhere: `FacilityClickHeroine` and `HeroineAI` play them without `FacilityStory.SaveScenarioPlayedLog`, and the game's selectors that hold them are not part of any save (only `StartDirectionData`'s game-start lists are, and no pool here is one of them).
+
+<a id="packlinesavefilter--holdbackrule"></a>
+
+### `static Func<string, bool> HoldBackRule(ICollection<string> packLineIds, PackAddedGroups addedGroups)`
+
+The ids a save must not hold: a pack line's group, or a group a pack added to the game's master data (exact provenance, recorded at injection). Nothing else - in particular not an id the game's data merely does not know, which can be real progress from a newer game version.
+
+**Parameters**
+
+- `packLineIds`: The pack lines' group ids seen this session. Required.
+- `addedGroups`: The groups packs added this session. Required.
+
+**Exceptions**
+
+- `ArgumentNullException`: An argument is null.
 
 <a id="packlinesavefilter--restore"></a>
 
@@ -1616,3 +1633,170 @@ Picks the line that takes this pick, or null for the game's own pick.
 - `lastSourceGroupId`: The [`PackLine.SourceGroupId`](#packline--sourcegroupid) of the pack line this pool played last; null for none.
 - `roll`: A uniform number in \[0, 1): does a pack line take the pick.
 - `pick`: A uniform number in \[0, 1): which one.
+
+---
+
+<a id="packsavefiltersmoke"></a>
+
+## `PackSaveFilterSmoke`
+
+static class · `CwyLs.ModLoader.Core.PackLines.PackSaveFilterSmoke` · assembly `CwyLs.ModLoader.Core`
+
+The smoke check `p2.masterdata.save_filter`: whether master data's save filter ([`PackSaveHoldBack`](#packsaveholdback)) is in place, and a dry run of it on a copy of the game's played list. Before it, the filter's state showed only in the log. Read-only: the played list is never changed.
+
+<a id="packsavefiltersmoke--id"></a>
+
+### `const string Id = "p2.masterdata.save_filter"`
+
+The check id.
+
+<a id="packsavefiltersmoke--evaluate"></a>
+
+### `static SmokeCheckResult Evaluate(bool masterDataEnabled, string disabledReason, PackSaveHoldBack holdBack, IList<string> played, Func<string, bool> rule = null)`
+
+The verdict.
+
+**Parameters**
+
+- `masterDataEnabled`: False when master data is off: nothing is injected, so nothing needs holding back.
+- `disabledReason`: Why master data is off, for the report.
+- `holdBack`: The filter. Required.
+- `played`: The game's `PlayedScenarioGroupIDs`, or null when the save is not loaded.
+- `rule`: The hold-back rule to dry-run; null uses [`PackSaveHoldBack.IsHeld`](#packsaveholdback--isheld) (tests pass another).
+
+**Exceptions**
+
+- `ArgumentNullException`: `holdBack` is null.
+
+---
+
+<a id="packsaveholdback"></a>
+
+## `PackSaveHoldBack`
+
+sealed class · `CwyLs.ModLoader.Core.PackLines.PackSaveHoldBack` · assembly `CwyLs.ModLoader.Core`
+
+The one save filter for every pack id. Master data owns it and installs it on `SaveDataManager.SaveScenarioProgressData`, so it holds whenever packs inject scene groups, with pack lines on or off. Pack lines join it with their ids and their seen-file callback.
+
+Exactly one filter per save: this object is the only one that strips and restores `PlayedScenarioGroupIDs`, and pack lines have no save patch of their own. A second [`PackSaveHoldBack.JoinPackLines`](#packsaveholdback--joinpacklines) replaces the first, so the callback runs once per save.
+
+When the hook could not be installed ([`PackSaveHoldBack.Installed`](#packsaveholdback--installed) false - also the state before the attempt), nothing can keep an id out of the file. Then [`PackSaveHoldBack.PlanInjection`](#packsaveholdback--planinjection) keeps the plain small-talk groups packs would add out of the game's data (the game's own lottery is what logs them), and [`PackSaveHoldBack.JoinPackLines`](#packsaveholdback--joinpacklines) refuses, so pack lines stay off.
+
+<a id="packsaveholdback--ctor"></a>
+
+### `PackSaveHoldBack(PackAddedGroups addedGroups)`
+
+Creates the filter over the session's pack-added groups.
+
+**Parameters**
+
+- `addedGroups`: Recorded at every injection. Required.
+
+**Exceptions**
+
+- `ArgumentNullException`: `addedGroups` is null.
+
+<a id="packsaveholdback--smalltalkscenario"></a>
+
+### `const int SmallTalkScenario = 23`
+
+The game's small-talk scene type (`ScenarioType.SmallTalk`, game 1.17.3).
+
+<a id="packsaveholdback--addedgroups"></a>
+
+### `PackAddedGroups AddedGroups { get; }`
+
+The groups packs added this session.
+
+<a id="packsaveholdback--installed"></a>
+
+### `bool Installed { get; }`
+
+True once the save hook is in place.
+
+<a id="packsaveholdback--packlinesjoined"></a>
+
+### `bool PackLinesJoined { get; }`
+
+True while pack lines have joined.
+
+<a id="packsaveholdback--problem"></a>
+
+### `string Problem { get; }`
+
+Why the hook is not in place, or empty when it is.
+
+<a id="packsaveholdback--holdback"></a>
+
+### `PackLineHeldIds HoldBack(IList<string> ids)`
+
+Prefix of the save: takes every pack id out of `ids` and keeps it for [`PackSaveHoldBack.Restore`](#packsaveholdback--restore); tells the pack-lines callback once. Drops anything an earlier save left.
+
+**Parameters**
+
+- `ids`: The game's played list.
+
+**Returns:** What was taken out.
+
+<a id="packsaveholdback--isheld"></a>
+
+### `bool IsHeld(string id)`
+
+True for an id the save must not hold (pack line or pack-added group).
+
+**Parameters**
+
+- `id`: A scene-group id.
+
+<a id="packsaveholdback--joinpacklines"></a>
+
+### `bool JoinPackLines(ICollection<string> packLineIds, Action<IReadOnlyList<string>> onHeld)`
+
+Pack lines join: their group ids are held back too, and `onHeld` gets each save's held ids (all of them, once). Replaces an earlier join. Refused (false, nothing changes) while the hook is not installed.
+
+**Parameters**
+
+- `packLineIds`: The pack lines' group ids seen this session (a live set). Required.
+- `onHeld`: Called once per save that held something back; null for none.
+
+**Exceptions**
+
+- `ArgumentNullException`: `packLineIds` is null.
+
+<a id="packsaveholdback--markinstalled"></a>
+
+### `void MarkInstalled()`
+
+The hook is in place.
+
+<a id="packsaveholdback--markmissing"></a>
+
+### `void MarkMissing(string problem)`
+
+The hook could not be installed; pack small talk stays out of the game's data.
+
+**Parameters**
+
+- `problem`: Why, for the log.
+
+<a id="packsaveholdback--planinjection"></a>
+
+### `MasterDataSet PlanInjection(MasterDataSet set, MasterDataBaseline baseline, out int heldOut)`
+
+What may be injected: `set` itself while the hook is installed; otherwise the set without the small-talk groups packs would add (an id the game's data does not have) and their novel rows, because nothing could keep their ids out of the save. An override of a game small talk keeps the game's id and stays.
+
+**Parameters**
+
+- `set`: The screened merge.
+- `baseline`: The game's own ids; empty or null holds out every pack small talk.
+- `heldOut`: How many groups were kept out.
+
+<a id="packsaveholdback--restore"></a>
+
+### `void Restore(IList<string> ids)`
+
+Finalizer of the save: puts back, in place, what [`PackSaveHoldBack.HoldBack`](#packsaveholdback--holdback) took out. Once.
+
+**Parameters**
+
+- `ids`: The game's played list.

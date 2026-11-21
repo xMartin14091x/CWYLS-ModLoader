@@ -1,0 +1,7 @@
+# Frozen method/path templates; query grammar is exercised in FrozenHttpTests.
+GET /v1/info
+GET /v1/state
+GET /v1/events
+GET /v1/actions
+POST /v1/actions/{name}
+GET /v1/actions/{handle}

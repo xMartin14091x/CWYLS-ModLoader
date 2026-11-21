@@ -1,0 +1,9 @@
+<Project>
+  <!-- Metadata reflection resources and reference paths for freeze tests: inspect framework DLLs without
+       loading Unity or executing plugins, and keep game binaries out of the repository or test output. -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'CwyLs.ModLoader.Tests'">
+    <EmbeddedResource Include="ApiSurface/*.txt" />
+    <AssemblyMetadata Include="FreezeGameManagedPath" Value="$(GameManagedPath)" />
+    <AssemblyMetadata Include="FreezeBepInExCorePath" Value="$(BepInExCorePath)" />
+  </ItemGroup>
+</Project>

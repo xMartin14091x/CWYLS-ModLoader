@@ -30,6 +30,11 @@ namespace CwyLs.ModLoader.Core.Data
     /// <item><description>Enums become their name; <see cref="Guid"/> and <see cref="TimeSpan"/> become strings.</description></item>
     /// <item><description>Non-finite floats become <c>null</c>, because <c>NaN</c> is not JSON.</description></item>
     /// <item><description>
+    /// A non-generic <see cref="IDictionary"/> or any <c>IDictionary&lt;string, T&gt;</c> (including
+    /// <see cref="Json.JsonObject"/>) becomes a JSON object in enumeration order, so
+    /// <see cref="Json.JsonReader"/> output writes back as the same JSON.
+    /// </description></item>
+    /// <item><description>
     /// Anything else is walked reflectively: public readable instance properties and public
     /// instance fields, keys camel-cased. Key order follows reflection order and is not part of
     /// the contract.
@@ -104,17 +109,21 @@ namespace CwyLs.ModLoader.Core.Data
             path.Add(value);
             try
             {
-                switch (value)
+                if (value is IDictionary dictionary)
                 {
-                    case IDictionary dictionary:
-                        WriteDictionary(sb, dictionary, depth, path, onError);
-                        break;
-                    case IEnumerable sequence:
-                        WriteArray(sb, sequence, depth, path, onError);
-                        break;
-                    default:
-                        WriteObject(sb, value, depth, path, onError);
-                        break;
+                    WriteDictionary(sb, dictionary, depth, path, onError);
+                }
+                else if (StringMapEntryType(value.GetType()) is { } entryType)
+                {
+                    WriteStringMap(sb, (IEnumerable)value, entryType, depth, path, onError);
+                }
+                else if (value is IEnumerable sequence)
+                {
+                    WriteArray(sb, sequence, depth, path, onError);
+                }
+                else
+                {
+                    WriteObject(sb, value, depth, path, onError);
                 }
             }
             finally
@@ -211,6 +220,51 @@ namespace CwyLs.ModLoader.Core.Data
                 sb.Append(MiniJson.String(Convert.ToString(entry.Key, CultureInfo.InvariantCulture) ?? string.Empty))
                     .Append(':');
                 WriteValue(sb, entry.Value, depth + 1, path, onError);
+            }
+
+            sb.Append('}');
+        }
+
+        /// <summary>
+        /// The <c>KeyValuePair&lt;string, T&gt;</c> entry type when <paramref name="type"/> implements
+        /// <c>IDictionary&lt;string, T&gt;</c>, otherwise null. Needed because a type can implement the
+        /// generic interface only (<see cref="Json.JsonObject"/>, what <c>helper.Data.ReadJson</c>
+        /// returns); without this it fell to the <see cref="IEnumerable"/> branch and an object came out
+        /// as an array of <c>{"key":..,"value":..}</c> pairs.
+        /// </summary>
+        private static Type? StringMapEntryType(Type type)
+        {
+            foreach (var contract in type.GetInterfaces())
+            {
+                if (contract.IsGenericType
+                    && contract.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+                    && contract.GetGenericArguments()[0] == typeof(string))
+                {
+                    return typeof(KeyValuePair<,>).MakeGenericType(contract.GetGenericArguments());
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>Writes an <c>IDictionary&lt;string, T&gt;</c> exactly as <see cref="WriteDictionary"/> writes a non-generic one: enumeration order, keys as-is.</summary>
+        private static void WriteStringMap(
+            StringBuilder sb, IEnumerable entries, Type entryType, int depth, List<object> path, Action<string>? onError)
+        {
+            var keyProperty = entryType.GetProperty("Key")!;
+            var valueProperty = entryType.GetProperty("Value")!;
+            sb.Append('{');
+            var first = true;
+            foreach (var entry in entries)
+            {
+                if (!first)
+                {
+                    sb.Append(',');
+                }
+
+                first = false;
+                sb.Append(MiniJson.String((string?)keyProperty.GetValue(entry, null) ?? string.Empty)).Append(':');
+                WriteValue(sb, valueProperty.GetValue(entry, null), depth + 1, path, onError);
             }
 
             sb.Append('}');

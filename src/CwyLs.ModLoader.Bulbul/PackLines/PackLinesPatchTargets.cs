@@ -236,9 +236,9 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 new PatchTarget("packlines.smalltalk.content.purchase", GameAssembly, "SmallTalkSelector+ContentType", MemberKind.Field, "PurchaseEnvironment",
                     isStatic: true, expectedSignature: "static SmallTalkSelector.ContentType PurchaseEnvironment"),
 
-                // SaveDataManager.SaveScenarioProgressData (the only writer of PlayedScenarioGroupIDs)
-                // and its ScenarioProgressData; PomodoroData.CurrentTimerMode (which timer list a
-                // two-list selector reads).
+                // SaveDataManager.SaveScenarioProgressData (the only writer of PlayedScenarioGroupIDs; master
+                // data's save filter patches it and pack lines join that filter) and its ScenarioProgressData;
+                // PomodoroData.CurrentTimerMode (which timer list a two-list selector reads).
                 Method("packlines.save.scenarioprogress", SaveDataManagerType, "SaveScenarioProgressData", "void SaveScenarioProgressData()"),
                 new PatchTarget("packlines.save.progressdata", GameAssembly, SaveDataManagerType, MemberKind.Property, "ScenarioProgressData",
                     expectedSignature: "ScenarioProgressData ScenarioProgressData { get; set; }"),

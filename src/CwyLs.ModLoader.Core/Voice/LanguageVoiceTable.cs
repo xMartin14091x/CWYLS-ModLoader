@@ -217,6 +217,35 @@ namespace CwyLs.ModLoader.Core.Voice
             }
         }
 
+        /// <summary>
+        /// Takes one named waiting clip out of turn and marks it <see cref="LanguageVoiceState.Loading"/>:
+        /// the first line of a scene that is about to play, loaded at once (<see cref="LanguageVoiceFirstLine"/>).
+        /// </summary>
+        /// <param name="code">The language code.</param>
+        /// <param name="name">The voice name.</param>
+        /// <returns>The step to load, or null when the clip is loading, loaded, failed or unknown.</returns>
+        public VoiceLoadStep? TakeNow(string? code, string? name)
+        {
+            var canonical = SubtitleLanguages.Normalize(code);
+
+            lock (_gate)
+            {
+                var slot = Find(canonical, name);
+                if (slot is null || slot.State != LanguageVoiceState.Pending)
+                {
+                    return null;
+                }
+
+                slot.State = LanguageVoiceState.Loading;
+                if (_priority.TryGetValue(canonical, out var queue))
+                {
+                    queue.Remove(slot);
+                }
+
+                return slot.Step;
+            }
+        }
+
         /// <summary>True when <see cref="TakeNext"/> would return something for this language.</summary>
         /// <param name="code">The language code.</param>
         /// <param name="includeBackground">As for <see cref="TakeNext"/>.</param>

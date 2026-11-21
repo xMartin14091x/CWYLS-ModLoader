@@ -11,6 +11,10 @@
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="CwyLs.ModLoader.Tests" />
+  </ItemGroup>
+
   <!--
     P2-3: the generated Satone name table. LogicalName is spelled out rather than left to the
     default (RootNamespace + folder path), so the resource id in SatoneTable.ResourceName cannot

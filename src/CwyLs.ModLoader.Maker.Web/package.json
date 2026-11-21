@@ -1,0 +1,10 @@
+{
+  "name": "cwyls-maker-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-concurrency=1 \"tests/**/*.test.mjs\"",
+    "api": "node generate_api.mjs",
+    "check": "node generate_api.mjs --check"
+  }
+}
