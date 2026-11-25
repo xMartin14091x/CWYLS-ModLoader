@@ -233,7 +233,14 @@ namespace CwyLs.ModLoader.Bulbul.Console
 
             var name = args[1];
 
-            if (string.Equals(what, "play", StringComparison.OrdinalIgnoreCase))
+            var play = string.Equals(what, "play", StringComparison.OrdinalIgnoreCase);
+            var satone = string.Equals(what, "satone", StringComparison.OrdinalIgnoreCase);
+            if ((play || satone) && Voices.ManualPlaybackRefusal(name) is string refusal)
+            {
+                return "could not play '" + name + "': " + refusal;
+            }
+
+            if (play)
             {
                 // Straight through the game's VoiceManager: the clip plays, but Satone's mouth does
                 // not move. 'voice satone' is the one that looks like a line she speaks.
@@ -243,7 +250,7 @@ namespace CwyLs.ModLoader.Bulbul.Console
                     : "could not play '" + name + "': " + error;
             }
 
-            if (string.Equals(what, "satone", StringComparison.OrdinalIgnoreCase))
+            if (satone)
             {
                 return Voices.PlayAsSatone(name)
                     ? "Satone is saying '" + name + "'"

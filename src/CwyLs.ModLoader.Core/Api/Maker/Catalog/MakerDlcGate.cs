@@ -18,6 +18,13 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
 
         /// <summary>A localisation id, exact or <c>prefix*</c>.</summary>
         Line,
+
+        /// <summary>
+        /// The game's own paid-DLC flag on a scenario group (<see cref="MakerGameGroup.DlcFlag"/>; the pattern names the game
+        /// member, e.g. <c>MyPaceOnly</c>). A flagged group is DLC. From <see cref="MakerDlcMarkers.FlagExpectedFrom"/> on, a group
+        /// whose flag could not be read and that is not in <see cref="MakerDlcBaseline.KnownFreeGroups"/> is hidden too (fail closed).
+        /// </summary>
+        GroupFlag,
     }
 
     /// <summary>Whether the player owns a DLC, as far as the loader knows.</summary>
@@ -78,7 +85,7 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
         /// <param name="id">A group or line id.</param>
         public bool MatchesId(string? id)
         {
-            if (string.IsNullOrEmpty(id) || Kind == MakerDlcMarkerKind.ScenarioType)
+            if (string.IsNullOrEmpty(id) || Kind == MakerDlcMarkerKind.ScenarioType || Kind == MakerDlcMarkerKind.GroupFlag)
             {
                 return false;
             }
@@ -113,11 +120,57 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
         /// <summary><c>Bulbul.MasterData.ScenarioType.DLCScenario</c>: the game's own type for DLC stories (no group used it in 1.17.3).</summary>
         public const int DlcScenarioType = 3;
 
-        /// <summary>Always on: every group of the game's own DLC story type is DLC.</summary>
-        public static IReadOnlyList<MakerDlcMarker> BuiltIn { get; } = new[]
+        /// <summary>
+        /// The game's own paid-DLC flag on a scenario group, <c>Bulbul.MasterData.ScenarioGroupData.MyPaceOnly</c> (game 2.0.0,
+        /// 25 Nov 2026): the "Room &amp; Cozy Activities Expansion" (in-game "My Pace") groups. The game checks it against
+        /// <c>IDLCState.IsOwned(DLCType.MyPace)</c> (<c>DLCType.MyPace</c> = 3718890).
+        /// </summary>
+        public const string DlcFlagMember = "MyPaceOnly";
+
+        /// <summary>The first game version that has <see cref="DlcFlagMember"/>; from here on an unreadable flag hides (fail closed).</summary>
+        public const string FlagExpectedFrom = "2.0.0";
+
+        /// <summary>
+        /// <c>ScenarioType</c> numbers game 2.0.0 added for the DLC's "My Pace" mode only (<c>HeroineClick_MyPace_*</c> 600-601,
+        /// <c>SpeakWord_Player_MyPace*</c> 2800-2853, <c>SpeakWord_MyPace_Transition*</c> 2860-2861, <c>SpeakWord_MyPace_WorkStart</c> /
+        /// <c>BreakStart</c> / <c>Finish</c> 3300-3500, <c>LocationMove_Departure</c> / <c>Arrival</c> 3600-3700 (moving between the
+        /// DLC's locations), <c>MyPaceIntroduction</c> 3800). None exists in 1.18.1. Base-game groups the
+        /// game also reuses in the My Pace pools (<c>ReactionTalkSelector</c>'s extra row ids, 39 groups, all in 1.18.1) are free
+        /// content and stay listed.
+        /// </summary>
+        public static IReadOnlyList<int> MyPaceScenarioTypes { get; } = new[] { 600, 601, 2800, 2801, 2850, 2851, 2852, 2853, 2860, 2861, 3300, 3400, 3500, 3600, 3700, 3800 };
+
+        /// <summary>
+        /// Localisation id prefixes of the lines game 2.0.0 picks at playback when Satone moves between the DLC's locations
+        /// (<c>LocationMoveTextSelector</c>: departures <c>goto_&lt;desk|bed|stairs&gt;_</c>, arrivals <c>location_arrival_</c>). No novel
+        /// row names them, so they are marked by id. Moving only exists in the DLC's My Pace mode.
+        /// </summary>
+        public static IReadOnlyList<string> MovementLinePrefixes { get; } = new[] { "goto_desk_", "goto_bed_", "goto_stairs_", "location_arrival_" };
+
+        /// <summary>
+        /// Always on: every group of the game's own DLC story type, of a My Pace type, or carrying the game's own DLC flag is DLC.
+        /// </summary>
+        public static IReadOnlyList<MakerDlcMarker> BuiltIn { get; } = BuildBuiltIn();
+
+        private static IReadOnlyList<MakerDlcMarker> BuildBuiltIn()
         {
-            new MakerDlcMarker(MakerDlcMarkerKind.ScenarioType, DlcScenarioType.ToString(CultureInfo.InvariantCulture), RoomExpansionAppId),
-        };
+            var list = new List<MakerDlcMarker>
+            {
+                new MakerDlcMarker(MakerDlcMarkerKind.ScenarioType, DlcScenarioType.ToString(CultureInfo.InvariantCulture), RoomExpansionAppId),
+                new MakerDlcMarker(MakerDlcMarkerKind.GroupFlag, DlcFlagMember, RoomExpansionAppId),
+            };
+            foreach (var type in MyPaceScenarioTypes)
+            {
+                list.Add(new MakerDlcMarker(MakerDlcMarkerKind.ScenarioType, type.ToString(CultureInfo.InvariantCulture), RoomExpansionAppId));
+            }
+
+            foreach (var prefix in MovementLinePrefixes)
+            {
+                list.Add(new MakerDlcMarker(MakerDlcMarkerKind.Line, prefix + "*", RoomExpansionAppId));
+            }
+
+            return list.AsReadOnly();
+        }
 
         /// <summary>
         /// The DLC's own groups and lines, filled when the DLC ships (24 Nov 2026) from that build's master data. Empty until then.
@@ -146,6 +199,7 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
         private readonly HashSet<string> _lines;
         private readonly HashSet<string> _groups;
         private readonly HashSet<string> _voices;
+        private readonly HashSet<string> _novelRows;
 
         /// <summary>Creates a verdict.</summary>
         /// <param name="lines">Hidden localisation ids.</param>
@@ -154,12 +208,27 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
         /// <param name="unresolvedGroups">Groups named by novel rows but missing from the group list (hidden while a type marker is active).</param>
         /// <param name="summary">One line for the log: what is hidden and why.</param>
         public MakerDlcHidden(IEnumerable<string>? lines, IEnumerable<string>? groups, IEnumerable<string>? voices, int unresolvedGroups, string? summary)
-            : this(true, lines, groups, voices, unresolvedGroups, summary)
+            : this(true, lines, groups, voices, unresolvedGroups, summary, null)
         {
         }
 
-        private MakerDlcHidden(bool known, IEnumerable<string>? lines, IEnumerable<string>? groups, IEnumerable<string>? voices, int unresolvedGroups, string? summary)
+        /// <summary>Creates a verdict that also names the game's novel rows of hidden content.</summary>
+        /// <param name="lines">Hidden localisation ids.</param>
+        /// <param name="groups">Hidden scenario group ids.</param>
+        /// <param name="voices">Voice clip names of hidden lines.</param>
+        /// <param name="unresolvedGroups">Groups named by novel rows but missing from the group list.</param>
+        /// <param name="summary">One line for the log: what is hidden and why.</param>
+        /// <param name="novelRows">Ids of the game's novel rows that belong to a hidden group or speak a hidden line.</param>
+        public MakerDlcHidden(IEnumerable<string>? lines, IEnumerable<string>? groups, IEnumerable<string>? voices, int unresolvedGroups, string? summary,
+            IEnumerable<string>? novelRows)
+            : this(true, lines, groups, voices, unresolvedGroups, summary, novelRows)
         {
+        }
+
+        private MakerDlcHidden(bool known, IEnumerable<string>? lines, IEnumerable<string>? groups, IEnumerable<string>? voices, int unresolvedGroups, string? summary,
+            IEnumerable<string>? novelRows)
+        {
+            _novelRows = novelRows is null ? NoIds : new HashSet<string>(novelRows, StringComparer.Ordinal);
             IsKnown = known;
             _lines = lines is null ? NoIds : new HashSet<string>(lines, StringComparer.Ordinal);
             _groups = groups is null ? NoIds : new HashSet<string>(groups, StringComparer.Ordinal);
@@ -171,9 +240,24 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
         /// <summary>Nothing hidden (no active marker matched anything).</summary>
         public static MakerDlcHidden None { get; } = new MakerDlcHidden(null, null, null, 0, "no DLC lines hidden");
 
+        /// <summary>True when <paramref name="verdict"/> is missing (not computed yet) or hides the line: fail closed.</summary>
+        /// <param name="verdict">The verdict, or null.</param>
+        /// <param name="id">A localisation id.</param>
+        public static bool Protects(MakerDlcHidden? verdict, string? id) => verdict is null || verdict.IsLine(id);
+
+        /// <summary>True when <paramref name="verdict"/> is missing (not computed yet) or hides the voice clip: fail closed.</summary>
+        /// <param name="verdict">The verdict, or null.</param>
+        /// <param name="clip">A voice clip name.</param>
+        public static bool ProtectsVoice(MakerDlcHidden? verdict, string? clip) => verdict is null || verdict.IsVoice(clip);
+
+        /// <summary>True when <paramref name="verdict"/> is missing (not computed yet) or hides the group: fail closed.</summary>
+        /// <param name="verdict">The verdict, or null.</param>
+        /// <param name="id">A scenario group id.</param>
+        public static bool ProtectsGroup(MakerDlcHidden? verdict, string? id) => verdict is null || verdict.IsGroup(id);
+
         /// <summary>The gate could not decide; every caller refuses (fail closed).</summary>
         /// <param name="why">Why, for the refusal and the log.</param>
-        public static MakerDlcHidden Unknown(string why) => new MakerDlcHidden(false, null, null, null, 0, why);
+        public static MakerDlcHidden Unknown(string why) => new MakerDlcHidden(false, null, null, null, 0, why, null);
 
         /// <summary>False when the gate could not decide.</summary>
         public bool IsKnown { get; }
@@ -200,6 +284,13 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
         /// <summary>True when the group is hidden, or the verdict is unknown.</summary>
         /// <param name="id">A scenario group id.</param>
         public bool IsGroup(string? id) => !IsKnown || (id != null && _groups.Contains(id));
+
+        /// <summary>True when the game's novel row belongs to a hidden group or speaks a hidden line, or the verdict is unknown.</summary>
+        /// <param name="rowId">A novel row id.</param>
+        public bool IsNovelRow(string? rowId) => !IsKnown || (rowId != null && _novelRows.Contains(rowId));
+
+        /// <summary>How many of the game's novel rows belong to hidden content.</summary>
+        public int NovelRowCount => _novelRows.Count;
 
         /// <summary>True when the voice clip belongs to a hidden line, or the verdict is unknown.</summary>
         /// <param name="clip">A voice clip name (file stem).</param>
@@ -256,6 +347,7 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
         private readonly IReadOnlyList<MakerDlcMarker> _markers;
         private readonly Func<uint, MakerDlcOwnership>? _ownership;
         private readonly Func<string?>? _gameVersion;
+        private readonly IReadOnlyCollection<string> _knownFreeGroups;
 
         /// <summary>Creates a gate that does not know the running game's version (treated as a build the markers were not made for).</summary>
         /// <param name="markers">The markers; null entries are dropped. Null or empty = nothing is DLC.</param>
@@ -271,9 +363,24 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
         /// <param name="gameVersion">The running game's version (normally <c>Application.version</c>); null, blank, unreadable or throwing = unknown.</param>
         /// <param name="madeFor">The build the markers were made for; null = <see cref="MakerDlcMarkers.MadeForGameVersion"/>.</param>
         public MakerDlcGate(IEnumerable<MakerDlcMarker?>? markers, Func<uint, MakerDlcOwnership>? ownership, Func<string?>? gameVersion, string? madeFor)
+            : this(markers, ownership, gameVersion, madeFor, null, null)
+        {
+        }
+
+        /// <summary>Creates a gate with its own flag rules (tests).</summary>
+        /// <param name="markers">The markers; null entries are dropped. Null or empty = nothing is DLC.</param>
+        /// <param name="ownership">Ownership per Steam app id; null = unknown for every app (hide).</param>
+        /// <param name="gameVersion">The running game's version; null, blank, unreadable or throwing = unknown.</param>
+        /// <param name="madeFor">The build the markers were made for; null = <see cref="MakerDlcMarkers.MadeForGameVersion"/>.</param>
+        /// <param name="flagExpectedFrom">The first game version with the DLC flag; null = <see cref="MakerDlcMarkers.FlagExpectedFrom"/>.</param>
+        /// <param name="knownFreeGroups">Group ids known to be free; null = <see cref="MakerDlcBaseline.KnownFreeGroups"/>.</param>
+        public MakerDlcGate(IEnumerable<MakerDlcMarker?>? markers, Func<uint, MakerDlcOwnership>? ownership, Func<string?>? gameVersion, string? madeFor,
+            string? flagExpectedFrom, IReadOnlyCollection<string>? knownFreeGroups)
         {
             _gameVersion = gameVersion;
             MadeFor = string.IsNullOrWhiteSpace(madeFor) ? MakerDlcMarkers.MadeForGameVersion : madeFor!.Trim();
+            FlagExpectedFrom = string.IsNullOrWhiteSpace(flagExpectedFrom) ? MakerDlcMarkers.FlagExpectedFrom : flagExpectedFrom!.Trim();
+            _knownFreeGroups = knownFreeGroups ?? MakerDlcBaseline.KnownFreeGroups;
             var list = new List<MakerDlcMarker>();
             if (markers != null)
             {
@@ -306,6 +413,39 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
         /// <summary>The game build the markers were made for.</summary>
         public string MadeFor { get; }
 
+        /// <summary>The first game version that has the DLC flag (<see cref="MakerDlcMarkers.FlagExpectedFrom"/>).</summary>
+        public string FlagExpectedFrom { get; }
+
+        /// <summary>
+        /// True when the running game should have the DLC flag: any version after <see cref="MakerDlcBaseline.LastVersionWithoutFlag"/>
+        /// (1.18.1), or an unknown or unreadable one (fail closed). False only for 1.18.1 and older, which have no flag.
+        /// </summary>
+        public bool FlagExpected()
+        {
+            string? version = null;
+            try
+            {
+                version = _gameVersion?.Invoke();
+            }
+            catch (Exception)
+            {
+                version = null;
+            }
+
+            if (string.IsNullOrWhiteSpace(version) || !GameVersions.TryParse(version!.Trim(), out var actual)
+                || !GameVersions.TryParse(MakerDlcBaseline.LastVersionWithoutFlag, out var last))
+            {
+                return true;
+            }
+
+            // Every build after the last one without the flag expects it: 1.18.2-1.19.x and 2.0.0 pre-releases included (G7).
+            return actual! > last!;
+        }
+
+        /// <summary>True when the group is hidden because of the DLC flag: flagged, or (flag expected) unreadable and not a pre-DLC group.</summary>
+        private bool FlagHides(bool flagMarker, string id, bool? flag, bool flagExpected)
+            => flagMarker && (flag == true || (flag is null && flagExpected && !_knownFreeGroups.Contains(id)));
+
         /// <summary>
         /// True when the running game is the build the markers were made for or an older one; false when it is newer, or its
         /// version is unknown or not a version number (then lines no classified group speaks are hidden).
@@ -334,7 +474,10 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
                 return true;
             }
 
-            return GameVersions.TryParse(MadeFor, out var made) && GameVersions.TryParse(version, out var actual) && actual! < made!;
+            // Older builds are confirmed only up to the last one without paid content; a build between that and the made-for build
+            // (1.18.2-1.19.x, 2.0.0 pre-releases) is not (G7).
+            return GameVersions.TryParse(MakerDlcBaseline.LastVersionWithoutFlag, out var last) && GameVersions.TryParse(version, out var actual)
+                && !(actual! > last!);
         }
 
         /// <summary>The ownership of <paramref name="appId"/>; any failure is <see cref="MakerDlcOwnership.Unknown"/>.</summary>
@@ -364,7 +507,17 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
         /// </summary>
         /// <param name="id">The scenario group id.</param>
         /// <param name="scenario">Its <c>ScenarioType</c> number, or null when unknown.</param>
-        public bool HidesGroup(string? id, int? scenario)
+        /// <remarks>Without the game's DLC flag (<c>null</c>): on a build that should have it, a group outside the known-free set is hidden (fail closed).</remarks>
+        public bool HidesGroup(string? id, int? scenario) => HidesGroup(id, scenario, null);
+
+        /// <summary>
+        /// <see cref="HidesGroup(string?, int?)"/> with the game's own DLC flag: a flagged group is hidden; from
+        /// <see cref="FlagExpectedFrom"/> on, a group whose flag is null (unreadable) and that is not a pre-DLC group is hidden too.
+        /// </summary>
+        /// <param name="id">The scenario group id.</param>
+        /// <param name="scenario">Its <c>ScenarioType</c> number, or null when unknown.</param>
+        /// <param name="dlcFlag">The game's DLC flag (true/false), or null when absent or unreadable.</param>
+        public bool HidesGroup(string? id, int? scenario, bool? dlcFlag)
         {
             if (string.IsNullOrEmpty(id) || _markers.Count == 0)
             {
@@ -381,7 +534,8 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
             }
 
             return GroupMatches(active, id!, scenario)
-                || (!scenario.HasValue && active.Exists(m => m.Kind == MakerDlcMarkerKind.ScenarioType));
+                || (!scenario.HasValue && active.Exists(m => m.Kind == MakerDlcMarkerKind.ScenarioType))
+                || FlagHides(active.Exists(m => m.Kind == MakerDlcMarkerKind.GroupFlag), id!, dlcFlag, FlagExpected());
         }
 
         /// <summary>Decides what to hide in one game snapshot.</summary>
@@ -422,12 +576,18 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
             }
 
             var typeMarkers = active.Exists(m => m.Kind == MakerDlcMarkerKind.ScenarioType);
+            var flagMarker = active.Exists(m => m.Kind == MakerDlcMarkerKind.GroupFlag);
+            var flagExpected = flagMarker && FlagExpected();
             var groupTypes = new Dictionary<string, int?>(StringComparer.Ordinal);
+            var groupFlags = new Dictionary<string, bool?>(StringComparer.Ordinal);
+            var groupTexts = new Dictionary<string, MakerGameGroup>(StringComparer.Ordinal);
             foreach (var group in groups ?? Array.Empty<MakerGameGroup>())
             {
                 if (group != null && !groupTypes.ContainsKey(group.Id))
                 {
                     groupTypes.Add(group.Id, group.Scenario);
+                    groupFlags.Add(group.Id, group.DlcFlag);
+                    groupTexts.Add(group.Id, group);
                 }
             }
 
@@ -440,18 +600,44 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
                 }
             }
 
-            if (typeMarkers && groupTypes.Count == 0 && novel.Exists(r => r.GroupId != null))
+            if ((typeMarkers || flagMarker) && groupTypes.Count == 0 && novel.Exists(r => r.GroupId != null))
             {
                 return MakerDlcHidden.Unknown("the game's scenario groups were not read, so DLC story types cannot be told apart");
             }
 
+            // G6: lines but no way to tell which group speaks them (no novel rows, no group on any row): cannot decide.
+            var rowList = new List<MakerGameRow>();
+            foreach (var row in rows ?? Array.Empty<MakerGameRow>())
+            {
+                if (row != null) rowList.Add(row);
+            }
+
+            rows = rowList;
+            if ((typeMarkers || flagMarker) && rowList.Count > 0 && !novel.Exists(r => r.GroupId != null) && !rowList.Exists(r => r.Group != null))
+            {
+                return MakerDlcHidden.Unknown("the game's novel rows were not read, so no line can be tied to its scenario group");
+            }
+
+            if ((typeMarkers || flagMarker) && groupTypes.Count == 0 && rowList.Exists(r => r.Group != null))
+            {
+                return MakerDlcHidden.Unknown("the game's scenario groups were not read, so DLC groups cannot be told apart");
+            }
+
             // IG-02: while a type marker is active, a group whose type is unknown cannot be told free, so it is hidden.
             var hiddenGroups = new HashSet<string>(StringComparer.Ordinal);
+            var flagged = 0;
+            var unreadableHidden = 0;
             foreach (var pair in groupTypes)
             {
+                var flag = groupFlags[pair.Key];
                 if (GroupMatches(active, pair.Key, pair.Value) || (typeMarkers && !pair.Value.HasValue))
                 {
                     hiddenGroups.Add(pair.Key);
+                }
+                else if (FlagHides(flagMarker, pair.Key, flag, flagExpected))
+                {
+                    hiddenGroups.Add(pair.Key);
+                    if (flag == true) flagged++; else unreadableHidden++;
                 }
             }
 
@@ -473,7 +659,7 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
                 if (!groupTypes.ContainsKey(row.GroupId))
                 {
                     unresolved.Add(row.GroupId);
-                    if (typeMarkers || GroupMatches(active, row.GroupId, null))
+                    if (typeMarkers || flagMarker || GroupMatches(active, row.GroupId, null))
                     {
                         hiddenGroups.Add(row.GroupId);
                     }
@@ -485,7 +671,19 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
                 }
             }
 
-            // F1: on a build the markers were not made for, a line no classified group speaks may be new DLC content.
+            // A hidden group's title and subtitle are its own localisation rows (the story history shows them): hidden too.
+            foreach (var id in hiddenGroups)
+            {
+                if (groupTexts.TryGetValue(id, out var texts))
+                {
+                    if (texts.TitleId != null) hiddenLines.Add(texts.TitleId);
+                    if (texts.SubtitleId != null) hiddenLines.Add(texts.SubtitleId);
+                }
+            }
+
+            // F1: on a build the markers were not made for, a voiced line no classified group speaks may be new DLC dialogue.
+            // Unvoiced rows outside every group (menus, labels) stay listed, so a newer patch does not take away pack translations
+            // of the game's own interface; new paid lines picked at playback are covered by the line markers.
             var confirmed = GameVersionConfirmed(out var running);
             var unclassified = 0;
             var hiddenVoices = new HashSet<string>(StringComparer.Ordinal);
@@ -496,7 +694,7 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
                     continue;
                 }
 
-                if (row.Group != null && typeMarkers && !groupTypes.ContainsKey(row.Group))
+                if (row.Group != null && (typeMarkers || flagMarker) && !groupTypes.ContainsKey(row.Group))
                 {
                     unresolved.Add(row.Group);
                     hiddenGroups.Add(row.Group);
@@ -508,7 +706,7 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
                     {
                         hiddenLines.Add(row.Id);
                     }
-                    else if (!confirmed && row.Group is null && !grouped.Contains(row.Id))
+                    else if (!confirmed && row.Group is null && !grouped.Contains(row.Id) && row.Voice != null)
                     {
                         hiddenLines.Add(row.Id);
                         unclassified++;
@@ -533,12 +731,35 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
                     + string.Join(", ", named) + (unresolved.Count > named.Count ? ", …" : "") + ")";
             }
 
+            if (flagged > 0)
+            {
+                summary += "; " + flagged.ToString(CultureInfo.InvariantCulture) + " group(s) carry the game's DLC flag ("
+                    + MakerDlcMarkers.DlcFlagMember + ")";
+            }
+
+            if (unreadableHidden > 0)
+            {
+                summary += "; the game's DLC flag (" + MakerDlcMarkers.DlcFlagMember + ") could not be read, so "
+                    + unreadableHidden.ToString(CultureInfo.InvariantCulture) + " group(s) outside the known-free set (game " + MakerDlcBaseline.CapturedOn
+                    + ") are hidden";
+            }
+
             if (!confirmed)
             {
                 summary += "; game " + running + " is not the build " + MadeFor + " the DLC markers were made for, so "
                     + unclassified.ToString(CultureInfo.InvariantCulture) + " line(s) outside a classified group are hidden until a loader update";
             }
-            return new MakerDlcHidden(hiddenLines, hiddenGroups, hiddenVoices, unresolved.Count, summary);
+            var hiddenNovel = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var row in novel)
+            {
+                if (!string.IsNullOrEmpty(row.RowId)
+                    && ((row.GroupId != null && hiddenGroups.Contains(row.GroupId)) || (row.LineId != null && hiddenLines.Contains(row.LineId))))
+                {
+                    hiddenNovel.Add(row.RowId);
+                }
+            }
+
+            return new MakerDlcHidden(hiddenLines, hiddenGroups, hiddenVoices, unresolved.Count, summary, hiddenNovel);
         }
 
         private static bool GroupMatches(List<MakerDlcMarker> active, string id, int? scenario)

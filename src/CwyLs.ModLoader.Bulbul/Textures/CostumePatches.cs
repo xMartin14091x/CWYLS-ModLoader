@@ -88,8 +88,19 @@ namespace CwyLs.ModLoader.Bulbul.Textures
                 typeof(CostumePatches).GetMethod(nameof(OnCostumeChanged), BindingFlags.NonPublic | BindingFlags.Static));
 
             // The same four members CostumePatchTargets declares, so the startup check and the
-            // patches can never name different methods.
-            Patch(typeof(global::Bulbul.CostumeChangeService), CostumePatchTargets.AttachBonesMethod, postfix, failures);
+            // patches can never name different methods. Resolve CostumeLegBlendShapeCorrector by
+            // name so the adapter still compiles against pre-2.0.0 reference assemblies as well.
+            var correctorType = typeof(global::Bulbul.CostumeChangeService).Assembly
+                .GetType("Bulbul.CostumeLegBlendShapeCorrector");
+            var attachBonesParams = correctorType is null
+                ? new[] { typeof(UnityEngine.Transform) }
+                : new[] { typeof(UnityEngine.Transform), correctorType };
+            Patch(
+                typeof(global::Bulbul.CostumeChangeService),
+                CostumePatchTargets.AttachBonesMethod,
+                postfix,
+                failures,
+                attachBonesParams);
             Patch(typeof(global::Bulbul.CostumeChangeService), CostumePatchTargets.ActivateDefaultMethod, postfix, failures);
             Patch(typeof(global::Bulbul.CostumeChangeService), CostumePatchTargets.TryChangeSkinMethod, postfix, failures);
             Patch(typeof(global::Bulbul.CostumeSkinChanger), CostumePatchTargets.ChangeSkinMethod, postfix, failures);
@@ -101,13 +112,20 @@ namespace CwyLs.ModLoader.Bulbul.Textures
                 (failures.Count == 0 ? string.Empty : " - MISSING: " + Failures));
         }
 
-        private static void Patch(Type type, string method, HarmonyMethod postfix, System.Collections.Generic.List<string> failures)
+        private static void Patch(
+            Type type,
+            string method,
+            HarmonyMethod postfix,
+            System.Collections.Generic.List<string> failures,
+            Type[]? parameterTypes = null)
         {
             var name = type.Name + "." + method;
 
             try
             {
-                var target = AccessTools.Method(type, method);
+                var target = parameterTypes is null
+                    ? AccessTools.Method(type, method)
+                    : AccessTools.Method(type, method, parameterTypes);
                 if (target is null)
                 {
                     failures.Add(name + " not found");

@@ -2,7 +2,7 @@
 
 # Namespace `CwyLs.ModLoader.Core.MasterData`
 
-Assembly `CwyLs.ModLoader.Core` · 20 public type(s) · [API index](README.md)
+Assembly `CwyLs.ModLoader.Core` · 22 public type(s) · [API index](README.md)
 
 | Type | Kind | Summary |
 |---|---|---|
@@ -18,6 +18,8 @@ Assembly `CwyLs.ModLoader.Core` · 20 public type(s) · [API index](README.md)
 | [`MasterDataPackInput`](#masterdatapackinput) | sealed class | One pack's master-data files, as text. |
 | [`MasterDataPackInput.SubtitleSource`](#masterdatapackinput-subtitlesource) | sealed class | One subtitle file: where it was and what was in it. |
 | [`MasterDataPackParser`](#masterdatapackparser) | static class | Reads the three master-data files a content pack may ship and turns them into rows. |
+| [`MasterDataPaidAdmission`](#masterdatapaidadmission) | static class | Which merged pack rows may enter the game's master data, given the DLC gate's verdict over the game's untouched tables. |
+| [`MasterDataPaidAdmission.Result`](#masterdatapaidadmission-result) | sealed class | The rows that may enter, and the refused ones (kind and id, never text). |
 | [`MasterDataParse<T>`](#masterdataparse-1) | sealed class | The result of parsing one pack file: the rows that were accepted and every row that was not. |
 | [`MasterDataRejection`](#masterdatarejection) | sealed class | One thing a pack asked for that was refused, and why. |
 | [`MasterDataSet`](#masterdataset) | sealed class | Everything the installed packs want to add to or change in the game's master data, merged and ready to inject: rows in first-seen order, the subtitle lookup, and the report that explains how they got there. |
@@ -909,6 +911,66 @@ Parses `data/scenario_groups.json`.
 
 - `json`: File contents; null or blank is reported as an empty file.
 - `file`: Display path used in rejections.
+
+---
+
+<a id="masterdatapaidadmission"></a>
+
+## `MasterDataPaidAdmission`
+
+static class · `CwyLs.ModLoader.Core.MasterData.MasterDataPaidAdmission` · assembly `CwyLs.ModLoader.Core`
+
+Which merged pack rows may enter the game's master data, given the DLC gate's verdict over the game's untouched tables. A row that would override, extend or point at paid DLC content is refused: a localisation row with a protected id or voice clip, a novel row that speaks a protected line, belongs to a protected group or replaces a game row of one, and a scenario group that replaces a protected group or titles itself with a protected line. No verdict, or an undecided one, refuses every row (fail closed).
+
+<a id="masterdatapaidadmission--filter"></a>
+
+### `static MasterDataPaidAdmission.Result Filter(MasterDataSet set, MakerDlcHidden paid, IReadOnlyDictionary<string, string> baseNovelGroups)`
+
+Filters `set`.
+
+**Parameters**
+
+- `set`: The merged pack rows.
+- `paid`: The verdict over the game's untouched tables; null = none yet (refuse everything).
+- `baseNovelGroups`: The game's own novel row ids and the group each belongs to.
+
+**Exceptions**
+
+- `ArgumentNullException`: `set` is null.
+
+---
+
+<a id="masterdatapaidadmission-result"></a>
+
+## `MasterDataPaidAdmission.Result`
+
+sealed class · `CwyLs.ModLoader.Core.MasterData.MasterDataPaidAdmission.Result` · assembly `CwyLs.ModLoader.Core`
+
+The rows that may enter, and the refused ones (kind and id, never text).
+
+<a id="masterdatapaidadmission-result--localization"></a>
+
+### `IReadOnlyList<LocalizationRow> Localization { get; }`
+
+Admitted localisation rows, in order.
+
+<a id="masterdatapaidadmission-result--novel"></a>
+
+### `IReadOnlyList<NovelRow> Novel { get; }`
+
+Admitted novel rows, in order.
+
+<a id="masterdatapaidadmission-result--refused"></a>
+
+### `IReadOnlyList<string> Refused { get; }`
+
+Refused rows as "kind id".
+
+<a id="masterdatapaidadmission-result--scenariogroups"></a>
+
+### `IReadOnlyList<ScenarioGroupRow> ScenarioGroups { get; }`
+
+Admitted scenario groups, in order.
 
 ---
 

@@ -76,8 +76,15 @@ namespace CwyLs.ModLoader.Bulbul
             new PatchTarget(
                 "heroine.lookscale", GameAssembly, "Bulbul.HeroineService",
                 MemberKind.Method, "ChangeLookScaleAnimation",
-                new[] { "System.Single", "System.Single", "DG.Tweening.Ease" },
-                expectedSignature: "void ChangeLookScaleAnimation(float, float, Ease)"),
+                new[]
+                {
+                    "System.Single",
+                    "System.Single",
+                    "DG.Tweening.Ease",
+                    "System.Nullable<System.Single>",
+                    "System.Boolean"
+                },
+                expectedSignature: "long ChangeLookScaleAnimation(float, float, Ease, Nullable<float>, bool)"),
 
             // --- State events ------------------------------------------------------------------
             // HeroineAI is in the global namespace.
@@ -85,7 +92,7 @@ namespace CwyLs.ModLoader.Bulbul
                 "heroineai.changestate", GameAssembly, "HeroineAI",
                 MemberKind.Method, "ChangeState",
                 new[] { "HeroineAI+ActionStateType" },
-                expectedSignature: "void ChangeState(HeroineAI.ActionStateType)"),
+                expectedSignature: "bool ChangeState(HeroineAI.ActionStateType)"),
 
             // A representative member of the enum the event bus will dispatch on, so a renamed or
             // renumbered state shows up here rather than as a wrong-looking event.

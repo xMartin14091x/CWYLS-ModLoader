@@ -111,6 +111,7 @@ namespace CwyLs.ModLoader.Core.MasterData
                 ("Special_NearSpring2026", 54),
                 ("Special_MagicalPrincess", 55),
                 ("Special_StatisticsDev", 56),
+                ("Special_Epilogue01", 57),
                 ("Event_2025_Christmas_GameStart", 100),
                 ("Event_2025_NewYear_Countdown", 101),
                 ("Event_2026_AprilFool", 102),

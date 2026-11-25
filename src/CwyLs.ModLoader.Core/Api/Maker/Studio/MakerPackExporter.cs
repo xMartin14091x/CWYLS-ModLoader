@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -153,18 +154,89 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Studio
         {
             if (fileName is null || !FileNameRule.IsMatch(fileName) || !fileName.StartsWith(packId + "-", StringComparison.Ordinal))
                 return Task.FromResult(MakerResult<MakerBinary>.Fail(MakerErrorCodes.NotFound, "no such export of this pack"));
+            var paid = Paid(packId, cancel);
             return Run<MakerBinary>(packId, editing: true, allowPending: false, cancel, (files, isPending) =>
             {
-                var root = _exportsRoot();
-                var full = root is null ? null : new MakerPackFiles(root).Resolve(packId + "/" + fileName);
-                // Legacy archives keep their original path; never move or overwrite a retained download.
-                if (root != null && !File.Exists(full)) full = new MakerPackFiles(root).Resolve(fileName);
-                if (full is null || !File.Exists(full)) return MakerResult<MakerBinary>.Fail(MakerErrorCodes.NotFound, "no such export of this pack");
-                if ((File.GetAttributes(full) & FileAttributes.ReparsePoint) != 0) return MakerResult<MakerBinary>.Fail(MakerErrorCodes.NotFound, "no such export of this pack");
-                if (new FileInfo(full).Length > MakerPackChecks.MaxDownloadBytes)
+                var full = RetainedArchive(packId, fileName);
+                if (full is null) return MakerResult<MakerBinary>.Fail(MakerErrorCodes.NotFound, "no such export of this pack");
+
+                using var stream = File.OpenRead(full);
+                var length = stream.Length;
+                if (length > MakerPackChecks.MaxDownloadBytes)
                     return MakerResult<MakerBinary>.Fail(MakerErrorCodes.TooLarge, "this zip is over 256 MiB; take it from '" + Path.GetDirectoryName(full) + "' instead");
-                return MakerResult<MakerBinary>.Success(new MakerBinary { Bytes = File.ReadAllBytes(full), MediaType = "application/zip", FileName = fileName });
+                var bytes = new byte[(int)length];
+                var offset = 0;
+                while (offset < bytes.Length)
+                {
+                    var read = stream.Read(bytes, offset, bytes.Length - offset);
+                    if (read == 0) break;
+                    offset += read;
+                }
+                if (offset != bytes.Length || stream.ReadByte() != -1)
+                    return MakerResult<MakerBinary>.Fail(MakerErrorCodes.Unavailable, "the retained archive changed while being read");
+
+                using var archive = new MemoryStream(bytes, writable: false);
+                var problem = ArchivePaidProblem(archive, packId, paid);
+                return problem is null
+                    ? MakerResult<MakerBinary>.Success(new MakerBinary { Bytes = bytes, MediaType = "application/zip", FileName = fileName })
+                    : MakerResult<MakerBinary>.Fail(MakerStudioErrorCodes.ExportBlocked, problem);
             }, waitForExport: false);
+        }
+
+        private string? RetainedArchive(string packId, string fileName)
+        {
+            if (!FileNameRule.IsMatch(fileName) || !fileName.StartsWith(packId + "-", StringComparison.Ordinal)) return null;
+            var root = _exportsRoot();
+            if (root is null) return null;
+            var files = new MakerPackFiles(root);
+            var full = files.Resolve(packId + "/" + fileName);
+            // Legacy archives keep their original path.
+            if (!File.Exists(full)) full = files.Resolve(fileName);
+            return File.Exists(full) && (File.GetAttributes(full) & FileAttributes.ReparsePoint) == 0 ? full : null;
+        }
+
+        private static string? ArchivePaidProblem(Stream stream, string packId, Catalog.MakerDlcHidden? paid)
+        {
+            if (paid is null) return null;
+            if (!paid.IsKnown) return MakerPackChecks.Paid(Array.Empty<string>(), _ => null, paid)!.Message;
+
+            try
+            {
+                using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+                var prefix = packId + "/";
+                var entries = new Dictionary<string, ZipArchiveEntry>(StringComparer.Ordinal);
+                long size = 0;
+                foreach (var entry in archive.Entries)
+                {
+                    var name = entry.FullName.Replace('\\', '/');
+                    if (!name.StartsWith(prefix, StringComparison.Ordinal))
+                        return "the archive contains an entry outside its pack folder";
+                    if (name.EndsWith("/", StringComparison.Ordinal)) continue;
+                    var relative = name.Substring(prefix.Length);
+                    if (PackContentIndex.Normalise(relative) is null)
+                        return "the archive contains an invalid pack file path";
+                    if (entries.ContainsKey(relative))
+                        return "the archive contains duplicate file paths";
+                    entries.Add(relative, entry);
+                    if (entry.Length > MakerPackChecks.MaxFileBytes || entry.Length > MakerPackChecks.MaxExportBytes - size
+                        || entries.Count > MakerZipWriter.MaxEntries)
+                        return "the archive exceeds the export size limits";
+                    size += entry.Length;
+                }
+
+                return MakerPackChecks.Paid(entries.Keys, path =>
+                {
+                    var entry = entries[path];
+                    if (entry.Length > MakerPackChecks.MaxMetadataBytes)
+                        throw new InvalidDataException("pack metadata exceeds its size limit");
+                    using var metadata = entry.Open();
+                    return MakerPackChecks.ReadMetadata(metadata, path, out _);
+                }, paid)?.Message;
+            }
+            catch (Exception ex) when (ex is InvalidDataException || ex is IOException || ex is NotSupportedException)
+            {
+                return "Pack Maker could not check the archive for paid DLC content; create a fresh export.";
+            }
         }
 
         /// <summary>
@@ -203,6 +275,15 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Studio
             {
                 if (!MakerStudioExportJson.TryReceipt(receiptText, out var stored, out var storedFingerprint) || storedFingerprint != fingerprint)
                     return MakerResult<MakerExportResult>.Fail(MakerStudioErrorCodes.Conflict, "operationId was already used for another request");
+                if (paid != null)
+                {
+                    var retained = RetainedArchive(packId, stored!.FileName);
+                    if (retained is null)
+                        return MakerResult<MakerExportResult>.Fail(MakerStudioErrorCodes.ExportBlocked, "the retained archive is missing; create a fresh export");
+                    using var archive = File.OpenRead(retained);
+                    var problem = ArchivePaidProblem(archive, packId, paid);
+                    if (problem != null) return MakerResult<MakerExportResult>.Fail(MakerStudioErrorCodes.ExportBlocked, problem);
+                }
                 return MakerResult<MakerExportResult>.Success(stored!);
             }
 
@@ -283,6 +364,13 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Studio
 
                     zip.Finish();
                     stream.Flush(true);
+                }
+
+                if (paid != null)
+                {
+                    using var archive = File.OpenRead(staged);
+                    var problem = ArchivePaidProblem(archive, packId, paid);
+                    if (problem != null) return MakerResult<MakerExportResult>.Fail(MakerStudioErrorCodes.ExportBlocked, problem);
                 }
 
                 var result = new MakerExportResult

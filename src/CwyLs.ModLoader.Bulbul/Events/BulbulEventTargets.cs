@@ -94,7 +94,7 @@ namespace CwyLs.ModLoader.Bulbul.Events
                 "events.scenario.commandpomodorovoicetext", GameAssembly, "Bulbul.ScenarioReader",
                 MemberKind.Method, "CommandPomodoroVoiceText",
                 new[] { "Bulbul.MasterData.NovelData" },
-                expectedSignature: "UniTask CommandPomodoroVoiceText(NovelData)"),
+                expectedSignature: "UniTask<Nullable<long>> CommandPomodoroVoiceText(NovelData)"),
 
             new PatchTarget(
                 "events.scenario.commandtextloopplaytext", GameAssembly, "Bulbul.ScenarioReader",

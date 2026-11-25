@@ -9,7 +9,7 @@
 
 # CWY:LS Mod Loader API reference
 
-API version **0.9.2** (`CwyApi.VersionText`). Generated from the XML documentation and the metadata of `CwyLs.ModLoader.dll`, `CwyLs.ModLoader.Core.dll`. Do not edit these pages: change the `///` comments in `src/` and re-run `tools/apidoc/run.sh` (`tools/apidoc/README.md`). The author's guide is in [`docs/guide/`](../guide/README.md).
+API version **0.9.3** (`CwyApi.VersionText`). Generated from the XML documentation and the metadata of `CwyLs.ModLoader.dll`, `CwyLs.ModLoader.Core.dll`. Do not edit these pages: change the `///` comments in `src/` and re-run `tools/apidoc/run.sh` (`tools/apidoc/README.md`). The author's guide is in [`docs/guide/`](../guide/README.md).
 
 ## Start here
 
@@ -43,7 +43,7 @@ A code mod sees the game through one object: the helper its `CwyMod` receives. [
 | [`CwyLs.ModLoader.Core.Actions`](CwyLs.ModLoader.Core.Actions.md) | `CwyLs.ModLoader.Core` | 45 | 9 | 269 | 0 |
 | [`CwyLs.ModLoader.Core.Api`](CwyLs.ModLoader.Core.Api.md) | `CwyLs.ModLoader.Core` | 54 | 0 | 379 | 0 |
 | [`CwyLs.ModLoader.Core.Api.Maker`](CwyLs.ModLoader.Core.Api.Maker.md) | `CwyLs.ModLoader.Core` | 113 | 0 | 650 | 501 |
-| [`CwyLs.ModLoader.Core.Api.Maker.Catalog`](CwyLs.ModLoader.Core.Api.Maker.Catalog.md) | `CwyLs.ModLoader.Core` | 24 | 0 | 185 | 0 |
+| [`CwyLs.ModLoader.Core.Api.Maker.Catalog`](CwyLs.ModLoader.Core.Api.Maker.Catalog.md) | `CwyLs.ModLoader.Core` | 25 | 0 | 209 | 0 |
 | [`CwyLs.ModLoader.Core.Api.Maker.Editor`](CwyLs.ModLoader.Core.Api.Maker.Editor.md) | `CwyLs.ModLoader.Core` | 19 | 0 | 128 | 6 |
 | [`CwyLs.ModLoader.Core.Api.Maker.Studio`](CwyLs.ModLoader.Core.Api.Maker.Studio.md) | `CwyLs.ModLoader.Core` | 46 | 0 | 331 | 236 |
 | [`CwyLs.ModLoader.Core.Audio`](CwyLs.ModLoader.Core.Audio.md) | `CwyLs.ModLoader.Core` | 44 | 11 | 223 | 0 |
@@ -60,7 +60,7 @@ A code mod sees the game through one object: the helper its `CwyMod` receives. [
 | [`CwyLs.ModLoader.Core.Loaders`](CwyLs.ModLoader.Core.Loaders.md) | `CwyLs.ModLoader.Core` | 11 | 0 | 62 | 0 |
 | [`CwyLs.ModLoader.Core.Logging`](CwyLs.ModLoader.Core.Logging.md) | `CwyLs.ModLoader.Core` | 10 | 0 | 97 | 0 |
 | [`CwyLs.ModLoader.Core.Maker`](CwyLs.ModLoader.Core.Maker.md) | `CwyLs.ModLoader.Core` | 2 | 0 | 4 | 4 |
-| [`CwyLs.ModLoader.Core.MasterData`](CwyLs.ModLoader.Core.MasterData.md) | `CwyLs.ModLoader.Core` | 20 | 0 | 167 | 0 |
+| [`CwyLs.ModLoader.Core.MasterData`](CwyLs.ModLoader.Core.MasterData.md) | `CwyLs.ModLoader.Core` | 22 | 0 | 172 | 0 |
 | [`CwyLs.ModLoader.Core.Mods`](CwyLs.ModLoader.Core.Mods.md) | `CwyLs.ModLoader.Core` | 28 | 1 | 139 | 0 |
 | [`CwyLs.ModLoader.Core.PackLines`](CwyLs.ModLoader.Core.PackLines.md) | `CwyLs.ModLoader.Core` | 27 | 0 | 178 | 0 |
 | [`CwyLs.ModLoader.Core.Packs`](CwyLs.ModLoader.Core.Packs.md) | `CwyLs.ModLoader.Core` | 21 | 2 | 199 | 0 |

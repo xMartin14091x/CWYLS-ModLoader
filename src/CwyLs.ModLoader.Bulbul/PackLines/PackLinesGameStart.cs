@@ -148,6 +148,12 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
 
             var lines = PackLinesRuntime.Registry.LinesOf(pool.Id);
+            if (lines.Count > 0 && !PackLinesRuntime.RoomIsBaseDesk())
+            {
+                _outcome = "the game's own " + pool.Id + " line (outside a base-game Desk pick)";
+                return gamePick;
+            }
+
             if (lines.Count == 0)
             {
                 _outcome = "the game's own " + pool.Id + " line (no pack line in that pool)";
@@ -159,7 +165,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             var notReady = new List<string>();
             foreach (var line in lines)
             {
-                if (!line.IsOfferedIn(code))
+                if (!line.IsOfferedIn(code) || !PackLinesRuntime.IsDeskGroup(line))
                 {
                     continue;
                 }

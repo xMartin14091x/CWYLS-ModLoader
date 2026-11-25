@@ -187,6 +187,34 @@ namespace CwyLs.ModLoader.Tests
                 PatchSignature.ForMethod(
                     "KanKikuchi.AudioManager.AudioPlayer", "Play",
                     new[] { "System.String", "System.Single", "System.Boolean" }, true));
+
+            Assert.Equal(
+                "long ChangeLookScaleAnimation(float, float, Ease, Nullable<float>, bool)",
+                PatchSignature.ForMethod(
+                    "System.Int64",
+                    "ChangeLookScaleAnimation",
+                    new[]
+                    {
+                        "System.Single",
+                        "System.Single",
+                        "DG.Tweening.Ease",
+                        "System.Nullable<System.Single>",
+                        "System.Boolean"
+                    },
+                    false));
+
+            Assert.Equal(
+                "void LookInitSlowly(Nullable<long>)",
+                PatchSignature.ForMethod(
+                    "System.Void", "LookInitSlowly", new[] { "System.Nullable<System.Int64>" }, false));
+
+            Assert.Equal(
+                "UniTask<Nullable<long>> CommandPomodoroVoiceText(NovelData)",
+                PatchSignature.ForMethod(
+                    "Cysharp.Threading.Tasks.UniTask<System.Nullable<System.Int64>>",
+                    "CommandPomodoroVoiceText",
+                    new[] { "Bulbul.MasterData.NovelData" },
+                    false));
         }
 
         [Fact]
@@ -267,14 +295,14 @@ namespace CwyLs.ModLoader.Tests
         [Fact]
         public void The_gate_defaults_to_the_version_the_seams_were_read_from()
         {
-            Assert.Equal("1.18.1", GameVersionGate.ExpectedGameVersion);
+            Assert.Equal("2.0.0", GameVersionGate.ExpectedGameVersion);
 
-            var check = new GameVersionGate().Check("1.18.1");
+            var check = new GameVersionGate().Check("2.0.0");
 
             Assert.True(check.IsOk);
             Assert.Equal(GameVersionStatus.Ok, check.Status);
-            Assert.Equal("1.18.1", check.Actual);
-            Assert.Contains("1.18.1", check.Message);
+            Assert.Equal("2.0.0", check.Actual);
+            Assert.Contains("2.0.0", check.Message);
         }
 
         [Fact]

@@ -54,8 +54,9 @@ namespace CwyLs.ModLoader.Tests
             };
             var groups = new[]
             {
-                new MakerGameGroup("free_story", "Free story", 1),
-                new MakerGameGroup("fake_dlc_bed", "Paid title sentinel", 1),
+                // The game 2.0.0 adapter reads the game's own DLC flag; these invented groups carry it unset.
+                new MakerGameGroup("free_story", "Free story", 1, false),
+                new MakerGameGroup("fake_dlc_bed", "Paid title sentinel", 1, false),
             };
             return new MakerGameData(rows, null, null, novel, withGroups ? groups : null, null, gate);
         }
@@ -75,10 +76,15 @@ namespace CwyLs.ModLoader.Tests
         public void Shipped_markers_today_are_the_games_DLC_story_type_only_and_the_DLC_day_list_is_empty()
         {
             Assert.Empty(MakerDlcMarkers.DlcDay);
-            var builtIn = Assert.Single(MakerDlcMarkers.BuiltIn);
+            // The DLC story type, the game's own DLC flag (2.0.0), the 16 My Pace scenario types and the 4 movement-line prefixes,
+            // all for the room expansion.
+            Assert.Equal(22, MakerDlcMarkers.BuiltIn.Count);
+            Assert.Equal(4, MakerDlcMarkers.BuiltIn.Count(m => m.Kind == MakerDlcMarkerKind.Line));
+            var builtIn = MakerDlcMarkers.BuiltIn[0];
             Assert.Equal(MakerDlcMarkerKind.ScenarioType, builtIn.Kind);
             Assert.Equal(3, builtIn.ScenarioType);
-            Assert.Equal(3718890u, builtIn.AppId);
+            Assert.All(MakerDlcMarkers.BuiltIn, m => Assert.Equal(3718890u, m.AppId));
+            Assert.Single(MakerDlcMarkers.BuiltIn, m => m.Kind == MakerDlcMarkerKind.GroupFlag);
             Assert.Equal(MakerDlcMarkers.BuiltIn.Concat(MakerDlcMarkers.DlcDay), MakerDlcMarkers.All);
             Assert.Equal(MakerDlcMarkers.All, MakerDlcGate.Shipped.Markers);
             // No ownership read is shipped: every app is unknown, so DLC lines are hidden for everyone.
@@ -97,7 +103,7 @@ namespace CwyLs.ModLoader.Tests
                 new[] { new MakerGameRow("free_a", null, "g_free", "", "Free"), new MakerGameRow("paid_a", "Voice_Paid", "g_dlc", "", "Paid sentinel") },
                 null, null,
                 new[] { new MakerGameNovelRow("1", "g_free", "free_a", null, null, null), new MakerGameNovelRow("2", "g_dlc", "paid_a", null, null, null) },
-                new[] { new MakerGameGroup("g_free", null, 1), new MakerGameGroup("g_dlc", "Paid title sentinel", MakerDlcMarkers.DlcScenarioType) },
+                new[] { new MakerGameGroup("g_free", null, 1, false), new MakerGameGroup("g_dlc", "Paid title sentinel", MakerDlcMarkers.DlcScenarioType, false) },
                 null, MakerDlcGate.Shipped);
             Assert.Equal(new[] { "free_a" }, typed.Rows.Select(r => r.Id));
             Assert.Equal(new[] { "g_free" }, typed.Groups.Select(g => g.Id));
@@ -166,7 +172,10 @@ namespace CwyLs.ModLoader.Tests
 
         /// <summary>The shipped type marker on the build the markers were made for (unless <paramref name="version"/> says otherwise).</summary>
         private static MakerDlcGate TypeGate(string? version = MakerDlcMarkers.MadeForGameVersion) =>
-            new MakerDlcGate(MakerDlcMarkers.All, null, () => version, null);
+            new MakerDlcGate(MakerDlcMarkers.All, null, () => version, null, null, TypedPreDlc);
+
+        /// <summary>The invented groups of <see cref="Typed"/> that stand for free groups known before the DLC (the DLC flag fallback's set).</summary>
+        private static readonly IReadOnlyCollection<string> TypedPreDlc = new HashSet<string>(StringComparer.Ordinal) { "g_free", "g_chapter_new" };
 
         /// <summary>
         /// Invented snapshot: a free story (type 1), a DLC-type story, a room line no group speaks, and whatever
@@ -237,9 +246,9 @@ namespace CwyLs.ModLoader.Tests
         }
 
         [Theory]
-        [InlineData("1.19.0")]
-        [InlineData("1.18.2")]
-        [InlineData("2.0.0")]
+        [InlineData("2.0.1")]
+        [InlineData("2.1.0")]
+        [InlineData("3.0.0")]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("not a version")]
@@ -263,7 +272,7 @@ namespace CwyLs.ModLoader.Tests
         [Fact]
         public void F1_a_version_read_that_throws_is_an_unknown_build()
         {
-            var gate = new MakerDlcGate(MakerDlcMarkers.All, null, () => throw new InvalidOperationException("no version"), null);
+            var gate = new MakerDlcGate(MakerDlcMarkers.All, null, () => throw new InvalidOperationException("no version"), null, null, TypedPreDlc);
             Assert.False(gate.GameVersionConfirmed(out var running));
             Assert.Equal("unknown", running);
             Assert.Equal(new[] { "free_a" }, Typed(gate).Rows.Select(r => r.Id));
@@ -272,6 +281,7 @@ namespace CwyLs.ModLoader.Tests
         [Theory]
         [InlineData(MakerDlcMarkers.MadeForGameVersion)]
         [InlineData(MakerDlcMarkers.MadeForGameVersion + "+steam.1")]
+        [InlineData("1.18.1")]
         [InlineData("1.17.3")]
         public void F1_on_the_build_the_markers_were_made_for_or_an_older_one_room_lines_stay_listed(string version)
         {
@@ -286,7 +296,7 @@ namespace CwyLs.ModLoader.Tests
         public void F1_a_new_free_story_chapter_on_a_newer_build_stays_listed_when_its_groups_classify_as_free()
         {
             // The update adds a chapter whose groups are in the group list with a free type: not blanket-hidden.
-            var game = Typed(TypeGate("1.19.0"),
+            var game = Typed(TypeGate("2.1.0"),
                 extraNovel: new[]
                 {
                     new MakerGameNovelRow("10", "g_chapter_new", "chapter_a", null, null, null),

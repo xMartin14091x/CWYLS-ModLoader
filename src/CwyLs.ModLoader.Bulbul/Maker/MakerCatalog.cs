@@ -185,7 +185,7 @@ namespace CwyLs.ModLoader.Bulbul.Maker
         {
             try
             {
-                var view = await ViewAsync(cancel).ConfigureAwait(false);
+                var view = await ViewAsync(cancel, ColdCaptureWait, requireCurrent: true).ConfigureAwait(false);
                 return view.Ok
                     ? view.Value!.Line(id, lang)
                     : MakerResult<MakerLine>.Fail(view.Error!, view.Message ?? string.Empty);
@@ -197,18 +197,23 @@ namespace CwyLs.ModLoader.Bulbul.Maker
         }
 
         /// <summary>
-        /// What Pack Maker's DLC gate hides in the current game snapshot (<see cref="MakerCatalogGame.Gate"/>). Same snapshot rules
-        /// as every query; without a snapshot, its error (callers refuse: fail closed).
+        /// What Pack Maker's DLC gate hides in the current game snapshot (<see cref="MakerCatalogGame.Gate"/>).
+        /// Protected operations require a current, known verdict.
         /// </summary>
         /// <param name="cancel">Cancels the wait.</param>
         internal async Task<MakerResult<MakerDlcHidden>> HiddenAsync(CancellationToken cancel)
         {
             try
             {
-                var game = await GameAsync(cancel, ColdCaptureWait).ConfigureAwait(false);
-                return game.Ok
+                var game = await GameAsync(cancel, ColdCaptureWait, requireCurrent: true).ConfigureAwait(false);
+                if (!game.Ok)
+                {
+                    return MakerResult<MakerDlcHidden>.Fail(game.Error!, game.Message ?? "The game's lines are not loaded yet.");
+                }
+
+                return IsCurrentVerdict(game.Value!)
                     ? MakerResult<MakerDlcHidden>.Success(game.Value!.Hidden)
-                    : MakerResult<MakerDlcHidden>.Fail(game.Error!, game.Message ?? "The game's lines are not loaded yet.");
+                    : VerdictUnavailable<MakerDlcHidden>();
             }
             catch (Exception ex)
             {
@@ -319,12 +324,12 @@ namespace CwyLs.ModLoader.Bulbul.Maker
         /// </summary>
         private Task<MakerResult<MakerCatalogView>> ViewAsync(CancellationToken cancel) => ViewAsync(cancel, ColdCaptureWait);
 
-        private async Task<MakerResult<MakerCatalogView>> ViewAsync(CancellationToken cancel, TimeSpan coldWait)
+        private async Task<MakerResult<MakerCatalogView>> ViewAsync(CancellationToken cancel, TimeSpan coldWait, bool requireCurrent = false)
         {
             MakerResult<MakerGameData> game;
             using (MakerRequestTrace.Phase("catalog.game"))
             {
-                game = await GameAsync(cancel, coldWait).ConfigureAwait(false);
+                game = await GameAsync(cancel, coldWait, requireCurrent).ConfigureAwait(false);
             }
 
             if (!game.Ok)
@@ -380,7 +385,9 @@ namespace CwyLs.ModLoader.Bulbul.Maker
                         ("voiceSets", _view.Content.VoicePlan.Summarize()));
                 }
 
-                return MakerResult<MakerCatalogView>.Success(_view);
+                return requireCurrent && !IsCurrentVerdict(game.Value!)
+                    ? VerdictUnavailable<MakerCatalogView>()
+                    : MakerResult<MakerCatalogView>.Success(_view);
             }
             finally
             {
@@ -394,13 +401,15 @@ namespace CwyLs.ModLoader.Bulbul.Maker
         /// <see cref="StaleCaptureWait"/>, then answers from the previous snapshot while the capture finishes in the background
         /// (and announces <c>maker.catalog.changed</c> when it lands after a change, so a page refetches). With no snapshot
         /// at all it waits up to <paramref name="coldWait"/> for that capture: the game may be slow in the background.
+        /// Protected callers receive a failure if a current, known verdict cannot be read.
         /// </summary>
-        private async Task<MakerResult<MakerGameData>> GameAsync(CancellationToken cancel, TimeSpan coldWait)
+        private async Task<MakerResult<MakerGameData>> GameAsync(CancellationToken cancel, TimeSpan coldWait, bool requireCurrent)
         {
             var generation = Volatile.Read(ref _gameGeneration);
             var current = Volatile.Read(ref _snap);
             var partialExpired = current != null && !current.Data.ClipCacheKnown && MainThread.Now - current.BuiltAt > PartialSnapshotSeconds;
-            if (current != null && current.Generation == generation && !partialExpired)
+            if (current != null && current.Generation == generation && !partialExpired &&
+                (!requireCurrent || IsCurrentVerdict(current.Data)))
             {
                 return MakerResult<MakerGameData>.Success(current.Data);
             }
@@ -431,12 +440,14 @@ namespace CwyLs.ModLoader.Bulbul.Maker
                 var outcome = capture.Result;
                 if (outcome.Data != null)
                 {
-                    return MakerResult<MakerGameData>.Success(outcome.Data);
+                    return requireCurrent && !IsCurrentVerdict(outcome.Data)
+                        ? VerdictUnavailable<MakerGameData>()
+                        : MakerResult<MakerGameData>.Success(outcome.Data);
                 }
 
                 if (outcome.NotLoaded != null)
                 {
-                    return current != null
+                    return current != null && !requireCurrent
                         ? MakerResult<MakerGameData>.Success(current.Data)
                         : MakerResult<MakerGameData>.Fail(MakerErrorCodes.NotReady, outcome.NotLoaded);
                 }
@@ -447,14 +458,14 @@ namespace CwyLs.ModLoader.Bulbul.Maker
             {
                 failure = "The game has not answered within " + wait.TotalSeconds.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) +
                           " s (busy or in the background); Pack Maker keeps reading in the background, try again in a moment.";
-                if (current != null)
+                if (current != null && !requireCurrent)
                 {
                     Volatile.Write(ref _servedStale, 1);
                 }
             }
 
             // A busy main thread is not a reason to refuse a list we already have: answer from the previous snapshot.
-            if (current != null)
+            if (current != null && !requireCurrent)
             {
                 CwyLsModLoader.Log.LogDebug(LogPrefix + " catalog snapshot not refreshed yet, answering from the previous one: " + failure);
                 return MakerResult<MakerGameData>.Success(current.Data);
@@ -463,6 +474,16 @@ namespace CwyLs.ModLoader.Bulbul.Maker
             CwyLsModLoader.Log.LogWarning(LogPrefix + " catalog: " + failure);
             return MakerResult<MakerGameData>.Fail(MakerErrorCodes.Unavailable, failure);
         }
+
+        private bool IsCurrentVerdict(MakerGameData data)
+        {
+            var snapshot = Volatile.Read(ref _snap);
+            return data.Hidden.IsKnown && snapshot != null && ReferenceEquals(snapshot.Data, data)
+                && snapshot.Generation == Volatile.Read(ref _gameGeneration);
+        }
+
+        private static MakerResult<T> VerdictUnavailable<T>() =>
+            MakerResult<T>.Fail(MakerErrorCodes.NotReady, "The game's lines changed during the paid DLC check; try again in a moment.");
 
         /// <summary>
         /// The capture in flight, or a new one: <see cref="MakerCatalogGame.Capture"/> on the main thread with a long timeout,

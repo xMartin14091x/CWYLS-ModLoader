@@ -71,7 +71,8 @@ namespace CwyLs.ModLoader.Bulbul.Satone.Motion
             new PatchTarget(
                 "satone.look.init", GameAssembly, Heroine,
                 MemberKind.Method, "LookInitSlowly",
-                expectedSignature: "void LookInitSlowly()"),
+                new[] { "System.Nullable<System.Int64>" },
+                expectedSignature: "void LookInitSlowly(Nullable<long>)"),
 
             // Satone.CanInteract.
             new PatchTarget(

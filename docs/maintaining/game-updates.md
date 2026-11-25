@@ -16,6 +16,10 @@ fixed release. For maintainers of CWY:LS Mod Loader and of forks.
   cannot be read, it hides every line that no classified scenario group speaks (room and activity lines
   among them) until a loader release confirms the new build. Lines of groups with a known free type stay
   listed.
+- From game 2.0.0 the game flags its paid DLC groups itself (`ScenarioGroupData.MyPaceOnly`). The gate reads
+  that flag (and the DLC's "My Pace" scenario types) and hides those groups for everyone. If the flag cannot be
+  read on a build after 1.18.1, every group not in the known-free set (`MakerDlcBaseline`, read from 2.0.0) is hidden instead, with a
+  `MAKER DLC gate` log line saying why. Check that line after every update.
 - Content packs carry their own `gameVersion` and are checked separately (`docs/guide/versioning.md`).
 
 ## 2. Check the new build offline

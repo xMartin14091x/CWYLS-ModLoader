@@ -2,12 +2,13 @@
 
 # Namespace `CwyLs.ModLoader.Core.Api.Maker.Catalog`
 
-Assembly `CwyLs.ModLoader.Core` · 24 public type(s) · [API index](README.md)
+Assembly `CwyLs.ModLoader.Core` · 25 public type(s) · [API index](README.md)
 
 | Type | Kind | Summary |
 |---|---|---|
 | [`MakerAudioLength`](#makeraudiolength) | static class | The length of a pack's voice file, read from its headers without decoding any audio: a WAV's `fmt` and `data` chunks, an Ogg Vorbis file's identification header and the granule position of its last page. |
 | [`MakerCatalogView`](#makercatalogview) | sealed class | The catalog's answers, from one game snapshot and one read of the packs: the line list with search, filters and paging, one line, and the pack list. |
+| [`MakerDlcBaseline`](#makerdlcbaseline) | static class | Scenario group ids known to be free content: every group of game 2.0.0 (Steam build 26922947) that the game does not flag `MyPaceOnly` and that is not of a paid type (the DLC story type, the My Pace types, the ... |
 | [`MakerDlcGate`](#makerdlcgate) | sealed class | Pack Maker's DLC gate: decides from the game's scenario data which lines are paid DLC content, and hides them unless the player is known to own that DLC. |
 | [`MakerDlcHidden`](#makerdlchidden) | sealed class | Which game lines, groups and voice clips Pack Maker hides because they are paid DLC content the player is not known to own. |
 | [`MakerDlcMarker`](#makerdlcmarker) | sealed class | One rule that marks game lines as paid DLC content. |
@@ -223,6 +224,34 @@ The state of one line in one language, for diagnostics and tests.
 
 ---
 
+<a id="makerdlcbaseline"></a>
+
+## `MakerDlcBaseline`
+
+static class · `CwyLs.ModLoader.Core.Api.Maker.Catalog.MakerDlcBaseline` · assembly `CwyLs.ModLoader.Core`
+
+Scenario group ids known to be free content: every group of game 2.0.0 (Steam build 26922947) that the game does not flag `MyPaceOnly` and that is not of a paid type (the DLC story type, the My Pace types, the movement types), read from the game's own `ScenarioGroupMaster` on 2026-11-25, plus the 1.18.x groups 2.0.0 no longer lists. Ids only, never line text. Used only by the DLC gate's fail-closed fallback: when the game's DLC flag cannot be read on a build that should have it, a group outside this set may be new paid content, so it is hidden.
+
+<a id="makerdlcbaseline--capturedon"></a>
+
+### `const string CapturedOn = "2.0.0"`
+
+The game version this set was read from.
+
+<a id="makerdlcbaseline--lastversionwithoutflag"></a>
+
+### `const string LastVersionWithoutFlag = "1.18.1"`
+
+The last game version without the DLC flag (no paid content was flagged before it).
+
+<a id="makerdlcbaseline--knownfreegroups"></a>
+
+### `static IReadOnlyCollection<string> KnownFreeGroups { get; }`
+
+The group ids (619), ordinal.
+
+---
+
 <a id="makerdlcgate"></a>
 
 ## `MakerDlcGate`
@@ -257,6 +286,27 @@ Creates a gate that compares the running game's version with the build the marke
 - `gameVersion`: The running game's version (normally `Application.version`); null, blank, unreadable or throwing = unknown.
 - `madeFor`: The build the markers were made for; null = [`MakerDlcMarkers.MadeForGameVersion`](#makerdlcmarkers--madeforgameversion).
 
+<a id="makerdlcgate--ctor-ienumerable-makerdlcmarker-func-uint-makerdlcownership-func-string-string-string-ireadonlycollection-string"></a>
+
+### `MakerDlcGate(IEnumerable<MakerDlcMarker> markers, Func<uint, MakerDlcOwnership> ownership, Func<string> gameVersion, string madeFor, string flagExpectedFrom, IReadOnlyCollection<string> knownFreeGroups)`
+
+Creates a gate with its own flag rules (tests).
+
+**Parameters**
+
+- `markers`: The markers; null entries are dropped. Null or empty = nothing is DLC.
+- `ownership`: Ownership per Steam app id; null = unknown for every app (hide).
+- `gameVersion`: The running game's version; null, blank, unreadable or throwing = unknown.
+- `madeFor`: The build the markers were made for; null = [`MakerDlcMarkers.MadeForGameVersion`](#makerdlcmarkers--madeforgameversion).
+- `flagExpectedFrom`: The first game version with the DLC flag; null = [`MakerDlcMarkers.FlagExpectedFrom`](#makerdlcmarkers--flagexpectedfrom).
+- `knownFreeGroups`: Group ids known to be free; null = [`MakerDlcBaseline.KnownFreeGroups`](#makerdlcbaseline--knownfreegroups).
+
+<a id="makerdlcgate--flagexpectedfrom"></a>
+
+### `string FlagExpectedFrom { get; }`
+
+The first game version that has the DLC flag ([`MakerDlcMarkers.FlagExpectedFrom`](#makerdlcmarkers--flagexpectedfrom)).
+
 <a id="makerdlcgate--madefor"></a>
 
 ### `string MadeFor { get; }`
@@ -289,6 +339,12 @@ Decides what to hide in one game snapshot.
 
 **Returns:** The verdict; [`MakerDlcHidden.Unknown`](#makerdlchidden--unknown) when a type marker is active but no group list was captured. While a type marker is active, groups missing from the list or of unknown type are hidden; on a game build the markers were not made for ([`MakerDlcGate.GameVersionConfirmed`](#makerdlcgate--gameversionconfirmed)), lines no classified group speaks are hidden.
 
+<a id="makerdlcgate--flagexpected"></a>
+
+### `bool FlagExpected()`
+
+True when the running game should have the DLC flag: any version after [`MakerDlcBaseline.LastVersionWithoutFlag`](#makerdlcbaseline--lastversionwithoutflag) (1.18.1), or an unknown or unreadable one (fail closed). False only for 1.18.1 and older, which have no flag.
+
 <a id="makerdlcgate--gameversionconfirmed"></a>
 
 ### `bool GameVersionConfirmed(out string running)`
@@ -299,16 +355,30 @@ True when the running game is the build the markers were made for or an older on
 
 - `running`: The running version as read, or [`GameVersions.Unknown`](CwyLs.ModLoader.Core.Packs.md#gameversions--unknown).
 
-<a id="makerdlcgate--hidesgroup"></a>
+<a id="makerdlcgate--hidesgroup-string-int"></a>
 
 ### `bool HidesGroup(string id, int? scenario)`
 
 True when an active marker (its app not [`MakerDlcOwnership.Owned`](#makerdlcownership--owned)) marks the scenario group as DLC: by group id or by its `ScenarioType`, or when a type marker is active and the type is unknown (fail closed). For game-side paths outside the catalog (console `scene play`).
 
+Without the game's DLC flag (`null`): on a build that should have it, a group outside the known-free set is hidden (fail closed).
+
 **Parameters**
 
 - `id`: The scenario group id.
 - `scenario`: Its `ScenarioType` number, or null when unknown.
+
+<a id="makerdlcgate--hidesgroup-string-int-bool"></a>
+
+### `bool HidesGroup(string id, int? scenario, bool? dlcFlag)`
+
+[`MakerDlcGate.HidesGroup`](#makerdlcgate--hidesgroup-string-int) with the game's own DLC flag: a flagged group is hidden; from [`MakerDlcGate.FlagExpectedFrom`](#makerdlcgate--flagexpectedfrom) on, a group whose flag is null (unreadable) and that is not a pre-DLC group is hidden too.
+
+**Parameters**
+
+- `id`: The scenario group id.
+- `scenario`: Its `ScenarioType` number, or null when unknown.
+- `dlcFlag`: The game's DLC flag (true/false), or null when absent or unreadable.
 
 <a id="makerdlcgate--ownershipof"></a>
 
@@ -340,7 +410,7 @@ sealed class · `CwyLs.ModLoader.Core.Api.Maker.Catalog.MakerDlcHidden` · assem
 
 Which game lines, groups and voice clips Pack Maker hides because they are paid DLC content the player is not known to own. Immutable. [`MakerDlcHidden.IsKnown`](#makerdlchidden--isknown) is false when the gate could not decide (fail closed: callers refuse).
 
-<a id="makerdlchidden--ctor"></a>
+<a id="makerdlchidden--ctor-ienumerable-string-ienumerable-string-ienumerable-string-int-string"></a>
 
 ### `MakerDlcHidden(IEnumerable<string> lines, IEnumerable<string> groups, IEnumerable<string> voices, int unresolvedGroups, string summary)`
 
@@ -353,6 +423,21 @@ Creates a verdict.
 - `voices`: Voice clip names of hidden lines.
 - `unresolvedGroups`: Groups named by novel rows but missing from the group list (hidden while a type marker is active).
 - `summary`: One line for the log: what is hidden and why.
+
+<a id="makerdlchidden--ctor-ienumerable-string-ienumerable-string-ienumerable-string-int-string-ienumerable-string"></a>
+
+### `MakerDlcHidden(IEnumerable<string> lines, IEnumerable<string> groups, IEnumerable<string> voices, int unresolvedGroups, string summary, IEnumerable<string> novelRows)`
+
+Creates a verdict that also names the game's novel rows of hidden content.
+
+**Parameters**
+
+- `lines`: Hidden localisation ids.
+- `groups`: Hidden scenario group ids.
+- `voices`: Voice clip names of hidden lines.
+- `unresolvedGroups`: Groups named by novel rows but missing from the group list.
+- `summary`: One line for the log: what is hidden and why.
+- `novelRows`: Ids of the game's novel rows that belong to a hidden group or speak a hidden line.
 
 <a id="makerdlchidden--groupcount"></a>
 
@@ -377,6 +462,12 @@ How many lines are hidden.
 ### `static MakerDlcHidden None { get; }`
 
 Nothing hidden (no active marker matched anything).
+
+<a id="makerdlchidden--novelrowcount"></a>
+
+### `int NovelRowCount { get; }`
+
+How many of the game's novel rows belong to hidden content.
 
 <a id="makerdlchidden--summary"></a>
 
@@ -416,6 +507,16 @@ True when the line is hidden, or the verdict is unknown.
 
 - `id`: A localisation id.
 
+<a id="makerdlchidden--isnovelrow"></a>
+
+### `bool IsNovelRow(string rowId)`
+
+True when the game's novel row belongs to a hidden group or speaks a hidden line, or the verdict is unknown.
+
+**Parameters**
+
+- `rowId`: A novel row id.
+
 <a id="makerdlchidden--isvoice"></a>
 
 ### `bool IsVoice(string clip)`
@@ -425,6 +526,39 @@ True when the voice clip belongs to a hidden line, or the verdict is unknown.
 **Parameters**
 
 - `clip`: A voice clip name (file stem).
+
+<a id="makerdlchidden--protects"></a>
+
+### `static bool Protects(MakerDlcHidden verdict, string id)`
+
+True when `verdict` is missing (not computed yet) or hides the line: fail closed.
+
+**Parameters**
+
+- `verdict`: The verdict, or null.
+- `id`: A localisation id.
+
+<a id="makerdlchidden--protectsgroup"></a>
+
+### `static bool ProtectsGroup(MakerDlcHidden verdict, string id)`
+
+True when `verdict` is missing (not computed yet) or hides the group: fail closed.
+
+**Parameters**
+
+- `verdict`: The verdict, or null.
+- `id`: A scenario group id.
+
+<a id="makerdlchidden--protectsvoice"></a>
+
+### `static bool ProtectsVoice(MakerDlcHidden verdict, string clip)`
+
+True when `verdict` is missing (not computed yet) or hides the voice clip: fail closed.
+
+**Parameters**
+
+- `verdict`: The verdict, or null.
+- `clip`: A voice clip name.
 
 <a id="makerdlchidden--refusal"></a>
 
@@ -535,6 +669,7 @@ What a [`MakerDlcMarker`](#makerdlcmarker) matches.
 | <a id="makerdlcmarkerkind--scenariotype"></a>`ScenarioType` | 0 | A `ScenarioType` number: every scenario group of that type is DLC. |
 | <a id="makerdlcmarkerkind--group"></a>`Group` | 1 | A scenario group id, exact or `prefix*`. |
 | <a id="makerdlcmarkerkind--line"></a>`Line` | 2 | A localisation id, exact or `prefix*`. |
+| <a id="makerdlcmarkerkind--groupflag"></a>`GroupFlag` | 3 | The game's own paid-DLC flag on a scenario group ([`MakerGameGroup.DlcFlag`](#makergamegroup--dlcflag); the pattern names the game member, e.g. `MyPaceOnly`). A flagged group is DLC. From [`MakerDlcMarkers.FlagExpectedFrom`](#makerdlcmarkers--flagexpectedfrom) on, a group whose flag could not be read and that is not in [`MakerDlcBaseline.KnownFreeGroups`](#makerdlcbaseline--knownfreegroups) is hidden too (fail closed). |
 
 ---
 
@@ -546,15 +681,27 @@ static class · `CwyLs.ModLoader.Core.Api.Maker.Catalog.MakerDlcMarkers` · asse
 
 The DLC markers the loader ships. Code, not configuration: a list a user could empty would be a way around the gate, so only a loader release changes it, and adding a marker only ever hides more.
 
+<a id="makerdlcmarkers--dlcflagmember"></a>
+
+### `const string DlcFlagMember = "MyPaceOnly"`
+
+The game's own paid-DLC flag on a scenario group, `Bulbul.MasterData.ScenarioGroupData.MyPaceOnly` (game 2.0.0, 25 Nov 2026): the "Room & Cozy Activities Expansion" (in-game "My Pace") groups. The game checks it against `IDLCState.IsOwned(DLCType.MyPace)` (`DLCType.MyPace` = 3718890).
+
 <a id="makerdlcmarkers--dlcscenariotype"></a>
 
 ### `const int DlcScenarioType = 3`
 
 `Bulbul.MasterData.ScenarioType.DLCScenario`: the game's own type for DLC stories (no group used it in 1.17.3).
 
+<a id="makerdlcmarkers--flagexpectedfrom"></a>
+
+### `const string FlagExpectedFrom = "2.0.0"`
+
+The first game version that has [`MakerDlcMarkers.DlcFlagMember`](#makerdlcmarkers--dlcflagmember); from here on an unreadable flag hides (fail closed).
+
 <a id="makerdlcmarkers--madeforgameversion"></a>
 
-### `const string MadeForGameVersion = "1.18.1"`
+### `const string MadeForGameVersion = "2.0.0"`
 
 The game build these markers were made for ([`GameVersionGate.ExpectedGameVersion`](CwyLs.ModLoader.Core.md#gameversiongate--expectedgameversion)). On a newer or unreadable build the gate hides every line no classified group speaks (audit F1) until a loader release confirms the new build.
 
@@ -574,13 +721,25 @@ Steam app id of the game's DLC constant `NestopiSystem.Steam.BulbulSteamDLC.DLC_
 
 ### `static IReadOnlyList<MakerDlcMarker> BuiltIn { get; }`
 
-Always on: every group of the game's own DLC story type is DLC.
+Always on: every group of the game's own DLC story type, of a My Pace type, or carrying the game's own DLC flag is DLC.
 
 <a id="makerdlcmarkers--dlcday"></a>
 
 ### `static IReadOnlyList<MakerDlcMarker> DlcDay { get; }`
 
 The DLC's own groups and lines, filled when the DLC ships (24 Nov 2026) from that build's master data. Empty until then.
+
+<a id="makerdlcmarkers--movementlineprefixes"></a>
+
+### `static IReadOnlyList<string> MovementLinePrefixes { get; }`
+
+Localisation id prefixes of the lines game 2.0.0 picks at playback when Satone moves between the DLC's locations (`LocationMoveTextSelector`: departures `goto_<desk|bed|stairs>_`, arrivals `location_arrival_`). No novel row names them, so they are marked by id. Moving only exists in the DLC's My Pace mode.
+
+<a id="makerdlcmarkers--mypacescenariotypes"></a>
+
+### `static IReadOnlyList<int> MyPaceScenarioTypes { get; }`
+
+`ScenarioType` numbers game 2.0.0 added for the DLC's "My Pace" mode only (`HeroineClick_MyPace_*` 600-601, `SpeakWord_Player_MyPace*` 2800-2853, `SpeakWord_MyPace_Transition*` 2860-2861, `SpeakWord_MyPace_WorkStart` / `BreakStart` / `Finish` 3300-3500, `LocationMove_Departure` / `Arrival` 3600-3700 (moving between the DLC's locations), `MyPaceIntroduction` 3800). None exists in 1.18.1. Base-game groups the game also reuses in the My Pace pools (`ReactionTalkSelector`'s extra row ids, 39 groups, all in 1.18.1) are free content and stay listed.
 
 ---
 
@@ -670,6 +829,23 @@ Creates a snapshot through Pack Maker's DLC gate: the lines, novel rows and grou
 - `groups`: The scenario groups in the game's order (with their `ScenarioType`); null means none.
 - `problem`: Why the rows are missing, when they are.
 - `gate`: The DLC gate; null = no gate (nothing hidden). An unknown verdict makes the snapshot not loaded.
+
+<a id="makergamedata--ctor-ienumerable-makergamerow-ireadonlydictionary-string-double-ienumerable-string-ienumerable-makergamenovelrow-ienumerable-makergamegroup-string-makerdlcgate-ienumerable-makergamerow"></a>
+
+### `MakerGameData(IEnumerable<MakerGameRow> rows, IReadOnlyDictionary<string, double> clipLengths, IEnumerable<string> registeredVoices, IEnumerable<MakerGameNovelRow> novelRows, IEnumerable<MakerGameGroup> groups, string problem, MakerDlcGate gate, IEnumerable<MakerGameRow> gateOnlyRows)`
+
+Like the main constructor, with `gateOnlyRows`: the game's other localisation rows (no novel row speaks them, e.g. lines the game picks at playback by key). The DLC gate decides over them too, so routes keyed by such an id (Play, export checks) are refused for paid content, but they are never listed.
+
+**Parameters**
+
+- `rows`: The rows in the game's order; null entries and repeated ids (after the first) are dropped.
+- `clipLengths`: The game's own voice clips: name to length in seconds; null when unreadable.
+- `registeredVoices`: Voice names registered with the voice feature.
+- `novelRows`: The `NovelMaster` rows in the game's order; null means none.
+- `groups`: The scenario groups in the game's order (with their `ScenarioType`); null means none.
+- `problem`: Why the rows are missing, when they are.
+- `gate`: The DLC gate; null = no gate (nothing hidden). An unknown verdict makes the snapshot not loaded.
+- `gateOnlyRows`: Rows the gate decides over but the snapshot never lists; null means none.
 
 <a id="makergamedata--ctor-ienumerable-makergamerow-ireadonlydictionary-string-double-ienumerable-string-string"></a>
 
@@ -843,6 +1019,48 @@ Creates a group with its `ScenarioType` (the DLC gate reads it).
 
 - `ArgumentException`: `id` is blank.
 
+<a id="makergamegroup--ctor-string-string-int-bool"></a>
+
+### `MakerGameGroup(string id, string title, int? scenario, bool? dlcFlag)`
+
+Creates a group with its `ScenarioType` and the game's own paid-DLC flag (the DLC gate reads both).
+
+**Parameters**
+
+- `id`: The scenario group id. Required.
+- `title`: A readable title from the game's own localisation, or null.
+- `scenario`: The group's `ScenarioType` number, or null when unknown.
+- `dlcFlag`: The game's own "this group belongs to the paid DLC" flag (`ScenarioGroupData.MyPaceOnly` from game 2.0.0): true or false when read, null when the game has no such flag or it could not be read.
+
+**Exceptions**
+
+- `ArgumentException`: `id` is blank.
+
+<a id="makergamegroup--ctor-string-string-int-bool-string-string"></a>
+
+### `MakerGameGroup(string id, string title, int? scenario, bool? dlcFlag, string titleId, string subtitleId)`
+
+Creates a group with its type, the game's DLC flag and the localisation ids of its title and subtitle.
+
+**Parameters**
+
+- `id`: The scenario group id. Required.
+- `title`: A readable title from the game's own localisation, or null.
+- `scenario`: The group's `ScenarioType` number, or null when unknown.
+- `dlcFlag`: The game's own paid-DLC flag (true/false), or null when absent or unreadable.
+- `titleId`: The localisation id of the group's title (`TitleLocalizationID`), or null.
+- `subtitleId`: The localisation id of the group's subtitle (`SubtitleLocalizationID`), or null.
+
+**Exceptions**
+
+- `ArgumentException`: `id` is blank.
+
+<a id="makergamegroup--dlcflag"></a>
+
+### `bool? DlcFlag { get; }`
+
+The game's own paid-DLC flag: true or false when read, null when absent or unreadable.
+
 <a id="makergamegroup--id"></a>
 
 ### `string Id { get; }`
@@ -855,11 +1073,23 @@ The scenario group id.
 
 The group's `ScenarioType` number, or null when the adapter did not read it.
 
+<a id="makergamegroup--subtitleid"></a>
+
+### `string SubtitleId { get; }`
+
+The localisation id of the group's subtitle, or null. Hidden with the group.
+
 <a id="makergamegroup--title"></a>
 
 ### `string Title { get; }`
 
 A readable title, or null.
+
+<a id="makergamegroup--titleid"></a>
+
+### `string TitleId { get; }`
+
+The localisation id of the group's title, or null. Hidden with the group.
 
 ---
 

@@ -109,6 +109,33 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
         /// <param name="scenario">The group's <c>ScenarioType</c> number, or null when unknown.</param>
         /// <exception cref="ArgumentException"><paramref name="id"/> is blank.</exception>
         public MakerGameGroup(string id, string? title, int? scenario)
+            : this(id, title, scenario, null)
+        {
+        }
+
+        /// <summary>Creates a group with its <c>ScenarioType</c> and the game's own paid-DLC flag (the DLC gate reads both).</summary>
+        /// <param name="id">The scenario group id. Required.</param>
+        /// <param name="title">A readable title from the game's own localisation, or null.</param>
+        /// <param name="scenario">The group's <c>ScenarioType</c> number, or null when unknown.</param>
+        /// <param name="dlcFlag">
+        /// The game's own "this group belongs to the paid DLC" flag (<c>ScenarioGroupData.MyPaceOnly</c> from game 2.0.0): true or
+        /// false when read, null when the game has no such flag or it could not be read.
+        /// </param>
+        /// <exception cref="ArgumentException"><paramref name="id"/> is blank.</exception>
+        public MakerGameGroup(string id, string? title, int? scenario, bool? dlcFlag)
+            : this(id, title, scenario, dlcFlag, null, null)
+        {
+        }
+
+        /// <summary>Creates a group with its type, the game's DLC flag and the localisation ids of its title and subtitle.</summary>
+        /// <param name="id">The scenario group id. Required.</param>
+        /// <param name="title">A readable title from the game's own localisation, or null.</param>
+        /// <param name="scenario">The group's <c>ScenarioType</c> number, or null when unknown.</param>
+        /// <param name="dlcFlag">The game's own paid-DLC flag (true/false), or null when absent or unreadable.</param>
+        /// <param name="titleId">The localisation id of the group's title (<c>TitleLocalizationID</c>), or null.</param>
+        /// <param name="subtitleId">The localisation id of the group's subtitle (<c>SubtitleLocalizationID</c>), or null.</param>
+        /// <exception cref="ArgumentException"><paramref name="id"/> is blank.</exception>
+        public MakerGameGroup(string id, string? title, int? scenario, bool? dlcFlag, string? titleId, string? subtitleId)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -118,7 +145,13 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
             Id = id;
             Title = string.IsNullOrWhiteSpace(title) ? null : title;
             Scenario = scenario;
+            DlcFlag = dlcFlag;
+            TitleId = IsLocalizationId(titleId) ? titleId : null;
+            SubtitleId = IsLocalizationId(subtitleId) ? subtitleId : null;
         }
+
+        // "0" is the game's own "none" value.
+        private static bool IsLocalizationId(string? id) => !string.IsNullOrWhiteSpace(id) && id != "0";
 
         /// <summary>The scenario group id.</summary>
         public string Id { get; }
@@ -128,6 +161,15 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
 
         /// <summary>The group's <c>ScenarioType</c> number, or null when the adapter did not read it.</summary>
         public int? Scenario { get; }
+
+        /// <summary>The game's own paid-DLC flag: true or false when read, null when absent or unreadable.</summary>
+        public bool? DlcFlag { get; }
+
+        /// <summary>The localisation id of the group's title, or null. Hidden with the group.</summary>
+        public string? TitleId { get; }
+
+        /// <summary>The localisation id of the group's subtitle, or null. Hidden with the group.</summary>
+        public string? SubtitleId { get; }
     }
 
     /// <summary>
@@ -201,6 +243,32 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
             IEnumerable<MakerGameGroup?>? groups,
             string? problem,
             MakerDlcGate? gate)
+            : this(rows, clipLengths, registeredVoices, novelRows, groups, problem, gate, null)
+        {
+        }
+
+        /// <summary>
+        /// Like the main constructor, with <paramref name="gateOnlyRows"/>: the game's other localisation rows (no novel row speaks
+        /// them, e.g. lines the game picks at playback by key). The DLC gate decides over them too, so routes keyed by such an id
+        /// (Play, export checks) are refused for paid content, but they are never listed.
+        /// </summary>
+        /// <param name="rows">The rows in the game's order; null entries and repeated ids (after the first) are dropped.</param>
+        /// <param name="clipLengths">The game's own voice clips: name to length in seconds; null when unreadable.</param>
+        /// <param name="registeredVoices">Voice names registered with the voice feature.</param>
+        /// <param name="novelRows">The <c>NovelMaster</c> rows in the game's order; null means none.</param>
+        /// <param name="groups">The scenario groups in the game's order (with their <c>ScenarioType</c>); null means none.</param>
+        /// <param name="problem">Why the rows are missing, when they are.</param>
+        /// <param name="gate">The DLC gate; null = no gate (nothing hidden). An unknown verdict makes the snapshot not loaded.</param>
+        /// <param name="gateOnlyRows">Rows the gate decides over but the snapshot never lists; null means none.</param>
+        public MakerGameData(
+            IEnumerable<MakerGameRow?>? rows,
+            IReadOnlyDictionary<string, double>? clipLengths,
+            IEnumerable<string>? registeredVoices,
+            IEnumerable<MakerGameNovelRow?>? novelRows,
+            IEnumerable<MakerGameGroup?>? groups,
+            string? problem,
+            MakerDlcGate? gate,
+            IEnumerable<MakerGameRow?>? gateOnlyRows)
         {
             var hidden = MakerDlcHidden.None;
             if (gate != null && string.IsNullOrWhiteSpace(problem))
@@ -208,7 +276,9 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Catalog
                 var gateRows = NonNull(rows);
                 var gateNovel = NonNull(novelRows);
                 var gateGroups = NonNull(groups);
-                hidden = gate.Decide(gateRows, gateNovel, gateGroups);
+                var decideRows = new List<MakerGameRow>(gateRows);
+                decideRows.AddRange(NonNull(gateOnlyRows));
+                hidden = gate.Decide(decideRows, gateNovel, gateGroups);
                 if (!hidden.IsKnown)
                 {
                     // Fail closed: a snapshot whose DLC lines cannot be told apart lists nothing.

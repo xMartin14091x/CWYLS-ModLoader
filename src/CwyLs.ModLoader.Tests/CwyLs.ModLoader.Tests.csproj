@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../CwyLs.ModLoader.Core/CwyLs.ModLoader.Core.csproj" />
+    <Compile Include="../CwyLs.ModLoader.Bulbul/PackLines/PackLinesReactionDeck.cs" Link="PackLinesReactionDeck.cs" />
     <!-- Standalone headless adapter regression harness; its fake engine types stay out of xUnit. -->
     <Compile Remove="PreviewAdapterHarness/**/*.cs" />
   </ItemGroup>

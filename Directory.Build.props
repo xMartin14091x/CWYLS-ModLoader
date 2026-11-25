@@ -17,8 +17,9 @@
     <SteamGameRoot Condition="'$(OS)' == 'Windows_NT' and '$(SteamGameRoot)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Chill with You Lo-Fi Story</SteamGameRoot>
     <SteamGameRoot Condition="'$(OS)' != 'Windows_NT'">$(HOME)/Library/Application Support/Steam/steamapps/common/Chill with You Lo-Fi Story</SteamGameRoot>
 
-    <GameManagedPath Condition="'$(OS)' == 'Windows_NT'">$(SteamGameRoot)\Chill With You_Data\Managed</GameManagedPath>
-    <GameManagedPath Condition="'$(OS)' != 'Windows_NT'">$(SteamGameRoot)/Chill With You.app/Contents/Resources/Data/Managed</GameManagedPath>
+    <!-- GameManagedPath given on the command line or as an environment variable wins (e.g. a copy of a newer game build's Managed folder). -->
+    <GameManagedPath Condition="'$(OS)' == 'Windows_NT' and '$(GameManagedPath)' == ''">$(SteamGameRoot)\Chill With You_Data\Managed</GameManagedPath>
+    <GameManagedPath Condition="'$(OS)' != 'Windows_NT' and '$(GameManagedPath)' == ''">$(SteamGameRoot)/Chill With You.app/Contents/Resources/Data/Managed</GameManagedPath>
   </PropertyGroup>
 
   <!--
@@ -37,7 +38,7 @@
     stays at major.minor.0.0 within a release line, so a mod built against 0.9.0 binds to 0.9.x.
   -->
   <PropertyGroup Condition="$(MSBuildProjectName.StartsWith('CwyLs.ModLoader'))">
-    <CwyLsVersion>0.9.2</CwyLsVersion>
+    <CwyLsVersion>0.9.3</CwyLsVersion>
     <CwyLsVersionSuffix>preview</CwyLsVersionSuffix>
     <Version>$(CwyLsVersion)</Version>
     <AssemblyVersion>$([System.Version]::Parse('$(CwyLsVersion)').ToString(2)).0.0</AssemblyVersion>

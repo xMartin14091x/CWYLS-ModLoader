@@ -15,22 +15,6 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
     /// never-throwing call into <see cref="PackLinesRuntime"/>; on any failure the game's own code
     /// runs as if we were not there.
     /// </summary>
-    /// <remarks>
-    /// <list type="table">
-    ///   <listheader><term>Game member (1.17.3)</term><description>Patch and why</description></listheader>
-    ///   <item><term><c>RandomList.InitList</c></term><description>Postfix: a bound list started a new cycle, so its pack episodes are owed again.</description></item>
-    ///   <item><term><c>ReactionTalkSelector.Setup</c></term><description>Postfix: bind the click, self-talk, answer-choice, clock and worked-time lists.</description></item>
-    ///   <item><term><c>FacilityClickHeroine.OneWord(ScenarioType)</c>, <c>AnswerChoiceStory()</c></term><description>Prefix: every click/self-talk/answer-choice pick happens inside these two, so the gate runs here, at pick time, and each list with weighted lines rolls once (a winner goes in front). Finalizer: weighted lines the game did not read leave the lists again.</description></item>
-    ///   <item><term><c>ReactionTalkSelector.GetNextBreakHeroineSelfShortTalkSelection</c></term><description>Postfix: a pack clock line counts toward its slot's once-a-day check.</description></item>
-    ///   <item><term><c>PomodoroVoiceSelector.Setup</c></term><description>Postfix: bind the timer lists.</description></item>
-    ///   <item><term><c>PomodoroVoiceSelector.TakeNext{WorkStart,BreakStart,Finish}Voice</c></term><description>Prefix: the gate (with the weighted roll), and an armed <c>lines test</c> timer line. Finalizer: as for the clicks.</description></item>
-    ///   <item><term>the eight two-list <c>*VoiceSelector.TakeNextVoice</c></term><description>Prefix: answer for a pack episode before the game indexes its per-episode table with it (e.g. <c>NormalWorkStartVoiceSelector</c>).</description></item>
-    ///   <item><term><c>SmallTalkSelector.Setup</c>, <c>LotterySmallTalk</c></term><description>Postfix: take pack lines out of the lottery cache; prefix: put the unweighted ones back exactly while their language is shown, then roll the weighted ones (a win replaces the lottery); postfix: "played last" bookkeeping.</description></item>
-    ///   <item><term><c>SaveDataManager.SaveScenarioProgressData</c></term><description>Not patched here: master data's save filter (<c>MasterDataSaveFilter</c>) is the only one; pack lines join it, and stay off without it.</description></item>
-    ///   <item><term><c>GameStartTalkSelector.GetGameStartTalk(ScenarioType)</c> (1.18.0)</term><description>Postfix: a startup-greeting pack line may replace the episode the game drew (<see cref="PackLinesGameStart"/>).</description></item>
-    ///   <item><term><c>GameStartTalkSelector.UseGameStartTalk(ScenarioType)</c> (1.18.0)</term><description>Prefix: skipped once after a pack pick, so the save's greeting deck does not lose a game line the player never heard.</description></item>
-    /// </list>
-    /// </remarks>
     internal static class PackLinesPatches
     {
         /// <summary>Harmony id of these patches.</summary>
@@ -56,20 +40,32 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             var game = typeof(global::RandomList).Assembly;
 
             Plan(plan, missing, typeof(global::RandomList), PackLinesPatchTargets.InitListMethod, Type.EmptyTypes, postfix: nameof(InitListPostfix));
-            Plan(plan, missing, typeof(global::ReactionTalkSelector), "Setup", Type.EmptyTypes, postfix: nameof(ReactionSetupPostfix));
-            Plan(plan, missing, typeof(Game.FacilityClickHeroine), "OneWord", new[] { typeof(Master.ScenarioType) },
-                prefix: nameof(ClickPickPrefix), finalizer: nameof(ClickPickFinalizer));
+            var reaction = typeof(global::ReactionTalkSelector);
+            var poolParameters = new[] { typeof(Game.LocationType), typeof(bool) };
+            var groupByRef = typeof(Master.ScenarioGroupData).MakeByRefType();
+            Plan(plan, missing, reaction, "Setup", new[] { typeof(IReadOnlyList<Master.ScenarioGroupData>), typeof(Game.ScenarioPlayableLocations) },
+                prefix: nameof(ReactionSetupPrefix), postfix: nameof(ReactionSetupPostfix));
+            Plan(plan, missing, reaction, PackLinesPatchTargets.SelfTalkMethod,
+                new[] { typeof(Game.LocationType), typeof(Game.TimeOfDayProvider.TimeOfDayType), typeof(bool), groupByRef },
+                prefix: nameof(SelfTalkPickPrefix), postfix: nameof(SelfTalkPickPostfix), finalizer: nameof(SelectorPickFinalizer));
+            Plan(plan, missing, reaction, "TryFindRow", new[] { typeof(Game.ScenarioInfo), groupByRef }, prefix: nameof(SelfTalkFindPrefix));
+            Plan(plan, missing, reaction, "Commit", new[] { typeof(Master.ScenarioGroupData) }, prefix: nameof(ReactionCommitPrefix));
+            Plan(plan, missing, typeof(Game.LocationTalkPool), "TryPeek",
+                new[] { typeof(Game.LocationType), typeof(bool), groupByRef }, prefix: nameof(ReactionPoolPeekPrefix));
+            Plan(plan, missing, typeof(Game.LocationTalkPool), "Refill", poolParameters, postfix: nameof(ReactionPoolRefillPostfix));
+            Plan(plan, missing, typeof(Game.FacilityClickHeroine), "StartReaction", new[] { typeof(Master.ScenarioType) },
+                prefix: nameof(StartReactionPrefix));
             Plan(plan, missing, typeof(Game.FacilityClickHeroine), "AnswerChoiceStory", Type.EmptyTypes,
-                prefix: nameof(ClickPickPrefix), finalizer: nameof(ClickPickFinalizer));
-            Plan(plan, missing, typeof(global::ReactionTalkSelector), "GetNextBreakHeroineSelfShortTalkSelection",
-                new[] { typeof(Game.TimeOfDayProvider.TimeOfDayType) }, postfix: nameof(SelfTalkPickPostfix));
+                prefix: nameof(AnswerChoicePrefix), finalizer: nameof(AnswerChoiceFinalizer));
+
+            var timerParameters = new[] { typeof(bool), typeof(Game.LocationType) };
             Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "Setup", Type.EmptyTypes, postfix: nameof(TimerSetupPostfix));
-            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextWorkStartVoice", Type.EmptyTypes,
-                prefix: nameof(WorkStartPrefix), finalizer: nameof(TimerPickFinalizer));
-            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextBreakStartVoice", Type.EmptyTypes,
-                prefix: nameof(BreakStartPrefix), finalizer: nameof(TimerPickFinalizer));
-            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextFinishVoice", Type.EmptyTypes,
-                prefix: nameof(FinishPrefix), finalizer: nameof(TimerPickFinalizer));
+            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextWorkStartVoice", timerParameters,
+                prefix: nameof(WorkStartPrefix), finalizer: nameof(SelectorPickFinalizer));
+            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextBreakStartVoice", timerParameters,
+                prefix: nameof(BreakStartPrefix), finalizer: nameof(SelectorPickFinalizer));
+            Plan(plan, missing, typeof(global::PomodoroVoiceSelector), "TakeNextFinishVoice", timerParameters,
+                prefix: nameof(FinishPrefix), finalizer: nameof(SelectorPickFinalizer));
 
             foreach (var timer in PackLinesPatchTargets.TimerSelectors)
             {
@@ -88,9 +84,21 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 Plan(plan, missing, type, "TakeNextVoice", Type.EmptyTypes, prefix: nameof(TakeNextVoicePrefix));
             }
 
-            Plan(plan, missing, typeof(global::SmallTalkSelector), "Setup", Type.EmptyTypes, postfix: nameof(SmallTalkSetupPostfix));
-            Plan(plan, missing, typeof(global::SmallTalkSelector), "LotterySmallTalk",
-                new[] { typeof(global::SmallTalkSelector.PlayTiming) }, prefix: nameof(LotteryPrefix), postfix: nameof(LotteryPostfix));
+            var smallTalk = typeof(global::SmallTalkSelector);
+            var locationParameter = new[] { typeof(Game.LocationType) };
+            Plan(plan, missing, smallTalk, "Setup", Type.EmptyTypes, postfix: nameof(SmallTalkSetupPostfix));
+            Plan(plan, missing, smallTalk, "LotterySmallTalk",
+                new[] { typeof(global::SmallTalkSelector.PlayTiming), typeof(Game.LocationType) },
+                prefix: nameof(LotteryPrefix), postfix: nameof(LotteryPostfix), finalizer: nameof(SmallTalkFinalizer));
+            Plan(plan, missing, smallTalk, "CanPlayReadyTalk", locationParameter,
+                prefix: nameof(CanPlayReadyPrefix), postfix: nameof(CanPlayReadyPostfix), finalizer: nameof(SmallTalkFinalizer));
+            Plan(plan, missing, smallTalk, "ReserveReadyTalk", locationParameter,
+                prefix: nameof(ReserveReadyPrefix), postfix: nameof(LotteryPostfix), finalizer: nameof(SmallTalkFinalizer));
+            Plan(plan, missing, smallTalk, PackLinesPatchTargets.PlayableEpisodeMethod,
+                new[] { typeof(Master.ScenarioGroupData), typeof(global::SmallTalkSelector.PlayTiming), typeof(Game.LocationType), typeof(Game.StairsSeat?) },
+                prefix: nameof(SmallTalkTimingPrefix));
+            Plan(plan, missing, typeof(Game.ScenarioPlayableLocations), "IsPlayableAt",
+                new[] { typeof(string), typeof(Game.LocationType) }, postfix: nameof(PlayableAtPostfix));
             Plan(plan, missing, typeof(global::GameStartTalkSelector), "GetGameStartTalk",
                 new[] { typeof(Master.ScenarioType) }, postfix: nameof(GameStartPickPostfix));
             Plan(plan, missing, typeof(global::GameStartTalkSelector), "UseGameStartTalk",
@@ -154,7 +162,18 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
         }
 
-        /// <summary>Postfix of <c>ReactionTalkSelector.Setup</c>.</summary>
+        internal static void ReactionSetupPrefix(ref IReadOnlyList<Master.ScenarioGroupData> __0)
+        {
+            try
+            {
+                __0 = PackLinesRuntime.WithoutPackRows(__0);
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("reaction master rows", ex);
+            }
+        }
+
         internal static void ReactionSetupPostfix(object __instance)
         {
             try
@@ -167,24 +186,31 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
         }
 
-        /// <summary>Prefix of <c>FacilityClickHeroine.OneWord(ScenarioType)</c> and <c>AnswerChoiceStory()</c>.</summary>
-        internal static void ClickPickPrefix(object __instance)
+        internal static void StartReactionPrefix(object __instance)
         {
             try
             {
-                PackLinesRuntime.GateClickFacility(__instance);
+                PackLinesRuntime.CheckForcedClick(__instance);
             }
             catch (Exception ex)
             {
-                PackLinesRuntime.ReportOnce("click pick", ex);
+                PackLinesRuntime.ReportOnce("forced click", ex);
             }
         }
 
-        /// <summary>
-        /// Finalizer of <c>FacilityClickHeroine.OneWord(ScenarioType)</c> and <c>AnswerChoiceStory()</c>:
-        /// runs after the pick, thrown or not - weighted lines the game did not read leave its lists.
-        /// </summary>
-        internal static void ClickPickFinalizer(object __instance)
+        internal static void AnswerChoicePrefix(object __instance)
+        {
+            try
+            {
+                PackLinesRuntime.GateAnswerChoice(__instance, PackLinesRuntime.RoomIsBaseDesk());
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("answer-choice pick", ex);
+            }
+        }
+
+        internal static void AnswerChoiceFinalizer(object __instance)
         {
             try
             {
@@ -192,33 +218,115 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
             catch (Exception ex)
             {
-                PackLinesRuntime.ReportOnce("click pick end", ex);
+                PackLinesRuntime.ReportOnce("answer-choice pick end", ex);
             }
         }
 
-        /// <summary>Finalizer of <c>PomodoroVoiceSelector.TakeNext{WorkStart,BreakStart,Finish}Voice</c>: as <see cref="ClickPickFinalizer"/>.</summary>
-        internal static void TimerPickFinalizer(object __instance)
+        internal static void SelfTalkPickPrefix(object __instance, Game.LocationType __0, bool __2)
         {
             try
             {
-                PackLinesRuntime.EndTimerPick(__instance);
+                PackLinesRuntime.GateReaction(__instance, PackLinesRuntime.IsBaseDesk(__0, __2));
             }
             catch (Exception ex)
             {
-                PackLinesRuntime.ReportOnce("timer pick end", ex);
+                PackLinesRuntime.ReportOnce("self-talk gate", ex);
             }
         }
 
-        /// <summary>Postfix of <c>ReactionTalkSelector.GetNextBreakHeroineSelfShortTalkSelection</c>.</summary>
-        internal static void SelfTalkPickPostfix(object __instance, (Master.ScenarioType scenarioType, int episodeNumber) __result)
+        internal static bool SelfTalkFindPrefix(object __instance, Game.ScenarioInfo? __0,
+            ref Master.ScenarioGroupData __1, ref bool __result)
         {
             try
             {
-                PackLinesRuntime.AfterSelfTalkPick(__instance, (int)__result.scenarioType, __result.episodeNumber);
+                return UseReactionRow(PackLinesRuntime.FindSelfTalk(__instance, __0), ref __1, ref __result);
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("self-talk row", ex);
+                return true;
+            }
+        }
+
+        internal static void SelfTalkPickPostfix(object __instance, bool __result, Master.ScenarioGroupData? __3)
+        {
+            try
+            {
+                if (__result && __3 != null)
+                {
+                    PackLinesRuntime.AfterSelfTalkPick(__instance, (int)__3.Scenario, (int)__3.EpisodeNumber);
+                }
             }
             catch (Exception ex)
             {
                 PackLinesRuntime.ReportOnce("self-talk pick", ex);
+            }
+        }
+
+        internal static bool ReactionPoolPeekPrefix(Game.LocationTalkPool __instance, Game.LocationType __0, bool __1,
+            ref Master.ScenarioGroupData __2, ref bool __result)
+        {
+            try
+            {
+                return !PackLinesRuntime.IsBaseDesk(__0, __1)
+                       || UseReactionRow(PackLinesRuntime.PeekReaction(__instance), ref __2, ref __result);
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("reaction pool pick", ex);
+                return true;
+            }
+        }
+
+        private static bool UseReactionRow(Master.ScenarioGroupData? row, ref Master.ScenarioGroupData resultRow, ref bool result)
+        {
+            if (row == null)
+            {
+                return true;
+            }
+
+            resultRow = row;
+            result = true;
+            return false;
+        }
+
+        internal static void ReactionPoolRefillPostfix(Game.LocationTalkPool __instance, Game.LocationType __0, bool __1)
+        {
+            try
+            {
+                if (PackLinesRuntime.IsBaseDesk(__0, __1))
+                {
+                    PackLinesRuntime.RefillReaction(__instance);
+                }
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("reaction pool refill", ex);
+            }
+        }
+
+        internal static bool ReactionCommitPrefix(object __instance, Master.ScenarioGroupData __0)
+        {
+            try
+            {
+                return PackLinesRuntime.CommitReaction(__instance, __0);
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("reaction commit", ex);
+                return true;
+            }
+        }
+
+        internal static void SelectorPickFinalizer(object __instance)
+        {
+            try
+            {
+                PackLinesRuntime.EndSelectorPick(__instance);
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("selector pick end", ex);
             }
         }
 
@@ -236,16 +344,16 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
         }
 
         /// <summary>Prefix of <c>PomodoroVoiceSelector.TakeNextWorkStartVoice</c>.</summary>
-        internal static bool WorkStartPrefix(object __instance, ref Game.ScenarioInfo __result) =>
-            TimerPick(__instance, PackLineTimerPhase.WorkStart, ref __result);
+        internal static bool WorkStartPrefix(object __instance, bool __0, Game.LocationType __1, ref Game.ScenarioInfo __result) =>
+            TimerPick(__instance, PackLineTimerPhase.WorkStart, __0, __1, ref __result);
 
         /// <summary>Prefix of <c>PomodoroVoiceSelector.TakeNextBreakStartVoice</c>.</summary>
-        internal static bool BreakStartPrefix(object __instance, ref Game.ScenarioInfo __result) =>
-            TimerPick(__instance, PackLineTimerPhase.BreakStart, ref __result);
+        internal static bool BreakStartPrefix(object __instance, bool __0, Game.LocationType __1, ref Game.ScenarioInfo __result) =>
+            TimerPick(__instance, PackLineTimerPhase.BreakStart, __0, __1, ref __result);
 
         /// <summary>Prefix of <c>PomodoroVoiceSelector.TakeNextFinishVoice</c>.</summary>
-        internal static bool FinishPrefix(object __instance, ref Game.ScenarioInfo __result) =>
-            TimerPick(__instance, PackLineTimerPhase.Finish, ref __result);
+        internal static bool FinishPrefix(object __instance, bool __0, Game.LocationType __1, ref Game.ScenarioInfo __result) =>
+            TimerPick(__instance, PackLineTimerPhase.Finish, __0, __1, ref __result);
 
         /// <summary>Prefix of a two-list timer selector's <c>TakeNextVoice</c>.</summary>
         internal static bool TakeNextVoicePrefix(object __instance, ref int __result)
@@ -293,50 +401,113 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
         }
 
-        /// <summary>
-        /// Prefix of <c>SmallTalkSelector.LotterySmallTalk(PlayTiming)</c>: the unweighted lines join or
-        /// leave the lottery's cache, then the weighted ones roll; a weighted win is the lottery's
-        /// result and the lottery itself does not run.
-        /// </summary>
-        internal static bool LotteryPrefix(object __instance, global::SmallTalkSelector.PlayTiming __0, ref float __result)
-        {
-            try
-            {
-                PackLinesRuntime.GateSmallTalk(__instance);
-            }
-            catch (Exception ex)
-            {
-                PackLinesRuntime.ReportOnce("small-talk lottery", ex);
-            }
+        internal static bool LotteryPrefix(global::SmallTalkSelector __instance, global::SmallTalkSelector.PlayTiming __0,
+            Game.LocationType __1, ref float __result, out bool __state) =>
+            SmallTalkPick(__instance, __0, __1, ready: false, ref __result, out __state);
 
+        internal static bool ReserveReadyPrefix(global::SmallTalkSelector __instance, Game.LocationType __0,
+            ref float __result, out bool __state) =>
+            SmallTalkPick(__instance, global::SmallTalkSelector.PlayTiming.Break, __0, ready: true, ref __result, out __state);
+
+        private static bool SmallTalkPick(global::SmallTalkSelector selector, global::SmallTalkSelector.PlayTiming timing,
+            Game.LocationType location, bool ready, ref float result, out bool ownsScope)
+        {
+            ownsScope = false;
             try
             {
-                // __0 binds the play timing by position, so a renamed parameter in a game update cannot unpatch us.
-                var episode = PackLinesRuntime.RollSmallTalk(__instance, (int)__0);
-                if (episode.HasValue)
+                PackLinesRuntime.BeginSmallTalk(selector, location, out ownsScope);
+                if (ownsScope && PackLinesRuntime.RollSmallTalk(selector, timing, ready) is float episode)
                 {
-                    __result = episode.Value;
+                    result = episode;
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                PackLinesRuntime.ReportOnce("weighted small talk", ex);
+                PackLinesRuntime.ReportOnce("small-talk pick", ex);
             }
 
             return true;
         }
 
-        /// <summary>Postfix of <c>SmallTalkSelector.LotterySmallTalk</c>: what the pick means for "played last".</summary>
-        internal static void LotteryPostfix(float __result)
+        internal static void CanPlayReadyPrefix(object __instance, Game.LocationType __0, out bool __state)
         {
+            __state = false;
             try
             {
-                PackLinesRuntime.AfterSmallTalkLottery(__result);
+                PackLinesRuntime.BeginSmallTalk(__instance, __0, out __state);
             }
             catch (Exception ex)
             {
-                PackLinesRuntime.ReportOnce("small-talk lottery end", ex);
+                PackLinesRuntime.ReportOnce("small-talk availability", ex);
+            }
+        }
+
+        internal static void CanPlayReadyPostfix(global::SmallTalkSelector __instance, bool __state, ref bool __result)
+        {
+            // During ReserveReadyTalk, a missed weight must fall back to the real cache.
+            if (!__state || __result)
+            {
+                return;
+            }
+
+            try
+            {
+                __result = PackLinesRuntime.HasWeightedReadyTalk(__instance);
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("weighted small-talk availability", ex);
+            }
+        }
+
+        internal static void LotteryPostfix(float __result, bool __state, bool __runOriginal)
+        {
+            if (__state && __runOriginal)
+            {
+                PackLinesRuntime.AfterSmallTalkLottery(__result);
+            }
+        }
+
+        internal static void SmallTalkFinalizer(bool __state)
+        {
+            try
+            {
+                PackLinesRuntime.EndSmallTalk(__state);
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("small-talk pick end", ex);
+            }
+        }
+
+        internal static void SmallTalkTimingPrefix(ref Master.ScenarioGroupData __0, global::SmallTalkSelector.PlayTiming __1, Game.LocationType __2)
+        {
+            try
+            {
+                if (__1 == global::SmallTalkSelector.PlayTiming.Break && __2 == Game.LocationType.Desk)
+                {
+                    __0 = PackLinesRuntime.BreakTimingRow(__0);
+                }
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("small-talk timing", ex);
+            }
+        }
+
+        internal static void PlayableAtPostfix(string __0, Game.LocationType __1, ref bool __result)
+        {
+            try
+            {
+                if (PackLinesRuntime.PackSmallTalkPlayableAt(__0, __1) is bool playable)
+                {
+                    __result = playable;
+                }
+            }
+            catch (Exception ex)
+            {
+                PackLinesRuntime.ReportOnce("small-talk location", ex);
             }
         }
 
@@ -371,14 +542,21 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
         }
 
-        private static bool TimerPick(object instance, PackLineTimerPhase phase, ref Game.ScenarioInfo result)
+        private static bool TimerPick(object instance, PackLineTimerPhase phase, bool isMyPace, Game.LocationType location,
+            ref Game.ScenarioInfo result)
         {
             try
             {
-                PackLinesRuntime.GateTimers(instance);
+                var baseDesk = PackLinesRuntime.IsBaseDesk(location, isMyPace);
+                PackLinesRuntime.GateTimers(instance, baseDesk);
+                if (!baseDesk)
+                {
+                    return true;
+                }
 
                 var arm = PackLinesFeature.TestArm;
-                if (arm.Armed != null
+                if (arm.Armed is PackLine armed && PackLinesRuntime.IsDeskGroup(armed)
+                    && PackLinesVoiceCheck.FirstSilent(armed) is null
                     && arm.TryTake(phase, PackLinesRuntime.CurrentTimerMode(), LanguageFeature.CurrentCode, out var line)
                     && line != null)
                 {

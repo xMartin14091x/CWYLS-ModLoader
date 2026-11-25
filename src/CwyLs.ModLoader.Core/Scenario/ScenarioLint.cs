@@ -230,7 +230,7 @@ namespace CwyLs.ModLoader.Core.Scenario
         /// <summary>True for the types <c>Bulbul.MasterData.ScenarioTypeExtensions.IsLongStory</c> accepts.</summary>
         /// <param name="scenario">A <c>ScenarioType</c> number.</param>
         public static bool IsLongStory(int scenario) =>
-            scenario == 1 || scenario == 2 || scenario == 3 || scenario == ExtraScenario || (scenario >= 50 && scenario <= 56);
+            scenario == 1 || scenario == 2 || scenario == 3 || scenario == ExtraScenario || (scenario >= 50 && scenario <= 57);
 
         /// <summary>Lints the merged pack data.</summary>
         /// <param name="merged">The packs' rows (<c>MasterDataMerge.Merge</c>).</param>

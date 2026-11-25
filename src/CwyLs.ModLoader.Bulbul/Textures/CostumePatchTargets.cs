@@ -42,8 +42,8 @@ namespace CwyLs.ModLoader.Bulbul.Textures
             new PatchTarget(
                 "textures.costume.attachbones", GameAssembly, ServiceTypeName,
                 MemberKind.Method, AttachBonesMethod,
-                new[] { "UnityEngine.Transform" },
-                expectedSignature: "void AttachCostumeBonesToCharacter(Transform)"),
+                new[] { "UnityEngine.Transform", "Bulbul.CostumeLegBlendShapeCorrector" },
+                expectedSignature: "void AttachCostumeBonesToCharacter(Transform, CostumeLegBlendShapeCorrector)"),
 
             // Private.
             new PatchTarget(

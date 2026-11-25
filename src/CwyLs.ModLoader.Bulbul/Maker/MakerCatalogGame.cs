@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using CwyLs.ModLoader.Bulbul.MasterData;
 using CwyLs.ModLoader.Core.Api.Maker.Catalog;
 using CwyLs.ModLoader.Core.Logging;
@@ -45,12 +46,21 @@ namespace CwyLs.ModLoader.Bulbul.Maker
                 if (novel.LineId != null) storyIds.Add(novel.LineId);
             var groups = GroupsByLine(loader.NovelMasterList);
             var rows = new List<MakerGameRow>(localization.Count);
+            var gateOnly = new List<MakerGameRow>();
             foreach (var pair in localization)
             {
                 var data = pair.Value;
                 var id = data?.ID;
-                if (data is null || string.IsNullOrWhiteSpace(id) || MakerLineRules.IsRuntimeRow(id) || !storyIds.Contains(id!))
+                if (data is null || string.IsNullOrWhiteSpace(id) || MakerLineRules.IsRuntimeRow(id))
                 {
+                    continue;
+                }
+
+                if (!storyIds.Contains(id!))
+                {
+                    // Not listed, but the DLC gate decides over it (lines the game picks at playback, titles), so Play and
+                    // export checks keyed by its id are refused when it is paid content.
+                    gateOnly.Add(new MakerGameRow(id!, data.Voice, null, null, null));
                     continue;
                 }
 
@@ -59,9 +69,35 @@ namespace CwyLs.ModLoader.Bulbul.Maker
 
             var snapshot = new MakerGameData(rows, ClipLengths(), RegisteredVoices(), novelRows,
                 ScenarioGroups(loader.ScenarioGroupMasterList, title => localization.TryGetValue(title, out var localized) ? localized : null),
-                null, Gate);
+                null, Gate, gateOnly);
             ReportGate(snapshot);
             return snapshot;
+        }
+
+        /// <summary>
+        /// The DLC gate's verdict over the given game tables (normally the game's untouched rows, before any pack merges), without
+        /// the Pack Maker extras (no titles, texts or clip lengths), for the in-game paths (<see cref="PaidDlcContent"/>).
+        /// </summary>
+        /// <param name="localization">The localisation rows.</param>
+        /// <param name="novel">The novel rows.</param>
+        /// <param name="groups">The scenario groups.</param>
+        internal static MakerDlcHidden DecideFrom(IEnumerable<Master.LocalizationData?> localization, IReadOnlyList<Master.NovelData>? novel,
+            IReadOnlyList<Master.ScenarioGroupData>? groups)
+        {
+            var groupsByLine = GroupsByLine(novel);
+            var rows = new List<MakerGameRow>();
+            foreach (var data in localization)
+            {
+                var id = data?.ID;
+                if (data is null || string.IsNullOrWhiteSpace(id) || MakerLineRules.IsRuntimeRow(id))
+                {
+                    continue;
+                }
+
+                rows.Add(new MakerGameRow(id!, data.Voice, groupsByLine.TryGetValue(id!, out var group) ? group : null, null, null));
+            }
+
+            return Gate.Decide(rows, NovelRows(novel), ScenarioGroups(groups, _ => null));
         }
 
         /// <summary>
@@ -72,6 +108,59 @@ namespace CwyLs.ModLoader.Bulbul.Maker
         internal static MakerDlcGate Gate { get; } = MakerDlcGate.ShippedFor(() => Application.version);
 
         private static string? _lastGateSummary;
+
+        /// <summary>
+        /// The game's own paid-DLC flag field (<see cref="MakerDlcMarkers.DlcFlagMember"/>, game 2.0.0), read by reflection because the
+        /// loader also runs on 1.18.1, which has no such field. Null when absent.
+        /// </summary>
+        private static readonly Lazy<FieldInfo?> DlcFlagField = new Lazy<FieldInfo?>(() =>
+        {
+            try
+            {
+                var field = typeof(Master.ScenarioGroupData).GetField(MakerDlcMarkers.DlcFlagMember, BindingFlags.Public | BindingFlags.Instance);
+                return field != null && field.FieldType == typeof(bool) ? field : null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        });
+
+        /// <summary>True when the running game has the DLC flag field.</summary>
+        internal static bool DlcFlagReadable => DlcFlagField.Value != null;
+
+        /// <summary>
+        /// The game's DLC flag for a scenario group: false for a group a content pack added (never paid content), the field's value
+        /// when the game has it, null when it has none or the read failed (the gate then decides by version, fail closed).
+        /// </summary>
+        /// <param name="group">The game's scenario group row.</param>
+        internal static bool? DlcFlagOf(Master.ScenarioGroupData? group)
+        {
+            if (group is null)
+            {
+                return null;
+            }
+
+            if (MasterDataFeature.AddedGroups.Contains(group.ID))
+            {
+                return false;
+            }
+
+            var field = DlcFlagField.Value;
+            if (field is null)
+            {
+                return null;
+            }
+
+            try
+            {
+                return field.GetValue(group) is bool flag ? flag : (bool?)null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
 
         /// <summary>One trace event per capture; one INFO line when what is hidden changes. Never line text.</summary>
         private static void ReportGate(MakerGameData data)
@@ -142,7 +231,7 @@ namespace CwyLs.ModLoader.Bulbul.Maker
                     title = string.IsNullOrWhiteSpace(text.En) ? text.Ja : text.En;
                 }
 
-                groups.Add(new MakerGameGroup(group.ID, title, (int)group.Scenario));
+                groups.Add(new MakerGameGroup(group.ID, title, (int)group.Scenario, DlcFlagOf(group), group.TitleLocalizationID, group.SubtitleLocalizationID));
             }
 
             return groups;

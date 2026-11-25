@@ -187,7 +187,7 @@ namespace CwyLs.ModLoader.Bulbul
         public static bool TryGetEffective(string? name, [NotNullWhen(true)] out AudioClip? clip)
         {
             clip = null;
-            if (!Enabled || string.IsNullOrEmpty(name))
+            if (!Enabled || string.IsNullOrEmpty(name) || Maker.PaidDlcContent.HidesVoice(name))
             {
                 return false;
             }
@@ -313,24 +313,34 @@ namespace CwyLs.ModLoader.Bulbul
         /// <summary>Every registration, ordinally sorted by name. A detached copy.</summary>
         public static IReadOnlyList<VoiceEntry> Snapshot() => Registry.Snapshot();
 
+        internal static string? ManualPlaybackRefusal(string name)
+        {
+            var clip = string.IsNullOrWhiteSpace(name) ? null : VoiceNameRules.KeyFromAudioPath(name);
+            if (clip is null) return "no valid voice clip name was given";
+
+            var blocked = Maker.PaidDlcContent.HidesVoice(clip);
+            if (Maker.PaidDlcContent.Hidden?.IsKnown != true) return "the paid DLC check is not ready";
+            return blocked ? "this voice clip belongs to paid DLC content" : null;
+        }
+
         /// <summary>
         /// Plays a voice name as Satone, through the game's own
         /// <c>HeroineService.PlayVoice</c> - which is what drives her mouth animation, so a
         /// registered clip played this way looks exactly like a line the game shipped.
         /// </summary>
         /// <param name="name">
-        /// A registered voice name, or any name the game itself knows. Nothing is checked against
-        /// the registry: a mod is allowed to ask for one of the game's own 1381 lines.
+        /// A registered voice name or a game voice name cleared by the paid DLC check.
         /// </param>
         /// <param name="moveMouth">
         /// True to run the talk animation while the clip plays (the game's <c>isMoveMouse</c>).
         /// </param>
-        /// <returns>True when the call reached the game; false when Satone is not in the scene.</returns>
+        /// <returns>True when the call reached the game; false when playback is refused or Satone is unavailable.</returns>
         public static bool PlayAsSatone(string name, bool moveMouth = true)
         {
-            if (string.IsNullOrWhiteSpace(name))
+            var refusal = ManualPlaybackRefusal(name);
+            if (refusal != null)
             {
-                CwyLsModLoader.Log.LogWarning("VOICE PlayAsSatone was given no name");
+                CwyLsModLoader.Log.LogWarning($"VOICE PlayAsSatone('{name}'): {refusal}");
                 return false;
             }
 

@@ -125,6 +125,12 @@ namespace CwyLs.ModLoader.Bulbul.Subtitles
         /// <returns>True when the packs have text for the line.</returns>
         internal static bool TryGetCurrent(string localizationId, string lang, out string? text)
         {
+            if (Maker.PaidDlcContent.HidesLine(localizationId))
+            {
+                text = null;
+                return false;
+            }
+
             if (TryLive(localizationId, lang, out var live, out var hidden))
             {
                 text = hidden ? null : live;
@@ -139,6 +145,12 @@ namespace CwyLs.ModLoader.Bulbul.Subtitles
         public bool TryGet(string localizationId, string lang, out string text)
         {
             text = string.Empty;
+            if (Maker.PaidDlcContent.HidesLine(localizationId))
+            {
+                // Paid DLC content: packs never answer for it (the game shows its own text).
+                return false;
+            }
+
             try
             {
                 if (TryLive(localizationId, lang, out var live, out var hidden))

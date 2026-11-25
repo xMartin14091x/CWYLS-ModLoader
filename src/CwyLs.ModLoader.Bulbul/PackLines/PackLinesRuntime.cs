@@ -40,6 +40,11 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
         private static FieldInfo? _items;
         private static Root? _reaction;
+        private static readonly ConditionalWeakTable<Game.LocationTalkPool, PackLinesReactionDeck> ReactionDecks =
+            new ConditionalWeakTable<Game.LocationTalkPool, PackLinesReactionDeck>();
+        private static Dictionary<string, Master.ScenarioGroupData> _deskGroups =
+            new Dictionary<string, Master.ScenarioGroupData>(StringComparer.Ordinal);
+        private static Game.ScenarioInfo? _forcedClick;
         private static Root? _timers;
         private static SmallTalkBinding? _smallTalk;
 
@@ -48,7 +53,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
         /// <summary>How many game lists are bound right now (the click and timer selectors' pools).</summary>
         internal static int BoundListCount =>
-            (_reaction?.Lists.Count ?? 0) + (_timers?.Lists.Count ?? 0);
+            (_reaction?.Lists.Count ?? 0) + (_reaction?.ReactionDecks.Count ?? 0) + (_timers?.Lists.Count ?? 0);
 
         /// <summary>True once the small-talk lottery has been bound.</summary>
         internal static bool SmallTalkBound => _smallTalk != null;
@@ -81,6 +86,15 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 SessionGroupIds.Add(id);
             }
 
+            RefreshDeskGroups();
+            if (_reaction != null)
+            {
+                foreach (var deck in _reaction.ReactionDecks.Values)
+                {
+                    deck.Rebind(DeckEpisodes(deck.Pool.Id), WeightedEpisodes(deck.Pool.Id));
+                }
+            }
+
             foreach (var root in new[] { _reaction, _timers })
             {
                 if (root is null)
@@ -101,9 +115,10 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
         }
 
-        /// <summary>Re-reads the small-talk lines from the loader after a re-injection with unchanged lines.</summary>
-        internal static void RefreshSmallTalk(string why)
+        /// <summary>Refreshes the live row references after a re-injection with unchanged lines.</summary>
+        internal static void RefreshMasterRows(string why)
         {
+            RefreshDeskGroups();
             var smallTalk = _smallTalk;
             if (smallTalk != null)
             {
@@ -111,16 +126,94 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
         }
 
+        private static void RefreshDeskGroups()
+        {
+            var loader = MasterDataFeature.ResolveLoader();
+            var eligible = new Dictionary<string, Master.ScenarioGroupData>(StringComparer.Ordinal);
+            if (Registry.Count > 0 && loader?.ScenarioGroupMasterList != null && loader.NovelMasterList != null)
+            {
+                var atDesk = new HashSet<string>(StringComparer.Ordinal);
+                var awayFromDesk = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var row in loader.NovelMasterList)
+                {
+                    if (row != null && Registry.IsPackGroup(row.ScenarioGroupID))
+                    {
+                        var target = row.IsPlayableAt(Game.LocationType.Desk) ? atDesk : awayFromDesk;
+                        target.Add(row.ScenarioGroupID);
+                    }
+                }
+
+                foreach (var group in loader.ScenarioGroupMasterList)
+                {
+                    if (group != null && Registry.TryGetByGroup(group.ID, out var line) && line != null
+                        && !group.MyPaceOnly && (int)group.Scenario == line.Pool.Scenario
+                        && group.EpisodeNumber == line.Episode && atDesk.Contains(group.ID) && !awayFromDesk.Contains(group.ID))
+                    {
+                        eligible[group.ID] = group;
+                    }
+                }
+            }
+
+            _deskGroups = eligible;
+        }
+
+        internal static bool IsDeskGroup(PackLine line) =>
+            _deskGroups.TryGetValue(line.GroupId, out var group) && !group.MyPaceOnly
+            && (int)group.Scenario == line.Pool.Scenario && group.EpisodeNumber == line.Episode;
+
+        internal static bool RoomIsBaseDesk() =>
+            GameScopes.TryRoom<Game.HeroineLocationService>(out var location) && location?.CurrentLocation == Game.LocationType.Desk
+            && GameScopes.TryRoom<Game.HeroineActivityService>(out var activity) && activity?.IsMyPace == false;
+
+        internal static bool IsBaseDesk(Game.LocationType location, bool isMyPace) => location == Game.LocationType.Desk && !isMyPace;
+
+        // The game builds all of its categories in Setup, including categories shared with My Pace.
+        // Give those constructors vanilla rows only. The live registered pack rows are supplied at
+        // the Desk pick and clock lookup seams, so rescans cannot leave stale rows in the boxes.
+        internal static IReadOnlyList<Master.ScenarioGroupData> WithoutPackRows(IReadOnlyList<Master.ScenarioGroupData> master)
+        {
+            if (SessionGroupIds.Count == 0)
+            {
+                return master;
+            }
+
+            var rows = new List<Master.ScenarioGroupData>(master.Count);
+            foreach (var row in master)
+            {
+                if (row == null || !SessionGroupIds.Contains(row.ID))
+                {
+                    rows.Add(row!);
+                }
+            }
+
+            return rows;
+        }
+
         // ---- binding the game's lists ------------------------------------------------------------
 
-        /// <summary>After <c>ReactionTalkSelector.Setup</c>: binds its 17 lists and the clock/worked-time lists.</summary>
+        /// <summary>After reaction setup, bind the base categories and the remaining RandomLists.</summary>
         internal static void BindReaction(object selector)
         {
             var root = new Root(selector);
-            foreach (var pair in PackLinesPatchTargets.ReactionLists)
+            foreach (var entry in PackLinesPatchTargets.ReactionLists)
             {
-                AddList(root, selector, pair.Value, pair.Key);
+                var category = Read<Game.LocationTalkCategory>(selector, PackLinesPatchTargets.ReactionSelectorType, entry.CategoryField);
+                if (category == null || !PackLinePools.TryGet(entry.PoolId, out var pool) || pool == null)
+                {
+                    continue;
+                }
+
+                var locationPool = BasePool(category, entry.TimeOfDay);
+                if (locationPool != null)
+                {
+                    var deck = new PackLinesReactionDeck(pool, DeckEpisodes(pool.Id), WeightedEpisodes(pool.Id));
+                    ReactionDecks.Remove(locationPool);
+                    ReactionDecks.Add(locationPool, deck);
+                    root.ReactionDecks.Add(pool.Scenario, deck);
+                }
             }
+
+            AddList(root, selector, PackLinesPatchTargets.AnswerChoiceListField, "pomodoro.end");
 
             var currentTime = Read<object>(selector, PackLinesPatchTargets.ReactionSelectorType, "_currentTimeSelfTalkSelector");
             if (currentTime != null)
@@ -152,6 +245,83 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             Roots.Add(selector, root);
             _reaction = root;
             ConsoleEvents.File("packlines", "bound", ("selector", "ReactionTalkSelector"), ("lists", root.Lists.Count));
+        }
+
+        private static Game.LocationTalkPool? BasePool(Game.LocationTalkCategory category, string? time)
+        {
+            if (time == null)
+            {
+                return Read<Game.LocationTalkPool>(category, PackLinesPatchTargets.ReactionCategoryType, PackLinesPatchTargets.ReactionGeneralField);
+            }
+
+            var slots = Read<Dictionary<Game.TimeOfDayProvider.TimeOfDayType, Game.LocationTalkPool>>(
+                category, PackLinesPatchTargets.ReactionCategoryType, PackLinesPatchTargets.ReactionTimePoolsField);
+            return slots != null && slots.TryGetValue((Game.TimeOfDayProvider.TimeOfDayType)Enum.Parse(typeof(Game.TimeOfDayProvider.TimeOfDayType), time), out var pool)
+                ? pool : null;
+        }
+
+        internal static Master.ScenarioGroupData? PeekReaction(Game.LocationTalkPool pool)
+        {
+            if (!ReactionDecks.TryGetValue(pool, out var deck) || !deck.State.HasLines)
+            {
+                return null;
+            }
+
+            var code = LanguageFeature.CurrentCode;
+            var episode = deck.Peek(pool.GetRemaining(Game.LocationType.Desk, false), n => IsOffered(deck.Pool, n, code), Pick);
+            var line = RollWeighted(deck.Pool, deck.State.WeightedEpisodes, code);
+            if (line == null && episode.HasValue)
+            {
+                Registry.TryGet(deck.Pool.Id, episode.Value, out line);
+            }
+
+            return line != null && _deskGroups.TryGetValue(line.GroupId, out var row) ? row : null;
+        }
+
+        internal static void RefillReaction(Game.LocationTalkPool pool)
+        {
+            if (ReactionDecks.TryGetValue(pool, out var deck))
+            {
+                deck.Refill();
+            }
+        }
+
+        internal static bool CommitReaction(object selector, Master.ScenarioGroupData row)
+        {
+            var isPack = SessionGroupIds.Contains(row.ID);
+            if (Roots.TryGetValue(selector, out var root) && root.ReactionDecks.TryGetValue((int)row.Scenario, out var deck)
+                && (isPack || RoomIsBaseDesk()))
+            {
+                var key = PackLineLastPlayed.KeyOf(deck.Pool);
+                if (isPack && Registry.TryGetByGroup(row.ID, out var line) && line != null)
+                {
+                    deck.Consume(line.Episode);
+                    if (line.IsWeighted)
+                    {
+                        DeckLast[key] = line.SourceGroupId;
+                        ConsoleEvents.File("packlines", "weighted", ("pool", deck.Pool.Id), ("group", line.GroupId),
+                            ("episode", line.Episode), ("weight", line.Weight));
+                        return false;
+                    }
+                }
+
+                DeckLast.Remove(key);
+            }
+
+            // Pack rows were never inserted into the game's boxes; its commit would visit all categories.
+            return !isPack;
+        }
+
+        internal static Master.ScenarioGroupData? FindSelfTalk(object selector, Game.ScenarioInfo? info)
+        {
+            if (info == null || info.EpisodeNumber < PackLinePools.MinimumEpisode
+                || !Roots.TryGetValue(selector, out var root) || !root.InBasePick)
+            {
+                return null;
+            }
+
+            TryGetDeskGroup(info.ScenarioType, info.EpisodeNumber, out var group);
+            return group;
         }
 
         /// <summary>After <c>PomodoroVoiceSelector.Setup</c>: binds the timer selectors' lists.</summary>
@@ -204,22 +374,9 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             // cache and are rolled before it (RollSmallTalk).
             var aside = new List<KeyValuePair<float, Master.ScenarioGroupData>>();
             var weighted = new List<KeyValuePair<PackLine, Master.ScenarioGroupData>>();
-            var groups = global::CwyLs.ModLoader.Bulbul.MasterData.MasterDataFeature.ResolveLoader()?.ScenarioGroupMasterList;
             foreach (var line in Registry.LinesOf("smalltalk"))
             {
-                var group = Find(groups, line.GroupId);
-                if (group is null)
-                {
-                    foreach (var entry in removed)
-                    {
-                        if (entry.Value != null && string.Equals(entry.Value.ID, line.GroupId, StringComparison.Ordinal))
-                        {
-                            group = entry.Value;
-                        }
-                    }
-                }
-
-                if (group is null)
+                if (!_deskGroups.TryGetValue(line.GroupId, out var group))
                 {
                     continue;
                 }
@@ -253,206 +410,191 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
         // ---- weighted small talk ----------------------------------------------------------------
 
-        private static bool _smallTalkWon;
+        private static bool _smallTalkInPick;
+        private static MethodInfo? _isPlayableEpisode;
+        private static MethodInfo? _hasReadyTalkReason;
 
-        /// <summary>
-        /// Before the small-talk lottery (after <see cref="GateSmallTalk"/>): once the game's own two
-        /// gates pass (<c>GamePlayingDefect.IsUsing()</c> false, the interval since the last small talk
-        /// elapsed - <c>IsElapsedInterval</c>), the weighted small talks the lottery itself would admit
-        /// for <paramref name="playTiming"/> (play timing, unlock, not the episode played last, a
-        /// content type without a special rule), offered in the language shown with clips loaded, roll
-        /// once. A win does what the lottery does for its pick - <c>_currentEpisodeNumber</c> - and is
-        /// returned for the prefix to return in place of the lottery's own pick.
-        /// </summary>
-        /// <param name="selector">The <c>SmallTalkSelector</c>.</param>
-        /// <param name="playTiming">The lottery's <c>PlayTiming</c> argument, as its number.</param>
-        /// <returns>The winner's episode, or null to let the game's lottery run (it never sees a weighted line).</returns>
-        internal static float? RollSmallTalk(object selector, int playTiming)
+        internal static void BeginSmallTalk(object selector, Game.LocationType location, out bool ownsScope)
         {
-            _smallTalkWon = false;
+            ownsScope = false;
+            if (_smallTalkInPick || location != Game.LocationType.Desk || !RoomIsBaseDesk())
+            {
+                return;
+            }
+
+            ownsScope = true;
+            _smallTalkInPick = true;
+            GateSmallTalk(selector);
+        }
+
+        internal static void EndSmallTalk(bool ownsScope)
+        {
+            if (!ownsScope)
+            {
+                return;
+            }
+
+            _smallTalkInPick = false;
             var binding = _smallTalk;
-            if (binding is null || binding.Weighted.Count == 0 || !ReferenceEquals(binding.Selector, selector))
+            if (binding != null)
+            {
+                PackLineSmallTalkGate.Reconcile(binding.Cache, binding.Withdrawn, _ => false);
+            }
+        }
+
+        // The game's location index is built from original master data before pack injection.
+        // Give its small-talk admission and playback checks the live result for our own IDs.
+        internal static bool? PackSmallTalkPlayableAt(string groupId, Game.LocationType location)
+        {
+            if (!Registry.TryGetByGroup(groupId, out var line) || line?.Pool.Family != PackLineFamily.SmallTalk)
             {
                 return null;
             }
 
-            if (!SmallTalkGatesPass(selector))
+            return location == Game.LocationType.Desk && IsDeskGroup(line) && RoomIsBaseDesk();
+        }
+
+        internal static Master.ScenarioGroupData BreakTimingRow(Master.ScenarioGroupData group)
+        {
+            if (!_smallTalkInPick || group.MyPaceOnly || group.PlayTiming != nameof(global::SmallTalkSelector.PlayTiming.GameStartAndBreak)
+                || !_deskGroups.TryGetValue(group.ID, out var registered) || !ReferenceEquals(group, registered))
             {
-                return null;
+                return group;
+            }
+
+            // 2.0's Break filter accepts Break only. Preserve the pack format's combined timing
+            // for this admission check, leaving the original row and every vanilla row alone.
+            return new Master.ScenarioGroupData
+            {
+                ID = group.ID,
+                UnlockStoryEpisode = group.UnlockStoryEpisode,
+                PlayTiming = nameof(global::SmallTalkSelector.PlayTiming.Break),
+                ContentType = group.ContentType,
+                Arg3 = group.Arg3
+            };
+        }
+
+        internal static bool HasWeightedReadyTalk(global::SmallTalkSelector selector)
+        {
+            foreach (var _ in WeightedSmallTalkCandidates(selector, global::SmallTalkSelector.PlayTiming.Break, ready: true))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static IEnumerable<PackLineCandidate> WeightedSmallTalkCandidates(
+            global::SmallTalkSelector selector, global::SmallTalkSelector.PlayTiming timing, bool ready)
+        {
+            var binding = _smallTalk;
+            if (binding == null || binding.Weighted.Count == 0 || !ReferenceEquals(binding.Selector, selector))
+            {
+                yield break;
+            }
+
+            var type = typeof(global::SmallTalkSelector);
+            var direction = Read<global::DirectionService>(selector, type.FullName!, PackLinesPatchTargets.SmallTalkDirectionField);
+            if (direction?.GamePlayingDefect == null || direction.GamePlayingDefect.IsUsing())
+            {
+                yield break;
+            }
+
+            if (ready)
+            {
+                _hasReadyTalkReason ??= AccessTools.DeclaredMethod(type, PackLinesPatchTargets.ReadyTalkReasonMethod, new[] { typeof(Game.LocationType) });
+                if (!(_hasReadyTalkReason?.Invoke(selector, new object[] { Game.LocationType.Desk }) is true))
+                {
+                    yield break;
+                }
+            }
+
+            _isPlayableEpisode ??= AccessTools.DeclaredMethod(type, PackLinesPatchTargets.PlayableEpisodeMethod,
+                new[] { typeof(Master.ScenarioGroupData), typeof(global::SmallTalkSelector.PlayTiming), typeof(Game.LocationType), typeof(Game.StairsSeat?) });
+            if (_isPlayableEpisode == null)
+            {
+                yield break;
             }
 
             var code = LanguageFeature.CurrentCode;
-            var before = Field(selector.GetType(), PackLinesPatchTargets.SmallTalkBeforeEpisodeField)?.GetValue(selector) is float value ? value : -1f;
-            var played = PlayedIds();
-            List<PackLineCandidate>? candidates = null;
             foreach (var entry in binding.Weighted)
             {
                 var line = entry.Key;
                 var group = entry.Value;
-                if (line.Weight > 0d
-                    && line.IsOfferedIn(code)
-                    && group.EpisodeNumber != before
-                    && (group.UnlockStoryEpisode == "None" || (played != null && played.Contains(group.UnlockStoryEpisode)))
-                    && TimingAdmits(playTiming, group.PlayTiming)
-                    && IsRollableContent(group.ContentType)
-                    && PackLinesVoiceCheck.FirstSilent(line) is null)
+                if (line.Weight > 0d && line.IsOfferedIn(code) && IsRollableContent(group.ContentType)
+                    && PackLinesVoiceCheck.FirstSilent(line) is null
+                    && _isPlayableEpisode.Invoke(selector, new object?[] { group, timing, Game.LocationType.Desk, null }) is true)
                 {
-                    (candidates ??= new List<PackLineCandidate>()).Add(new PackLineCandidate(line, line.Weight!.Value));
+                    yield return new PackLineCandidate(line, line.Weight.Value);
                 }
             }
+        }
 
-            if (candidates is null)
+        internal static float? RollSmallTalk(global::SmallTalkSelector selector, global::SmallTalkSelector.PlayTiming timing, bool ready)
+        {
+            var candidates = new List<PackLineCandidate>(WeightedSmallTalkCandidates(selector, timing, ready));
+            if (candidates.Count == 0)
             {
                 return null;
             }
 
-            DeckLast.TryGetValue(PackLineLastPlayed.KeyOf(SmallTalkPool), out var last);
+            var key = PackLineLastPlayed.KeyOf(SmallTalkPool);
+            DeckLast.TryGetValue(key, out var last);
             var winner = PackLineWeights.Roll(candidates, last, WeightRng.NextDouble(), WeightRng.NextDouble());
-            if (winner is null)
+            if (winner == null)
             {
                 return null;
             }
 
-            var current = Field(selector.GetType(), PackLinesPatchTargets.SmallTalkCurrentEpisodeField);
-            if (current is null || current.FieldType != typeof(float))
+            var current = Field(typeof(global::SmallTalkSelector), PackLinesPatchTargets.SmallTalkCurrentEpisodeField);
+            var reserved = Field(typeof(global::SmallTalkSelector), PackLinesPatchTargets.SmallTalkReservedField);
+            if (current == null || reserved == null)
             {
                 return null;
             }
 
-            DeckLast[PackLineLastPlayed.KeyOf(SmallTalkPool)] = winner.SourceGroupId;
-            ConsoleEvents.File(
-                "packlines",
-                "weighted",
-                ("pool", SmallTalkPool.Id),
-                ("group", winner.GroupId),
-                ("episode", winner.Episode),
-                ("weight", winner.Weight),
-                ("timing", playTiming));
-
-            // Last, so nothing can fail after the game's own state says "this one is next".
+            ConsoleEvents.File("packlines", "weighted", ("pool", SmallTalkPool.Id), ("group", winner.GroupId),
+                ("episode", winner.Episode), ("weight", winner.Weight), ("timing", (int)timing));
+            reserved.SetValue(selector, ready);
             current.SetValue(selector, (float)winner.Episode);
-            _smallTalkWon = true;
+            DeckLast[key] = winner.SourceGroupId;
             return winner.Episode;
         }
 
-        /// <summary>
-        /// After the small-talk lottery: when the game's own lottery picked (not a weighted win, and not
-        /// -1), the last weighted small talk may come up again.
-        /// </summary>
-        /// <param name="result">What the lottery returned.</param>
         internal static void AfterSmallTalkLottery(float result)
         {
-            if (_smallTalkWon)
-            {
-                _smallTalkWon = false;
-                return;
-            }
-
-            if (result != -1f)
+            if (result >= 0f)
             {
                 DeckLast.Remove(PackLineLastPlayed.KeyOf(SmallTalkPool));
             }
         }
 
-        /// <summary>The lottery's first two gates, read the way <c>LotterySmallTalk</c> reads them.</summary>
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool SmallTalkGatesPass(object selector)
-        {
-            var type = selector.GetType();
-            if (!(Field(type, PackLinesPatchTargets.SmallTalkDirectionField)?.GetValue(selector) is global::DirectionService direction)
-                || !(Field(type, PackLinesPatchTargets.SmallTalkLoaderField)?.GetValue(selector) is Game.MasterDataLoader loader)
-                || !(Field(type, PackLinesPatchTargets.SmallTalkBeforePlayField)?.GetValue(selector) is DateTime beforePlay))
-            {
-                // Cannot tell: leave the pick to the game's lottery.
-                return false;
-            }
-
-            var defect = direction.GamePlayingDefect;
-            if (defect != null && defect.IsUsing())
-            {
-                return false;
-            }
-
-            var interval = loader.SmallTalkData;
-            return interval != null && (DateTime.Now - beforePlay).TotalMinutes >= interval.IntervalMinutes;
-        }
-
-        /// <summary>
-        /// The lottery's play-timing rule (<c>LotterySmallTalk.CreateCanPlayEpisodeList</c>): a break
-        /// lottery admits <c>Break</c> and <c>GameStartAndBreak</c>; a game-start one <c>GameStart</c> and
-        /// <c>GameStartAndBreak</c>; <c>None</c> admits any.
-        /// </summary>
-        private static bool TimingAdmits(int lottery, string? groupTiming)
-        {
-            if (!Enum.TryParse<global::SmallTalkSelector.PlayTiming>(groupTiming, false, out var target))
-            {
-                return false;
-            }
-
-            switch ((global::SmallTalkSelector.PlayTiming)lottery)
-            {
-                case global::SmallTalkSelector.PlayTiming.Break:
-                    return target == global::SmallTalkSelector.PlayTiming.Break
-                           || target == global::SmallTalkSelector.PlayTiming.GameStartAndBreak;
-                case global::SmallTalkSelector.PlayTiming.GameStart:
-                case global::SmallTalkSelector.PlayTiming.GameStartAndBreak:
-                    return target == global::SmallTalkSelector.PlayTiming.GameStart
-                           || target == global::SmallTalkSelector.PlayTiming.GameStartAndBreak;
-                default:
-                    return true;
-            }
-        }
-
-        /// <summary>
-        /// A content type the lottery applies no special rule to (<c>None</c>, <c>PurchaseEnvironment</c>);
-        /// the cat-headphone, cicada and passage-of-time rules read game state the roll does not.
-        /// </summary>
         private static bool IsRollableContent(string? contentType) =>
             Enum.TryParse<global::SmallTalkSelector.ContentType>(contentType, false, out var content)
             && (content == global::SmallTalkSelector.ContentType.None || content == global::SmallTalkSelector.ContentType.PurchaseEnvironment);
 
-        private static Master.ScenarioGroupData? Find(IReadOnlyList<Master.ScenarioGroupData>? groups, string id)
-        {
-            if (groups is null)
-            {
-                return null;
-            }
-
-            for (var i = 0; i < groups.Count; i++)
-            {
-                var group = groups[i];
-                if (group != null && string.Equals(group.ID, id, StringComparison.Ordinal))
-                {
-                    return group;
-                }
-            }
-
-            return null;
-        }
-
         // ---- the gate, at pick time ------------------------------------------------------------
 
-        /// <summary>
-        /// Before <c>FacilityClickHeroine.OneWord</c> / <c>AnswerChoiceStory</c>: gates the lists of the
-        /// facility's own <c>ReactionTalkSelector</c>.
-        /// </summary>
-        internal static void GateClickFacility(object facility)
+        internal static void GateAnswerChoice(object facility, bool baseDesk)
         {
-            GateReaction(Read<object>(facility, PackLinesPatchTargets.ClickHeroineType, PackLinesPatchTargets.ClickSelectorField));
+            var selector = Read<object>(facility, PackLinesPatchTargets.ClickHeroineType, PackLinesPatchTargets.ClickSelectorField);
+            GateReaction(selector, baseDesk, answerChoice: true);
         }
 
-        /// <summary>Before a click, self-talk or answer-choice pick: brings every click-selector list in line.</summary>
-        internal static void GateReaction(object? selector)
-        {
-            var root = selector != null && Roots.TryGetValue(selector, out var found) ? found : _reaction;
-            Gate(root, "reaction");
-        }
+        internal static void GateReaction(object? selector, bool baseDesk, bool answerChoice = false) =>
+            BeginPick(selector, baseDesk, "reaction", binding => (binding.Pool.Family == PackLineFamily.TimerConversation) == answerChoice);
 
-        /// <summary>Before a timer pick: brings every timer list in line.</summary>
-        internal static void GateTimers(object? selector)
+        internal static void GateTimers(object selector, bool baseDesk) => BeginPick(selector, baseDesk, "timers", _ => true);
+
+        private static void BeginPick(object? selector, bool baseDesk, string site, Predicate<ListBinding> includes)
         {
-            var root = selector != null && Roots.TryGetValue(selector, out var found) ? found : _timers;
-            Gate(root, "timers");
+            if (selector == null || !Roots.TryGetValue(selector, out var root) || Registry.Count == 0)
+            {
+                return;
+            }
+
+            root.InBasePick = baseDesk;
+            Gate(root, baseDesk, site, includes);
         }
 
         /// <summary>
@@ -467,6 +609,11 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
 
             binding.State.StartCycle();
+            if (!binding.InBasePick)
+            {
+                return;
+            }
+
             var code = LanguageFeature.CurrentCode;
             var result = binding.State.Reconcile(binding.Items, episode => IsOffered(binding.Pool, episode, code), Pick);
             if (result.Changed)
@@ -495,7 +642,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
 
             var binding = TimerModeIsCountup() ? pair.Value : pair.Key;
-            if (binding is null || !binding.State.HasLines)
+            if (binding is null || !binding.InBasePick || !binding.State.HasLines)
             {
                 return null;
             }
@@ -537,7 +684,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
         /// </summary>
         internal static void AfterSelfTalkPick(object selector, int scenario, int episode)
         {
-            if (episode < PackLinePools.MinimumEpisode || !Roots.TryGetValue(selector, out var root))
+            if (episode < PackLinePools.MinimumEpisode || !Roots.TryGetValue(selector, out var root) || !root.InBasePick)
             {
                 return;
             }
@@ -574,7 +721,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
         }
 
         /// <summary>Before the small-talk lottery: our entries are in the cache exactly while their language is shown.</summary>
-        internal static void GateSmallTalk(object selector)
+        private static void GateSmallTalk(object selector)
         {
             // Pack small talks heard in earlier sessions count as seen, as the game's own do: without
             // this every launch made them "unseen" again and they shut out every seen game scene
@@ -850,6 +997,12 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 return false;
             }
 
+            if (!RoomIsBaseDesk() || !IsDeskGroup(line))
+            {
+                detail = "this pack line requires a base-game reaction at the Desk";
+                return false;
+            }
+
             var pending = Field(typeof(Game.FacilityClickHeroine), PackLinesPatchTargets.PendingLineField);
             if (pending is null)
             {
@@ -863,10 +1016,49 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 return false;
             }
 
-            pending.SetValue(facility, new Game.ScenarioInfo((Master.ScenarioType)line.Pool.Scenario, line.Episode));
+            var forced = new Game.ScenarioInfo((Master.ScenarioType)line.Pool.Scenario, line.Episode);
+            pending.SetValue(facility, forced);
+            _forcedClick = forced;
             detail = "asked for a click reaction; the room plays " + line.GroupId + " on its next frame "
                      + "(asleep: she only wakes up; wanting to talk: her story comes first and this line plays on the next click)";
             return true;
+        }
+
+        internal static void CheckForcedClick(object facility)
+        {
+            var forced = _forcedClick;
+            if (forced == null)
+            {
+                return;
+            }
+
+            var pending = Field(typeof(Game.FacilityClickHeroine), PackLinesPatchTargets.PendingLineField);
+            if (pending == null || !ReferenceEquals(pending.GetValue(facility), forced))
+            {
+                return;
+            }
+
+            if (!RoomIsBaseDesk() || !TryGetDeskGroup(forced.ScenarioType, forced.EpisodeNumber, out _))
+            {
+                pending.SetValue(facility, null);
+            }
+
+            _forcedClick = null;
+        }
+
+        private static bool TryGetDeskGroup(Master.ScenarioType scenario, int episode, out Master.ScenarioGroupData? group)
+        {
+            foreach (var pool in PackLinePools.ForScenario((int)scenario))
+            {
+                if (Registry.TryGet(pool.Id, episode, out var line) && line != null
+                    && _deskGroups.TryGetValue(line.GroupId, out group))
+                {
+                    return true;
+                }
+            }
+
+            group = null;
+            return false;
         }
 
         // ---- diagnostics ----------------------------------------------------------------------
@@ -898,6 +1090,12 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
                 return inCache + " of " + smallTalk.Withdrawn.Count + " unweighted in the lottery"
                        + DescribeWeighted(pool, smallTalk.Weighted.Count, "rolled before each lottery");
+            }
+
+            if (_reaction != null && _reaction.ReactionDecks.TryGetValue(pool.Scenario, out var deck))
+            {
+                return deck.State.OwedCount + " not yet played this Desk cycle"
+                       + DescribeWeighted(pool, deck.State.WeightedEpisodes.Count, "rolled at each pick of this pool");
             }
 
             foreach (var root in new[] { _reaction, _timers })
@@ -985,6 +1183,14 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             get
             {
                 var count = 0;
+                if (_reaction != null)
+                {
+                    foreach (var deck in _reaction.ReactionDecks.Values)
+                    {
+                        count += deck.State.WeightedEpisodes.Count;
+                    }
+                }
+
                 foreach (var root in new[] { _reaction, _timers })
                 {
                     if (root is null)
@@ -1149,32 +1355,30 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             return count;
         }
 
-        private static void Gate(Root? root, string site)
+        private static void Gate(Root root, bool baseDesk, string site, Predicate<ListBinding> includes)
         {
-            if (root is null || Registry.Count == 0)
-            {
-                return;
-            }
-
             var code = LanguageFeature.CurrentCode;
             var placed = 0;
             var withdrawn = 0;
             var fronted = 0;
             foreach (var binding in root.Lists)
             {
-                if (!binding.State.HasLines)
+                if (!binding.State.HasLines || !includes(binding))
                 {
                     continue;
                 }
 
-                var result = binding.State.Reconcile(binding.Items, episode => IsOffered(binding.Pool, episode, code), Pick);
+                // The game may fall back to these base lists in My Pace or at another location.
+                // Withdraw dealt lines before it can read that fallback.
+                binding.InBasePick = baseDesk;
+                var result = binding.State.Reconcile(binding.Items, episode => baseDesk && IsOffered(binding.Pool, episode, code), Pick);
                 placed += result.Placed;
                 withdrawn += result.Withdrawn;
                 TrackCycle(binding);
 
                 // Weighted lines: one roll per list, per pick. A pool without one is left exactly as
                 // the deck gate left it - no roll, no draw, nothing in front.
-                if (binding.State.WeightedEpisodes.Count > 0)
+                if (baseDesk && binding.State.WeightedEpisodes.Count > 0)
                 {
                     var winner = RollWeighted(binding.Pool, binding.State.WeightedEpisodes, code);
                     binding.State.BeginPick(binding.Items, winner?.Episode);
@@ -1214,6 +1418,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 if (Registry.TryGet(pool.Id, episode, out var line)
                     && line != null
                     && line.Weight > 0d
+                    && IsDeskGroup(line)
                     && line.IsOfferedIn(code)
                     && PackLinesVoiceCheck.FirstSilent(line) is null)
                 {
@@ -1231,36 +1436,30 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
         }
 
         /// <summary>
-        /// After a click, self-talk or answer-choice pick (finalizer of <c>OneWord</c> /
-        /// <c>AnswerChoiceStory</c>): takes back the weighted lines the game did not read and records
-        /// what each read pool played.
+        /// After an answer-choice pick, take back unused weighted lines and track the line played.
         /// </summary>
         internal static void EndClickPick(object facility)
         {
             var selector = Read<object>(facility, PackLinesPatchTargets.ClickHeroineType, PackLinesPatchTargets.ClickSelectorField);
-            EndPick(selector != null && Roots.TryGetValue(selector, out var found) ? found : _reaction);
+            EndSelectorPick(selector);
         }
 
-        /// <summary>After a timer pick (finalizer of <c>TakeNext*Voice</c>): as <see cref="EndClickPick"/>.</summary>
-        internal static void EndTimerPick(object? selector)
+        internal static void EndSelectorPick(object? selector)
         {
-            EndPick(selector != null && Roots.TryGetValue(selector, out var found) ? found : _timers);
-        }
-
-        private static void EndPick(Root? root)
-        {
-            if (root is null)
+            if (selector == null || !Roots.TryGetValue(selector, out var root) || !root.InBasePick)
             {
                 return;
             }
 
+            root.InBasePick = false;
             foreach (var binding in root.Lists)
             {
-                if (!binding.State.InPick)
+                if (!binding.InBasePick)
                 {
                     continue;
                 }
 
+                binding.InBasePick = false;
                 var result = binding.State.EndPick(binding.Items);
                 if (!result.Read)
                 {
@@ -1327,6 +1526,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
         private static bool IsOffered(PackLinePool pool, int episode, string code, bool checkVoices = true) =>
             Registry.TryGet(pool.Id, episode, out var line)
             && line != null
+            && IsDeskGroup(line)
             && line.IsOfferedIn(code)
             && (!checkVoices || PackLinesVoiceCheck.FirstSilent(line) is null);
 
@@ -1432,6 +1632,8 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             internal PackLinePoolState State { get; }
 
             internal object Owner { get; }
+
+            internal bool InBasePick { get; set; }
         }
 
         /// <summary>One selector the game picks through, and the lists it owns.</summary>
@@ -1443,6 +1645,10 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             }
 
             internal object Selector { get; }
+
+            internal bool InBasePick { get; set; }
+
+            internal Dictionary<int, PackLinesReactionDeck> ReactionDecks { get; } = new Dictionary<int, PackLinesReactionDeck>();
 
             internal List<ListBinding> Lists { get; } = new List<ListBinding>();
 

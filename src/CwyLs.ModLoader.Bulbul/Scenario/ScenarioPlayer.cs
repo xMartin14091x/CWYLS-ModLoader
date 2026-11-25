@@ -197,7 +197,7 @@ namespace CwyLs.ModLoader.Bulbul.Scenario
                 RoomIdle = room != null && room.CurrentMainState == Game.RoomGameManager.MainState.Idle,
                 SatoneFree = satoneFree,
                 SaveGuardActive = ScenarioPatches.GuardApplied,
-                IsPaidDlc = pack is null && group != null && Maker.MakerCatalogGame.Gate.HidesGroup(id, (int)group.Scenario),
+                IsPaidDlc = pack is null && group != null && Maker.MakerCatalogGame.Gate.HidesGroup(id, (int)group.Scenario, Maker.MakerCatalogGame.DlcFlagOf(group)),
             };
         }
 

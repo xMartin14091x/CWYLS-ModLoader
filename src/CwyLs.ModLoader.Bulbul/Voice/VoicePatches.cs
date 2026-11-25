@@ -130,6 +130,12 @@ namespace CwyLs.ModLoader.Bulbul
                     return true;
                 }
 
+                // Paid DLC content: packs never answer for its clips (the game plays its own).
+                if (Maker.PaidDlcContent.HidesVoice(name))
+                {
+                    return true;
+                }
+
                 // Precedence (LanguageVoiceRules): a mod's runtime clip, then the set of the
                 // language in force, then a global pack clip, then the game. The language set is only
                 // asked when no runtime clip outranks it, so its fallback trace never lies.

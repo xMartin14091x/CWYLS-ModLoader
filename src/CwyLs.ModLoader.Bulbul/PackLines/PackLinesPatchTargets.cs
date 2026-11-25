@@ -10,7 +10,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Checked against game 1.17.3 (the startup-greeting entries against 1.18.0); each group names
+    /// Checked against game 2.0.0; each group names
     /// what it is used for. Strings only - no game
     /// type is touched - so <c>tools/seamcheck</c> can evaluate <see cref="All"/> without the game
     /// (registered by <c>PackLinesFeature.Initialize</c>).
@@ -77,20 +77,24 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
         /// <summary>The small-talk lottery cache.</summary>
         public const string SmallTalkCacheField = "_cache";
 
-        /// <summary>The lottery's direction service (its first gate: <c>GamePlayingDefect.IsUsing()</c>).</summary>
+        /// <summary>The lottery's direction service.</summary>
         public const string SmallTalkDirectionField = "_directionService";
 
-        /// <summary>The lottery's master-data loader (its interval: <c>SmallTalkData.IntervalMinutes</c>).</summary>
-        public const string SmallTalkLoaderField = "_masterDataLoader";
-
-        /// <summary>When the last small talk started (the lottery's interval gate).</summary>
-        public const string SmallTalkBeforePlayField = "_beforePlayDateTime";
-
-        /// <summary>The episode of the last small talk, which the lottery never picks twice in a row.</summary>
-        public const string SmallTalkBeforeEpisodeField = "_beforeEpisodeNumber";
-
-        /// <summary>The episode the lottery picked, read back by its callers (<c>CurrentEpisodeNumber</c>, <c>OnEndTalk</c>).</summary>
+        /// <summary>The lottery's episode and whether it consumes a ready-talk reservation.</summary>
         public const string SmallTalkCurrentEpisodeField = "_currentEpisodeNumber";
+        public const string SmallTalkReservedField = "isReservedAsReadyTalk";
+
+        public const string ReactionPoolType = "Bulbul.LocationTalkPool";
+        public const string ReactionCategoryType = "Bulbul.LocationTalkCategory";
+        public const string ReactionGeneralField = "generalPool";
+        public const string ReactionTimePoolsField = "timeOfDayPools";
+        public const string AnswerChoiceListField = "_answerChoiceEpisodeList";
+        public const string SelfTalkMethod = "TrySelectBreakHeroineSelfShortTalk";
+        public const string PlayableEpisodeMethod = "IsPlayableEpisode";
+        public const string ReadyTalkReasonMethod = "HasReadyTalkReason";
+        private const string LocationType = "Bulbul.LocationType";
+        private const string TimeOfDayType = "Bulbul.TimeOfDayProvider+TimeOfDayType";
+        private const string GroupByRef = ScenarioGroupDataType + "&";
 
         /// <summary>The once-a-day set on the clock selectors.</summary>
         public const string PlayedEpisodesField = "_playedEpisodes";
@@ -107,28 +111,25 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
         /// <summary>The list field on the one-list timer selectors.</summary>
         public const string VoiceListField = "_voiceList";
 
-        /// <summary>
-        /// The <c>ReactionTalkSelector</c> list fields, by pool id.
-        /// </summary>
-        public static IReadOnlyList<KeyValuePair<string, string>> ReactionLists { get; } = new[]
+        /// <summary>The base-game reaction pools. A time slot selects an entry in the category's time map.</summary>
+        public static IReadOnlyList<ReactionPool> ReactionLists { get; } = new[]
         {
-            Pair("click.normal", "_normalClickShortTalkList"),
-            Pair("click.work", "_workClickShortTalkList"),
-            Pair("click.work.morning", "_workClickShortTalkMorningList"),
-            Pair("click.work.noon", "_workClickShortTalkNoonList"),
-            Pair("click.work.evening", "_workClickShortTalkEveningList"),
-            Pair("click.work.night", "_workClickShortTalkNightList"),
-            Pair("click.break", "_breakClickShortTalkList"),
-            Pair("click.break.morning", "_breakClickShortTalkMorningList"),
-            Pair("click.break.noon", "_breakClickShortTalkNoonList"),
-            Pair("click.break.evening", "_breakClickShortTalkEveningList"),
-            Pair("click.break.night", "_breakClickShortTalkNightList"),
-            Pair("selftalk.break", "_breakHeroineSelShortTalkfList"),
-            Pair("selftalk.break.morning", "_breakHeroineSelfShortTalkMorningList"),
-            Pair("selftalk.break.noon", "_breakHeroineSelfShortTalkNoonList"),
-            Pair("selftalk.break.evening", "_breakHeroineSelfShortTalkEveningList"),
-            Pair("selftalk.break.night", "_breakHeroineSelfShortTalkNightList"),
-            Pair("pomodoro.end", "_answerChoiceEpisodeList"),
+            new ReactionPool("click.normal", "normalClickShortTalk"),
+            new ReactionPool("click.work", "workClickShortTalk"),
+            new ReactionPool("click.work.morning", "workClickShortTalk", "Morning"),
+            new ReactionPool("click.work.noon", "workClickShortTalk", "Noon"),
+            new ReactionPool("click.work.evening", "workClickShortTalk", "Evening"),
+            new ReactionPool("click.work.night", "workClickShortTalk", "Night"),
+            new ReactionPool("click.break", "breakClickShortTalk"),
+            new ReactionPool("click.break.morning", "breakClickShortTalk", "Morning"),
+            new ReactionPool("click.break.noon", "breakClickShortTalk", "Noon"),
+            new ReactionPool("click.break.evening", "breakClickShortTalk", "Evening"),
+            new ReactionPool("click.break.night", "breakClickShortTalk", "Night"),
+            new ReactionPool("selftalk.break", "breakHeroineSelfShortTalk"),
+            new ReactionPool("selftalk.break.morning", "breakHeroineSelfShortTalk", "Morning"),
+            new ReactionPool("selftalk.break.noon", "breakHeroineSelfShortTalk", "Noon"),
+            new ReactionPool("selftalk.break.evening", "breakHeroineSelfShortTalk", "Evening"),
+            new ReactionPool("selftalk.break.night", "breakHeroineSelfShortTalk", "Night"),
         };
 
         /// <summary>
@@ -181,60 +182,63 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 Field("packlines.randomlist.beforelast", RandomListType, RandomListBeforeLastField, "int"),
                 Method("packlines.randomlist.initlist", RandomListType, InitListMethod, "void InitList()"),
 
-                // FacilityClickHeroine: its selector, OneWord (every click/self-talk pick),
-                // AnswerChoiceStory (the answer-choice talk), and ReactionReady plus the pending line
-                // (the console test plays a line through the comeback slot).
+                // The facility owns the answer-choice selector and the console test's pending reaction.
                 Field("packlines.clickheroine.selector", ClickHeroineType, ClickSelectorField, "ReactionTalkSelector"),
-                Method("packlines.clickheroine.oneword", ClickHeroineType, "OneWord", "void OneWord(ScenarioType)", "Bulbul.MasterData.ScenarioType"),
+                Method("packlines.clickheroine.startreaction", ClickHeroineType, "StartReaction", "void StartReaction(ScenarioType)", "Bulbul.MasterData.ScenarioType"),
                 Method("packlines.clickheroine.answerchoice", ClickHeroineType, "AnswerChoiceStory", "void AnswerChoiceStory()"),
                 Method("packlines.clickheroine.reactionready", ClickHeroineType, "ReactionReady",
                     "bool ReactionReady(FacilityClickHeroine.ReactionType)", "Bulbul.FacilityClickHeroine+ReactionType"),
                 Field("packlines.clickheroine.pending", ClickHeroineType, PendingLineField, "ScenarioInfo"),
 
-                // ReactionTalkSelector: Setup (tags the lists), the self-talk pick (clock lines'
-                // once-a-day bookkeeping), and the clock and worked-time selectors.
-                Method("packlines.reaction.setup", ReactionSelectorType, "Setup", "void Setup()"),
-                Method("packlines.reaction.selftalk", ReactionSelectorType, "GetNextBreakHeroineSelfShortTalkSelection",
-                    "ValueTuple<ScenarioType, int> GetNextBreakHeroineSelfShortTalkSelection(TimeOfDayProvider.TimeOfDayType)",
-                    "Bulbul.TimeOfDayProvider+TimeOfDayType"),
+                Method("packlines.reaction.setup", ReactionSelectorType, "Setup", "void Setup(IReadOnlyList<ScenarioGroupData>, ScenarioPlayableLocations)",
+                    "System.Collections.Generic.IReadOnlyList<Bulbul.MasterData.ScenarioGroupData>", "Bulbul.ScenarioPlayableLocations"),
+                Method("packlines.reaction.selftalk", ReactionSelectorType, SelfTalkMethod,
+                    "bool TrySelectBreakHeroineSelfShortTalk(LocationType, TimeOfDayProvider.TimeOfDayType, bool, ScenarioGroupData&)",
+                    LocationType, TimeOfDayType, "System.Boolean", GroupByRef),
+                Method("packlines.reaction.findrow", ReactionSelectorType, "TryFindRow",
+                    "bool TryFindRow(ScenarioInfo, ScenarioGroupData&)", "Bulbul.ScenarioInfo", GroupByRef),
+                Method("packlines.reaction.commit", ReactionSelectorType, "Commit", "void Commit(ScenarioGroupData)", ScenarioGroupDataType),
                 Field("packlines.reaction.currenttime", ReactionSelectorType, "_currentTimeSelfTalkSelector", "CurrentTimeSelfTalkSelector"),
                 Field("packlines.reaction.workedtime", ReactionSelectorType, "_workedTimeSelfTalkSelector", "WorkedTimeSelfTalkSelector"),
+                Field("packlines.reaction.list.pomodoro.end", ReactionSelectorType, AnswerChoiceListField, "RandomList"),
+                Field("packlines.reaction.generalpool", ReactionCategoryType, ReactionGeneralField, "LocationTalkPool"),
+                Field("packlines.reaction.timeofdaypools", ReactionCategoryType, ReactionTimePoolsField,
+                    "Dictionary<TimeOfDayProvider.TimeOfDayType, LocationTalkPool>"),
+                Method("packlines.reaction.pool.peek", ReactionPoolType, "TryPeek",
+                    "bool TryPeek(LocationType, bool, ScenarioGroupData&)", LocationType, "System.Boolean", GroupByRef),
+                Method("packlines.reaction.pool.remaining", ReactionPoolType, "GetRemaining",
+                    "int GetRemaining(LocationType, bool)", LocationType, "System.Boolean"),
+                Method("packlines.reaction.pool.refill", ReactionPoolType, "Refill",
+                    "void Refill(LocationType, bool)", LocationType, "System.Boolean"),
 
-                // PomodoroVoiceSelector: Setup (tags the lists) and the three timer picks.
                 Method("packlines.pomodoro.setup", PomodoroSelectorType, "Setup", "void Setup()"),
-                Method("packlines.pomodoro.workstart", PomodoroSelectorType, "TakeNextWorkStartVoice", "ScenarioInfo TakeNextWorkStartVoice()"),
-                Method("packlines.pomodoro.breakstart", PomodoroSelectorType, "TakeNextBreakStartVoice", "ScenarioInfo TakeNextBreakStartVoice()"),
-                Method("packlines.pomodoro.finish", PomodoroSelectorType, "TakeNextFinishVoice", "ScenarioInfo TakeNextFinishVoice()"),
+                TimerPick("workstart", "TakeNextWorkStartVoice"),
+                TimerPick("breakstart", "TakeNextBreakStartVoice"),
+                TimerPick("finish", "TakeNextFinishVoice"),
 
-                // SmallTalkSelector: the cache, Setup (builds it) and LotterySmallTalk (the lottery).
                 Field("packlines.smalltalk.cache", SmallTalkSelectorType, SmallTalkCacheField, "Dictionary<float, ScenarioGroupData>"),
                 Method("packlines.smalltalk.setup", SmallTalkSelectorType, "Setup", "void Setup()"),
                 Method("packlines.smalltalk.lottery", SmallTalkSelectorType, "LotterySmallTalk",
-                    "float LotterySmallTalk(SmallTalkSelector.PlayTiming)", "SmallTalkSelector+PlayTiming"),
-
-                // Weighted small talk (rolled before the lottery): the lottery's own two gates as it
-                // reads them (DirectionService.GamePlayingDefect.IsUsing(), the interval since
-                // _beforePlayDateTime against SmallTalkData.IntervalMinutes), the episode it never
-                // picks twice in a row, the field its callers read the pick from, and the group
-                // columns its admission rule reads (play timing, unlock, content type).
+                    "float LotterySmallTalk(SmallTalkSelector.PlayTiming, LocationType)", "SmallTalkSelector+PlayTiming", LocationType),
+                Method("packlines.smalltalk.canplayready", SmallTalkSelectorType, "CanPlayReadyTalk", "bool CanPlayReadyTalk(LocationType)", LocationType),
+                Method("packlines.smalltalk.readyreason", SmallTalkSelectorType, ReadyTalkReasonMethod,
+                    "bool HasReadyTalkReason(LocationType)", LocationType),
+                Method("packlines.smalltalk.reserveready", SmallTalkSelectorType, "ReserveReadyTalk", "float ReserveReadyTalk(LocationType)", LocationType),
+                Method("packlines.smalltalk.playable", SmallTalkSelectorType, PlayableEpisodeMethod,
+                    "bool IsPlayableEpisode(ScenarioGroupData, SmallTalkSelector.PlayTiming, LocationType, Nullable<StairsSeat>)",
+                    ScenarioGroupDataType, "SmallTalkSelector+PlayTiming", LocationType, "System.Nullable<Bulbul.StairsSeat>"),
                 Field("packlines.smalltalk.direction", SmallTalkSelectorType, SmallTalkDirectionField, "DirectionService"),
-                Field("packlines.smalltalk.loader", SmallTalkSelectorType, SmallTalkLoaderField, "MasterDataLoader"),
-                Field("packlines.smalltalk.beforeplay", SmallTalkSelectorType, SmallTalkBeforePlayField, "DateTime"),
-                Field("packlines.smalltalk.beforeepisode", SmallTalkSelectorType, SmallTalkBeforeEpisodeField, "float"),
                 Field("packlines.smalltalk.currentepisode", SmallTalkSelectorType, SmallTalkCurrentEpisodeField, "float"),
+                Field("packlines.smalltalk.reserved", SmallTalkSelectorType, SmallTalkReservedField, "bool"),
                 new PatchTarget("packlines.direction.defect", GameAssembly, "DirectionService", MemberKind.Property, "GamePlayingDefect",
                     expectedSignature: "GamePlayingDefectDirection GamePlayingDefect { get; }"),
                 Method("packlines.defect.isusing", "GamePlayingDefectDirection", "IsUsing", "bool IsUsing()"),
-                Field("packlines.masterdata.smalltalkdata", "Bulbul.MasterDataLoader", "SmallTalkData", "SmallTalkData"),
-                new PatchTarget("packlines.smalltalkdata.interval", GameAssembly, "Bulbul.SmallTalkData", MemberKind.Property, "IntervalMinutes",
-                    expectedSignature: "float IntervalMinutes { get; }"),
-                Field("packlines.group.playtiming", ScenarioGroupDataType, "PlayTiming", "string"),
-                Field("packlines.group.unlock", ScenarioGroupDataType, "UnlockStoryEpisode", "string"),
-                Field("packlines.group.contenttype", ScenarioGroupDataType, "ContentType", "string"),
-                new PatchTarget("packlines.smalltalk.timing.both", GameAssembly, "SmallTalkSelector+PlayTiming", MemberKind.Field, "GameStartAndBreak",
-                    isStatic: true, expectedSignature: "static SmallTalkSelector.PlayTiming GameStartAndBreak"),
-                new PatchTarget("packlines.smalltalk.content.purchase", GameAssembly, "SmallTalkSelector+ContentType", MemberKind.Field, "PurchaseEnvironment",
-                    isStatic: true, expectedSignature: "static SmallTalkSelector.ContentType PurchaseEnvironment"),
+                Method("packlines.locations.playable", "Bulbul.ScenarioPlayableLocations", "IsPlayableAt",
+                    "bool IsPlayableAt(string, LocationType)", "System.String", LocationType),
+                Method("packlines.novel.playable", NovelDataType, "IsPlayableAt", "bool IsPlayableAt(LocationType)", LocationType),
+                Field("packlines.group.mypace", ScenarioGroupDataType, "MyPaceOnly", "bool"),
+                Property("packlines.location.current", "Bulbul.HeroineLocationService", "CurrentLocation", "LocationType CurrentLocation { get; set; }"),
+                Property("packlines.activity.mypace", "Bulbul.HeroineActivityService", "IsMyPace", "bool IsMyPace { get; }"),
 
                 // SaveDataManager.SaveScenarioProgressData (the only writer of PlayedScenarioGroupIDs; master
                 // data's save filter patches it and pack lines join that filter) and its ScenarioProgressData;
@@ -268,7 +272,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
             foreach (var list in ReactionLists)
             {
-                all.Add(Field("packlines.reaction.list." + list.Key, ReactionSelectorType, list.Value, "RandomList"));
+                all.Add(Field("packlines.reaction.list." + list.PoolId, ReactionSelectorType, list.CategoryField, "LocationTalkCategory"));
             }
 
             foreach (var clock in ClockSelectors)
@@ -286,7 +290,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
 
             foreach (var timer in TimerSelectors)
             {
-                all.Add(Field("packlines.pomodoro." + timer.PoolId, PomodoroSelectorType, timer.Field, "ITalkSelector"));
+                all.Add(Field("packlines.pomodoro." + timer.PoolId, PomodoroSelectorType, timer.Field, timer.TypeName.Substring("Bulbul.".Length)));
                 all.Add(Field("packlines.list." + timer.PoolId, timer.TypeName, timer.ListField, "RandomList"));
                 if (timer.CountupPoolId != null)
                 {
@@ -302,8 +306,26 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
             return all;
         }
 
-        private static KeyValuePair<string, string> Pair(string poolId, string field) =>
-            new KeyValuePair<string, string>(poolId, field);
+        private static PatchTarget TimerPick(string id, string name) =>
+            Method("packlines.pomodoro." + id, PomodoroSelectorType, name,
+                "ScenarioInfo " + name + "(bool, LocationType)", "System.Boolean", LocationType);
+
+        private static PatchTarget Property(string id, string type, string property, string signature) =>
+            new PatchTarget(id, GameAssembly, type, MemberKind.Property, property, expectedSignature: signature);
+
+        public sealed class ReactionPool
+        {
+            internal ReactionPool(string poolId, string categoryField, string? timeOfDay = null)
+            {
+                PoolId = poolId;
+                CategoryField = categoryField;
+                TimeOfDay = timeOfDay;
+            }
+
+            public string PoolId { get; }
+            public string CategoryField { get; }
+            public string? TimeOfDay { get; }
+        }
 
         private static PatchTarget Field(string id, string type, string field, string fieldType) =>
             new PatchTarget(id, GameAssembly, type, MemberKind.Field, field, expectedSignature: fieldType + " " + field);

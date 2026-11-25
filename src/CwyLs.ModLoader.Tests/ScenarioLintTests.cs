@@ -304,6 +304,7 @@ namespace CwyLs.ModLoader.Tests
                 {
                     "MainScenario", "AfterScenario", "DLCScenario", "ExtraScenario", "Special_AlterEgo", "Special_BearsRestaurant",
                     "Special_Valentine2026", "Special_LunaNewYear2026", "Special_NearSpring2026", "Special_MagicalPrincess", "Special_StatisticsDev",
+                    "Special_Epilogue01",
                 },
                 names);
             Assert.Equal(30, ScenarioLint.AmbientSound.Count);

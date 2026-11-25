@@ -15,7 +15,7 @@ namespace CwyLs.ModLoader.Bulbul.Satone.Motion
     /// <remarks>
     /// <para>
     /// <b>Why reflection for the look seam.</b>
-    /// <c>HeroineService.ChangeLookScaleAnimation(float, float, Ease = Ease.Unset)</c>
+    /// <c>HeroineService.ChangeLookScaleAnimation(float, float, Ease = Ease.Unset, float? = null, bool = false)</c>
     /// has a DOTween <c>DG.Tweening.Ease</c> parameter. Calling it from C#
     /// - even leaving the optional argument out - requires the compiler to materialise that
     /// default, so it would force a DOTween reference into this adapter for one argument that is
@@ -201,7 +201,7 @@ namespace CwyLs.ModLoader.Bulbul.Satone.Motion
         internal static bool IsRoomLoaded => GameScopes.IsRoomLoaded;
 
         /// <summary>
-        /// Calls <c>HeroineService.ChangeLookScaleAnimation(scale, seconds, Ease.Unset)</c>.
+        /// Calls <c>HeroineService.ChangeLookScaleAnimation(scale, seconds, Ease.Unset, null, false)</c>.
         /// </summary>
         /// <param name="heroine">The live service.</param>
         /// <param name="scale">Look weight, 0 = look away, 1 = look at the player.</param>
@@ -232,7 +232,7 @@ namespace CwyLs.ModLoader.Bulbul.Satone.Motion
 
             try
             {
-                method.Invoke(heroine, new object[] { scale, seconds, ease });
+                method.Invoke(heroine, new object?[] { scale, seconds, ease, null, false });
                 error = string.Empty;
                 return true;
             }
@@ -360,10 +360,17 @@ namespace CwyLs.ModLoader.Bulbul.Satone.Motion
                     "ChangeLookScaleAnimation", BindingFlags.Public | BindingFlags.Instance);
 
                 var parameters = method?.GetParameters();
-                if (method is null || parameters is null || parameters.Length != 3 || !parameters[2].ParameterType.IsEnum)
+                if (method is null
+                    || parameters is null
+                    || parameters.Length != 5
+                    || parameters[0].ParameterType != typeof(float)
+                    || parameters[1].ParameterType != typeof(float)
+                    || !parameters[2].ParameterType.IsEnum
+                    || parameters[3].ParameterType != typeof(float?)
+                    || parameters[4].ParameterType != typeof(bool))
                 {
                     _lookSeamDetail =
-                        "HeroineService.ChangeLookScaleAnimation(float, float, Ease) was not found "
+                        "HeroineService.ChangeLookScaleAnimation(float, float, Ease, Nullable<float>, bool) was not found "
                         + "with the expected shape; the look API is disabled";
                     CwyLsModLoader.Log.LogWarning("SATONE " + _lookSeamDetail);
                     return;
@@ -372,7 +379,7 @@ namespace CwyLs.ModLoader.Bulbul.Satone.Motion
                 _changeLookScale = method;
                 _easeUnset = Enum.ToObject(parameters[2].ParameterType, 0); // DG.Tweening.Ease.Unset
                 _lookSeamDetail =
-                    $"ChangeLookScaleAnimation(float, float, {parameters[2].ParameterType.FullName}) bound";
+                    $"ChangeLookScaleAnimation(float, float, {parameters[2].ParameterType.FullName}, Nullable<float>, bool) bound";
             }
             catch (Exception ex)
             {

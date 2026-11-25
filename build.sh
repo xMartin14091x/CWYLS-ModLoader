@@ -91,7 +91,13 @@ if [ "$RUN_TESTS" -eq 1 ]; then
     fi
     SC_ARTIFACTS="${TMPDIR:-/tmp}/cwy-seamcheck-$HERE_HASH"
   fi
-  SEAMCHECK_ARTIFACTS="$SC_ARTIFACTS" "$HERE/tools/seamcheck/seamcheck.sh" --platform "$SC_PLATFORM"
+  if [ -n "${GameManagedPath:-}" ]; then
+    # Built against a copy of another game build's Managed folder: check the seams against that copy.
+    echo "    against GameManagedPath=$GameManagedPath (platform ${SEAMCHECK_PLATFORM:-win})"
+    SEAMCHECK_ARTIFACTS="$SC_ARTIFACTS" "$HERE/tools/seamcheck/seamcheck.sh" --managed "$GameManagedPath" --platform "${SEAMCHECK_PLATFORM:-win}"
+  else
+    SEAMCHECK_ARTIFACTS="$SC_ARTIFACTS" "$HERE/tools/seamcheck/seamcheck.sh" --platform "$SC_PLATFORM"
+  fi
   dotnet test "$HERE/tools/seamcheck/Seamcheck.Tests/Seamcheck.Tests.csproj" -c "$CONFIG" --artifacts-path "$SC_ARTIFACTS"
 fi
 

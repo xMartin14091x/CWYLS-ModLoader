@@ -189,8 +189,14 @@ namespace CwyLs.ModLoader.Bulbul.Events
         /// <summary>Harmony postfix: publishes <see cref="SatoneStateChanged"/>.</summary>
         /// <param name="__0">The requested next state.</param>
         /// <param name="__state">The state captured by the prefix.</param>
-        internal static void ChangeStatePostfix(HeroineAI.ActionStateType __0, int __state)
+        /// <param name="__result">Whether <c>ChangeState</c> entered <paramref name="__0"/>.</param>
+        internal static void ChangeStatePostfix(HeroineAI.ActionStateType __0, int __state, bool __result)
         {
+            if (!__result)
+            {
+                return;
+            }
+
             var next = (int)__0;
             CWYEvents.Publish(
                 new SatoneStateChanged(

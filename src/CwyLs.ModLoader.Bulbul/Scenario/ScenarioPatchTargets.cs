@@ -115,7 +115,8 @@ namespace CwyLs.ModLoader.Bulbul.Scenario
                 expectedSignature: "RoomGameManager.MainState CurrentMainState { get; }"),
 
             Method("script.heroine.ispossibletalk", "Bulbul.HeroineService", "IsPossibleTalk", "bool IsPossibleTalk()"),
-            Method("script.heroine.lookinitslowly", "Bulbul.HeroineService", "LookInitSlowly", "void LookInitSlowly()"),
+            Method("script.heroine.lookinitslowly", "Bulbul.HeroineService", "LookInitSlowly",
+                "void LookInitSlowly(Nullable<long>)", "System.Nullable<System.Int64>"),
             Method("script.heroine.initfacialafterdelay", "Bulbul.HeroineService", "InitHeroineFacialAfterDelay",
                 "void InitHeroineFacialAfterDelay(float)", "System.Single"),
 

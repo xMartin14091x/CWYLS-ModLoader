@@ -68,7 +68,7 @@ namespace CwyLs.ModLoader.Tests
         public void The_tables_have_the_member_counts_the_dump_has()
         {
             Assert.Equal(50, MasterDataEnums.Command.Count);
-            Assert.Equal(89, MasterDataEnums.Scenario.Count);
+            Assert.Equal(90, MasterDataEnums.Scenario.Count); // 1.18.x dump (89) + Special_Epilogue01 (57, game 2.0.0)
             Assert.Equal(2, MasterDataEnums.Talker.Count);
             Assert.Equal(38, MasterDataEnums.Ease.Count);
             Assert.Equal(4, MasterDataEnums.All.Length);

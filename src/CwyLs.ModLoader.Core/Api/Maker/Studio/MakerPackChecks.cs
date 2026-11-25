@@ -154,42 +154,62 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Studio
             checks.Add(set.Links.Count == 0
                 ? C(Ok("links", "No links inside the pack."), "linksOk")
                 : C(Make("links", MakerExportSeverity.Warning, set.Links.Count + " link(s) are skipped; copy the real files into the pack instead.", set.Links), "linksSkipped", ("n", set.Links.Count)));
-            var dlc = Paid(files, set, paid);
+            var dlc = Paid(set.Included.Select(pair => pair.Key), path => ReadMetadata(files, path, out _), paid);
             if (dlc != null) checks.Add(dlc);
             return checks;
         }
 
-        /// <summary>
-        /// Paid DLC content the player is not known to own is never exported: subtitle entries and <c>localization.json</c> rows for
-        /// hidden lines, and voice files for hidden clips, refuse the export (paths only, never text). Null: nothing to report.
-        /// </summary>
-        private static MakerExportCheck? Paid(MakerPackFiles files, MakerPackFileSet set, MakerDlcHidden? hidden)
+        /// <summary>Checks runtime-recognized files for paid DLC references. Reports file paths only.</summary>
+        internal static MakerExportCheck? Paid(IEnumerable<string> paths, Func<string, string?> readMetadata, MakerDlcHidden? hidden)
         {
             if (hidden is null) return null;
             if (!hidden.IsKnown)
                 return C(Make("paid", MakerExportSeverity.Error, "Pack Maker could not check the pack for paid DLC lines (" + hidden.Summary + "); try again in a moment.", Array.Empty<string>()), "paidUnknown", ("detail", hidden.Summary));
-            if (hidden.LineCount == 0 && hidden.VoiceCount == 0) return null;
+            if (hidden.GroupCount == 0 && hidden.LineCount == 0 && hidden.VoiceCount == 0) return null;
+
             var hits = new List<string>();
-            foreach (var pair in set.Included)
+            foreach (var path in paths)
             {
-                var lang = SubtitleTables.LanguageOf(pair.Key);
-                if (lang != null)
-                {
-                    if (SubtitleTables.Parse(ReadMetadata(files, pair.Key, out _), pair.Key, lang).Rows.Any(r => hidden.IsLine(r.LocalizationId))) hits.Add(pair.Key);
-                }
-                else if (pair.Key == PackContentIndex.LocalizationPath)
-                {
-                    if (MasterDataPackParser.ParseLocalization(ReadMetadata(files, pair.Key, out _), pair.Key).Rows.Any(r => hidden.IsLine(r.Id))) hits.Add(pair.Key);
-                }
-                else if (pair.Key.StartsWith(PackContentIndex.VoiceFolder, StringComparison.Ordinal)
-                         && hidden.IsVoice(Path.GetFileNameWithoutExtension(pair.Key)))
-                {
-                    hits.Add(pair.Key);
-                }
+                var normalized = PackContentIndex.Normalise(path);
+                if (normalized != null && ReferencesPaid(normalized, () => readMetadata(path), hidden))
+                    hits.Add(path);
             }
 
             return hits.Count == 0 ? null
                 : C(Make("paid", MakerExportSeverity.Error, hits.Count + " file(s) have content for paid DLC lines that Pack Maker cannot confirm you own, so the pack is not exported.", hits), "paidFound", ("n", hits.Count));
+        }
+
+        private static bool ReferencesPaid(string path, Func<string?> readMetadata, MakerDlcHidden hidden)
+        {
+            var language = SubtitleTables.LanguageOf(path);
+            if (language != null)
+                return SubtitleTables.Parse(readMetadata(), path, language).Rows.Any(row => hidden.IsLine(row.LocalizationId));
+
+            switch (PackContentIndex.Classify(path))
+            {
+                case PackContentKind.Localization:
+                    return MasterDataPackParser.ParseLocalization(readMetadata(), path).Rows.Any(row =>
+                        hidden.IsLine(row.Id) || hidden.IsVoice(row.Voice) || hidden.IsVoice(VoiceNameRules.KeyFromAudioPath(row.Voice)));
+                case PackContentKind.Novel:
+                    return MasterDataPackParser.ParseNovel(readMetadata(), path).Rows.Any(row =>
+                        hidden.IsGroup(row.ScenarioGroupId) || hidden.IsLine(row.LocalizationId) || hidden.IsNovelRow(row.Id));
+                case PackContentKind.ScenarioGroups:
+                    return MasterDataPackParser.ParseScenarioGroups(readMetadata(), path).Rows.Any(row =>
+                        hidden.IsGroup(row.Id) || hidden.IsLine(row.TitleLocalizationId) || hidden.IsLine(row.SubtitleLocalizationId));
+                case PackContentKind.Voice:
+                    return VoiceNameRules.TryFromFileName(path, out var voice, out _) && hidden.IsVoice(voice);
+                default:
+                    return LanguageVoicePlan.TryParsePath(path, out var folder, out var fileName, out _)
+                        && LanguageVoicePlan.TryNormalizeCode(folder, out _, out _)
+                        && VoiceLoadPlan.TryLoaderFor(Path.GetExtension(fileName), out _)
+                        && VoiceNameRules.TryFromFileName(fileName, out var name, out _) && hidden.IsVoice(name);
+            }
+        }
+
+        private static bool IsMasterData(string? path)
+        {
+            var kind = PackContentIndex.Classify(path ?? string.Empty);
+            return kind == PackContentKind.Localization || kind == PackContentKind.Novel || kind == PackContentKind.ScenarioGroups;
         }
 
         /// <summary>The languages the pack has subtitles or dubs for, ordinally sorted.</summary>
@@ -428,8 +448,9 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Studio
             var wide = set.Included.Where(p => Encoding.UTF8.GetByteCount(packId + "/" + p.Key) > ushort.MaxValue).Select(p => p.Key).ToList();
             if (wide.Count > 0) return C(Make("size", MakerExportSeverity.Error, "ZIP entry names may contain at most 65535 UTF-8 bytes.", wide), "sizeNames", ("n", wide.Count));
             var metadata = set.Included.Where(p => p.Value > MaxMetadataBytes && (p.Key == PackContentIndex.ManifestFileName
-                || p.Key == ChangelogFile || p.Key == MakerStudioPaths.Provenance || SubtitleTables.LanguageOf(p.Key) != null)).Select(p => p.Key).ToList();
-            if (metadata.Count > 0) return C(Make("size", MakerExportSeverity.Error, "Metadata files may be at most 4 MiB; split large subtitle tables before exporting.", metadata), "sizeMetadata", ("n", metadata.Count));
+                || p.Key == ChangelogFile || p.Key == MakerStudioPaths.Provenance || SubtitleTables.LanguageOf(p.Key) != null
+                || IsMasterData(PackContentIndex.Normalise(p.Key)))).Select(p => p.Key).ToList();
+            if (metadata.Count > 0) return C(Make("size", MakerExportSeverity.Error, "Metadata files may be at most 4 MiB.", metadata), "sizeMetadata", ("n", metadata.Count));
             var huge = set.Included.Where(p => p.Value > MaxFileBytes).Select(p => p.Key).ToList();
             if (huge.Count > 0) return C(Make("size", MakerExportSeverity.Error, huge.Count + " file(s) are over 512 MiB.", huge), "sizeFile", ("n", huge.Count));
             if (bytes > MaxExportBytes) return C(Make("size", MakerExportSeverity.Error, "The pack is " + Mib(bytes) + "; an export may be at most 1984 MiB.", new string[0]), "sizeLimit", ("size", Mib(bytes)));
@@ -446,6 +467,11 @@ namespace CwyLs.ModLoader.Core.Api.Maker.Studio
             if (!File.Exists(full)) return null;
             using var stream = File.OpenRead(full);
             if (stream.Length > limit) throw new IOException(path + " exceeds the metadata size limit");
+            return ReadMetadata(stream, path, out bom, limit);
+        }
+
+        internal static string ReadMetadata(Stream stream, string path, out bool bom, long limit = MaxMetadataBytes)
+        {
             using var buffer = new MemoryStream();
             var chunk = new byte[8192];
             int read;

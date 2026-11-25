@@ -24,11 +24,8 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
     /// feature is active (<see cref="MasterDataFeature.AdmitPackLines"/>).
     /// </para>
     /// <para>
-    /// <b>Gate at pick time.</b> The game's pools are hard-coded <c>RandomList</c> ranges (and one
-    /// data-built small-talk cache). Harmony patches widen each one with the pool's pack episodes at
-    /// the moment the game picks, and only with those whose language is shown and whose clips would
-    /// make a sound: a language switch takes effect on the next pick, and in any other language the
-    /// pool is the game's own, with the game's own odds and random draws.
+    /// <b>Gate at pick time.</b> Harmony offers eligible lines at base-game Desk picks while their
+    /// language is shown and their voice clips are ready.
     /// </para>
     /// <para>
     /// <b>Weight.</b> A line with a <c>Weight</c> is never dealt into a deck: at each pick of its pool
@@ -253,7 +250,7 @@ namespace CwyLs.ModLoader.Bulbul.PackLines
                 {
                     // Same lines, new row objects: let the lottery hold the loader's current ones.
                     // The click and timer lists keep their cycle bookkeeping.
-                    PackLinesRuntime.RefreshSmallTalk(trigger);
+                    PackLinesRuntime.RefreshMasterRows(trigger);
                 }
 
                 // The startup greeting is picked before the room is ready: queue its clips now.

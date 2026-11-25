@@ -71,6 +71,22 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
         /// <summary>How many scenario groups the game itself has.</summary>
         internal static int BaseScenarioGroupCount => _baseGroups.Length;
 
+        /// <summary>The game's own localisation rows of the current load (empty without a baseline).</summary>
+        internal static IReadOnlyList<Master.LocalizationData> BaseLocalization => _baseLocalization;
+
+        /// <summary>The game's own novel rows of the current load (empty without a baseline).</summary>
+        internal static IReadOnlyList<Master.NovelData> BaseNovel => _baseNovel;
+
+        /// <summary>The game's own scenario groups of the current load (empty without a baseline).</summary>
+        internal static IReadOnlyList<Master.ScenarioGroupData> BaseGroups => _baseGroups;
+
+        /// <summary>True when the loader still holds a collection this injector installed (not the game's own tables).</summary>
+        /// <param name="loader">The game's master-data loader.</param>
+        internal static bool HoldsInstalledCollections(Game.MasterDataLoader loader) =>
+            loader != null && (ReferenceEquals(loader.LocalizationList, _installedLocalization)
+                || ReferenceEquals(loader.NovelMasterList, _installedNovel)
+                || ReferenceEquals(loader.ScenarioGroupMasterList, _installedGroups));
+
         /// <summary>
         /// Drops the snapshot, so the next <see cref="Capture"/> takes a fresh one. Called when the
         /// game starts a new load or releases the one we injected into.
@@ -81,6 +97,7 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
         /// </remarks>
         internal static void Forget()
         {
+            Maker.PaidDlcContent.Invalidate();
             HasBaseline = false;
             _baseLocalization = NoLocalization;
             _baseNovel = NoNovel;
@@ -188,6 +205,22 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
 
             var counts = new InjectionCounts();
 
+            // Paid DLC content is decided on the game's untouched rows, before any pack row is merged, so no override can
+            // change the verdict (a replaced group loses the game's DLC flag). Rows that would override, extend or point at
+            // protected content are refused. An undecided verdict refuses every pack row (fail closed).
+            var paid = Maker.PaidDlcContent.RefreshFrom(_baseLocalization, _baseNovel, _baseGroups, "before the pack merge");
+            var baseNovelGroup = new Dictionary<string, string?>(StringComparer.Ordinal);
+            foreach (var row in _baseNovel)
+            {
+                if (row?.ID != null && !baseNovelGroup.ContainsKey(row.ID))
+                {
+                    baseNovelGroup.Add(row.ID, row.ScenarioGroupID);
+                }
+            }
+
+            var admitted = MasterDataPaidAdmission.Filter(set, paid, baseNovelGroup);
+            var refused = admitted.Refused;
+
             var localization = new Dictionary<string, Master.LocalizationData>(
                 _baseLocalization.Length + set.Localization.Count, StringComparer.Ordinal);
 
@@ -199,7 +232,7 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
                 }
             }
 
-            foreach (var row in set.Localization)
+            foreach (var row in admitted.Localization)
             {
                 var replaced = localization.ContainsKey(row.Id);
                 localization[row.Id] = Build(row);
@@ -210,7 +243,7 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
             novel.AddRange(_baseNovel);
             var novelPositions = UniquePositions(novel, row => row?.ID);
 
-            foreach (var row in set.Novel)
+            foreach (var row in admitted.Novel)
             {
                 var built = Build(row);
                 if (novelPositions.TryGetValue(row.Id, out var position))
@@ -230,7 +263,7 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
             groups.AddRange(_baseGroups);
             var groupPositions = UniquePositions(groups, row => row?.ID);
 
-            foreach (var row in set.ScenarioGroups)
+            foreach (var row in admitted.ScenarioGroups)
             {
                 var built = Build(row);
                 if (groupPositions.TryGetValue(row.Id, out var position))
@@ -244,6 +277,14 @@ namespace CwyLs.ModLoader.Bulbul.MasterData
                     groups.Add(built);
                     counts.Count(MasterDataMerge.ScenarioGroupsKind, row.Id, false, logEachRow);
                 }
+            }
+
+            if (refused.Count > 0)
+            {
+                // Ids only, never line text.
+                CwyLsModLoader.Log.LogWarning("MASTERDATA " + refused.Count + " pack row(s) refused because they would override or use paid DLC content"
+                    + (paid.IsKnown ? string.Empty : " (the DLC check could not decide: " + paid.Summary + ")") + ": "
+                    + string.Join(", ", System.Linq.Enumerable.Take(refused, 8)) + (refused.Count > 8 ? ", …" : string.Empty));
             }
 
             loader.LocalizationList = localization;
